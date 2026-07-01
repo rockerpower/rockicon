@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foundry Icons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body { overflow: hidden; }
+  ::selection { background: var(--ink); color: var(--bg); }
+
+  .app-root {
+    --bg: #0a0a0b; --bg-2: #0d0d0f; --bg-3: #1a1a1d; --field: #0e0e10;
+    --line: rgba(255,255,255,.085); --line-2: rgba(255,255,255,.15);
+    --ink: rgba(255,255,255,.92); --ink-2: rgba(255,255,255,.52); --ink-3: rgba(255,255,255,.32);
+    --inv-bg: #f3f3f0; --inv-ink: #0a0a0b;
+  }
+  .app-root.light {
+    --bg: #f6f6f3; --bg-2: #fbfbf9; --bg-3: #eeeeea; --field: #ffffff;
+    --line: rgba(0,0,0,.10); --line-2: rgba(0,0,0,.17);
+    --ink: #17171a; --ink-2: rgba(0,0,0,.55); --ink-3: rgba(0,0,0,.34);
+    --inv-bg: #17171a; --inv-ink: #fafafa;
+  }
+  .app-root *::-webkit-scrollbar { width: 10px; height: 10px; }
+  .app-root *::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+  .app-root *::-webkit-scrollbar-track { background: transparent; }
+
+  input[type="range"] { width: 100%; accent-color: var(--ink); }
+  button { font-family: 'Geist', system-ui, sans-serif; }
+
+  @keyframes panelIn { from { transform: translateX(24px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes toastIn { from { transform: translateY(12px) translateX(-50%); opacity: 0; } to { transform: translateY(0) translateX(-50%); opacity: 1; } }
+
+  .panel-anim { animation: panelIn .26s cubic-bezier(.2,.8,.2,1); }
+  .toast-anim { animation: toastIn .22s ease; }
+
+  .icon-cell:hover { background: var(--bg-3) !important; }
+  .tree-row:hover { background: var(--bg-3) !important; }
+  .nav-btn:hover { opacity: .8; }
+
+  /* Pro plan */
+  .app-root { --pro: #7C6AE8; --pro-2: #A99DF0; --pro-bg: rgba(124,106,232,.12); }
+  .app-root.light { --pro: #5B48D9; --pro-2: #7C6AE8; --pro-bg: rgba(91,72,217,.10); }
+  @keyframes shimmer { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+  .pro-badge {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 7px; border-radius: 5px; font-size: 9.5px; font-weight: 700;
+    font-family: 'Geist Mono', monospace; letter-spacing: .08em; text-transform: uppercase;
+    background: var(--pro-bg); color: var(--pro); border: 1px solid rgba(124,106,232,.25);
+    line-height: 1.4; flex-shrink: 0;
+  }
+  .pro-lock-overlay {
+    position: absolute; inset: 0; border-radius: inherit;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.42); opacity: 0; transition: opacity .15s; cursor: pointer;
+    backdrop-filter: blur(1px);
+  }
+  .pro-wrap { position: relative; }
+  .pro-wrap:hover .pro-lock-overlay { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const { createElement: h, useState, useEffect, useRef, useCallback } = React;
+
+/* ── Icon data ── */
+function buildData() {
+  const L = (id,name,cat,sub,tags,body,fill) => ({id,name,cat,sub,tags,body,fill:!!fill});
+  return [
+    L('home','home','Interface','Core Actions',['house','main','start'],'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6h5v6"/>'),
+    L('search','search','Interface','Core Actions',['find','magnify','look'],'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/>'),
+    L('settings','settings','Interface','Core Actions',['gear','cog','prefs'],'<circle cx="12" cy="12" r="3"/><path d="M19 12c0-.5 0-.9-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.3-1.3L13.8 2h-3.6l-.5 2.5a7 7 0 0 0-2.3 1.3l-2.3-1-2 3.4 2 1.5C5 11.1 5 11.5 5 12s0 .9.1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.3 1.3l.5 2.5h3.6l.5-2.5a7 7 0 0 0 2.3-1.3l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.3z"/>'),
+    L('menu','menu','Interface','Core Actions',['nav','bars','hamburger'],'<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>'),
+    L('more','more horizontal','Interface','Core Actions',['dots','overflow','options'],'<circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/>'),
+    L('grid','grid','Interface','Core Actions',['layout','tiles','dashboard'],'<rect x="3.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.4"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.4"/>'),
+    L('refresh','refresh','Interface','Core Actions',['reload','sync','update'],'<path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4.5v5h-5"/>'),
+    L('check','check','Interface','Controls',['done','tick','ok'],'<path d="M5 13l4 4L19 7"/>'),
+    L('close','close','Interface','Controls',['x','cancel','remove'],'<path d="M6 6l12 12"/><path d="M18 6 6 18"/>'),
+    L('plus','plus','Interface','Controls',['add','new','create'],'<path d="M12 5v14"/><path d="M5 12h14"/>'),
+    L('minus','minus','Interface','Controls',['subtract','remove','collapse'],'<path d="M5 12h14"/>'),
+    L('filter','filter','Interface','Controls',['funnel','sort','refine'],'<path d="M3.5 5h17l-6.5 8v6l-4 2v-8z"/>',true),
+    L('arrow-right','arrow right','Navigation','Wayfinding',['next','forward','direction'],'<path d="M4 12h16"/><path d="m14 6 6 6-6 6"/>'),
+    L('chevron-right','chevron right','Navigation','Wayfinding',['next','expand','caret'],'<path d="m9 6 6 6-6 6"/>'),
+    L('map-pin','map pin','Navigation','Wayfinding',['location','marker','place'],'<path d="M12 22s7-6 7-12a7 7 0 0 0-14 0c0 6 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',true),
+    L('compass','compass','Navigation','Wayfinding',['direction','navigate','explore'],'<circle cx="12" cy="12" r="9"/><path d="m15.6 8.4-2 5.2-5.2 2 2-5.2z"/>'),
+    L('globe','globe','Navigation','Global',['world','web','earth'],'<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/>'),
+    L('external-link','external link','Navigation','Global',['open','out','share'],'<path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 13.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5.5"/>'),
+    L('mail','mail','Communication','Messaging',['email','message','envelope'],'<rect x="3" y="5" width="18" height="14" rx="2.2"/><path d="m4 7 8 6 8-6"/>'),
+    L('message','message','Communication','Messaging',['chat','bubble','talk'],'<path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/>',true),
+    L('phone','phone','Communication','Messaging',['call','dial','contact'],'<path d="M6.5 3C5 3 3.5 4.3 3.5 6c0 8 6.5 14.5 14.5 14.5 1.7 0 3-1.5 3-3v-2.4l-4-1.5-2 2c-2.5-1.2-4.8-3.5-6-6l2-2L8.9 3z"/>'),
+    L('send','send','Communication','Messaging',['paper plane','submit','deliver'],'<path d="M22 3 11 14"/><path d="M22 3 15 21l-4-7-7-4z"/>'),
+    L('share','share','Communication','Connect',['network','social','distribute'],'<circle cx="6" cy="12" r="2.6"/><circle cx="17.5" cy="6" r="2.6"/><circle cx="17.5" cy="18" r="2.6"/><path d="m8.4 10.9 6.7-3.6"/><path d="m8.4 13.1 6.7 3.6"/>'),
+    L('bell','bell','Communication','Connect',['notify','alert','ring'],'<path d="M12 3a6 6 0 0 0-6 6c0 4-1.4 5.6-2.5 6.6-.5.4-.2 1.4.5 1.4h16c.7 0 1-1 .5-1.4C19.4 14.6 18 13 18 9a6 6 0 0 0-6-6z"/><circle cx="12" cy="20.5" r="1.6"/>',true),
+    L('link','link','Communication','Connect',['chain','url','connect'],'<path d="M9.5 14.5 14.5 9.5"/><path d="M10.8 6.8 13 4.6a4 4 0 0 1 5.8 5.6l-2.2 2.2"/><path d="M13.2 17.2 11 19.4a4 4 0 0 1-5.8-5.6l2.2-2.2"/>'),
+    L('paperclip','paperclip','Communication','Connect',['attach','clip','file'],'<path d="M20 11 11.5 19.4a5 5 0 0 1-7-7.1L13 4a3.4 3.4 0 0 1 4.9 4.8l-8.4 8.4a1.9 1.9 0 0 1-2.7-2.7l7.5-7.5"/>'),
+    L('image','image','Media','Capture',['photo','picture','gallery'],'<rect x="3" y="4" width="18" height="16" rx="2.2"/><circle cx="8.5" cy="9" r="1.9"/><path d="m4.5 18 4.5-4.5 3.5 3 3.5-3.5L21 17.5"/>'),
+    L('video','video','Media','Capture',['film','movie','record'],'<rect x="3" y="6" width="13" height="12" rx="2.2"/><path d="m16 10 5-3v10l-5-3z"/>'),
+    L('camera','camera','Media','Capture',['photo','capture','lens'],'<path d="M4 8h3l1.5-2.5h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>'),
+    L('mic','microphone','Media','Capture',['record','voice','audio'],'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>'),
+    L('music','music','Media','Playback',['note','song','audio'],'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>'),
+    L('play','play','Media','Playback',['start','video','media'],'<path d="M7 4.5 19.5 12 7 19.5z"/>',true),
+    L('volume','volume','Media','Playback',['sound','speaker','audio'],'<path d="M4 9.5v5h4l5 4v-13l-5 4z"/><path d="M16.5 9a4 4 0 0 1 0 6"/>'),
+    L('headphones','headphones','Media','Playback',['audio','listen','sound'],'<path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="4" height="7" rx="1.6"/><rect x="17" y="13" width="4" height="7" rx="1.6"/>'),
+    L('eye','eye','Media','Visibility',['view','visible','show'],'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>'),
+    L('eye-off','eye off','Media','Visibility',['hide','hidden','invisible'],'<path d="M3 3 21 21"/><path d="M10.6 5.2A10 10 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-3 3.8"/><path d="M6.5 6.9A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 4-.8"/><path d="M9.5 9.5a3 3 0 0 0 4.2 4.2"/>'),
+    L('file','file','Files','Documents',['document','page','paper'],'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>'),
+    L('folder','folder','Files','Documents',['directory','storage','group'],'<path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+    L('save','save','Files','Documents',['floppy','store','disk'],'<path d="M5 3h12l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M7 3v5h8V3"/><rect x="8" y="13" width="8" height="6"/>'),
+    L('printer','printer','Files','Documents',['print','document','paper'],'<path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><rect x="7" y="14" width="10" height="6"/>'),
+    L('download','download','Files','Transfer',['save','import','arrow'],'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>'),
+    L('upload','upload','Files','Transfer',['export','send','arrow'],'<path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M5 3h14"/>'),
+    L('copy','copy','Files','Transfer',['duplicate','clone','clipboard'],'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
+    L('trash','trash','Files','Manage',['delete','remove','bin'],'<path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/>'),
+    L('edit','edit','Files','Manage',['pencil','write','modify'],'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 5 4 4"/>'),
+    L('cart','shopping cart','Commerce','Shopping',['buy','shop','checkout'],'<circle cx="9" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/><path d="M2 3h2.2l2.3 13h12l2-9H6.2"/>'),
+    L('card','credit card','Commerce','Shopping',['payment','pay','bank'],'<rect x="2" y="5" width="20" height="14" rx="2.2"/><path d="M2 10h20"/>'),
+    L('tag','tag','Commerce','Shopping',['label','price','sale'],'<path d="M3 3.5h7l11 11-7 7L3 10z"/><circle cx="7.5" cy="7.5" r="1.6"/>',true),
+    L('truck','truck','Commerce','Logistics',['shipping','delivery','transport'],'<rect x="2" y="6" width="13" height="10" rx="1.5"/><path d="M15 9h4l3 3v4h-7z"/><circle cx="7" cy="18" r="1.9"/><circle cx="18" cy="18" r="1.9"/>'),
+    L('cloud','cloud','Weather','Sky',['sky','storage','weather'],'<path d="M7 18a4 4 0 0 1-.5-8 6 6 0 0 1 11.6 1.5A3.5 3.5 0 0 1 17.5 18z"/>'),
+    L('sun','sun','Weather','Sky',['light','day','bright'],'<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5"/><path d="M12 19.5V22"/><path d="M22 12h-2.5"/><path d="M4.5 12H2"/><path d="m18.4 5.6-1.8 1.8"/><path d="m7.4 16.6-1.8 1.8"/><path d="m18.4 18.4-1.8-1.8"/><path d="m7.4 7.4-1.8-1.8"/>'),
+    L('moon','moon','Weather','Sky',['night','dark','sleep'],'<path d="M20 13a8 8 0 1 1-9-9 6 6 0 0 0 9 9z"/>',true),
+    L('droplet','droplet','Weather','Elements',['water','rain','liquid'],'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',true),
+    L('zap','zap','Weather','Elements',['lightning','flash','energy'],'<path d="M13 2.5 4 14h7l-1 7.5 9-11.5h-7z"/>',true),
+    L('lock','lock','Security','Access',['secure','private','password'],'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
+    L('unlock','unlock','Security','Access',['open','access','password'],'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.7-1.7"/>'),
+    L('shield','shield','Security','Protection',['protect','secure','guard'],'<path d="M12 3 5 6v5c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z"/>',true),
+    L('wifi','wifi','Devices','Connectivity',['network','signal','wireless'],'<path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8 15.5a6 6 0 0 1 8 0"/><path d="M11 18.4a2 2 0 0 1 2 0"/>'),
+    L('calendar','calendar','Devices','Time',['date','schedule','event'],'<rect x="3" y="5" width="18" height="16" rx="2.2"/><path d="M3 9.5h18"/><path d="M8 3v4"/><path d="M16 3v4"/>'),
+    L('clock','clock','Devices','Time',['time','watch','schedule'],'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>'),
+    L('heart','heart','Shapes','Symbols',['like','love','favorite'],'<path d="M12 21s-7-4.4-9.2-8.6C1.2 9 2.6 5 6 5c2 0 3.3 1.2 4 2.4C10.7 6.2 12 5 14 5c3.4 0 4.8 4 3.2 7.4C19 16.6 12 21 12 21z"/>',true),
+    L('star','star','Shapes','Symbols',['rating','favorite','bookmark'],'<path d="M12 2.5 14.9 8.6 21.5 9.4 16.6 14 17.9 20.7 12 17.4 6.1 20.7 7.4 14 2.5 9.4 9.1 8.6z"/>',true),
+    L('bookmark','bookmark','Shapes','Symbols',['save','flag','tag'],'<path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.5a1 1 0 0 1 1-1z"/>',true),
+    L('flag','flag','Shapes','Symbols',['mark','report','country'],'<path d="M5 3v18"/><path d="M5 4h13l-2.5 4L18 12H5z"/>',true),
+    L('circle','circle','Shapes','Geometry',['round','dot','shape'],'<circle cx="12" cy="12" r="9"/>',true),
+    L('square','square','Shapes','Geometry',['box','rectangle','shape'],'<rect x="4" y="4" width="16" height="16" rx="2.5"/>',true),
+    L('triangle','triangle','Shapes','Geometry',['warning','shape','arrow'],'<path d="M12 4 22 20H2z"/>',true),
+  ];
+}
+
+const ICONS = buildData();
+const CATS = [];
+const SUBS = {};
+ICONS.forEach(ic => {
+  if (!CATS.includes(ic.cat)) CATS.push(ic.cat);
+  SUBS[ic.cat] = SUBS[ic.cat] || [];
+  if (!SUBS[ic.cat].includes(ic.sub)) SUBS[ic.cat].push(ic.sub);
+});
+
+const PRO = new Set(['settings','grid','compass','globe','external-link','send','bell','paperclip','camera','headphones','eye-off','printer','save','truck','card','zap','droplet','shield','unlock','calendar','star','bookmark','flag','triangle','mic','video','message']);
+
+/* ── SVG helpers ── */
+function svgAttrs(style, size, sw) {
+  if (style === 'solid') return { fill: 'currentColor', stroke: 'none' };
+  if (style === 'duotone') return { fill: 'none', stroke: 'none' };
+  return { fill: 'none', stroke: 'currentColor', strokeWidth: sw, strokeLinecap: 'round', strokeLinejoin: 'round' };
+}
+
+function SvgIcon({ body, style = 'outline', size = 24, sw = 2, color }) {
+  const attrs = svgAttrs(style, size, sw);
+  const inner = style === 'duotone'
+    ? `<g fill="currentColor" stroke="none" opacity="0.26">${body}</g><g fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${body}</g>`
+    : body;
+  return h('svg', {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: size, height: size,
+    viewBox: '0 0 24 24',
+    style: { display: 'block', flexShrink: 0, color: color || undefined },
+    ...attrs,
+    dangerouslySetInnerHTML: { __html: inner },
+  });
+}
+
+function markupStr(icon, style, size, sw, color) {
+  const c = color || 'currentColor';
+  const head = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24"`;
+  if (style === 'solid') return `${head} fill="${c}">${icon.body}</svg>`;
+  if (style === 'duotone') return `${head}><g fill="${c}" opacity="0.26">${icon.body}</g><g fill="none" stroke="${c}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${icon.body}</g></svg>`;
+  return `${head} fill="none" stroke="${c}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${icon.body}</svg>`;
+}
+
+function styleAvail(icon) { return icon.fill ? ['outline', 'solid', 'duotone'] : ['outline']; }
+function gridStyleFor(icon, navStyle) { return (navStyle === 'solid' && icon.fill) ? 'solid' : 'outline'; }
+
+function pascal(name) {
+  return name.replace(/[^a-z0-9 ]/gi,'').split(/[ -]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+}
+function toJsx(mk, name) {
+  let s = mk
+    .replace(/stroke-width/g,'strokeWidth').replace(/stroke-linecap/g,'strokeLinecap')
+    .replace(/stroke-linejoin/g,'strokeLinejoin').replace(/fill-rule/g,'fillRule')
+    .replace(/clip-rule/g,'clipRule').replace(/xmlns="[^"]*"\s*/,'');
+  s = s.replace('<svg', '<svg {...props}');
+  return `export const ${pascal(name)}Icon = (props) => (\n  ${s.replace(/></g,'>\n    <').replace('</svg>','\n  </svg>')}\n);`;
+}
+
+/* ── Clipboard / download ── */
+function copyText(text) {
+  try { navigator.clipboard.writeText(text); } catch(e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  }
+}
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+function exportPng(icon, style, size, sw, color) {
+  const px = Math.max(size, 64);
+  const mk = markupStr(icon, style, 24, sw, color);
+  const img = new Image();
+  img.onload = () => {
+    const cv = document.createElement('canvas'); cv.width = px; cv.height = px;
+    cv.getContext('2d').drawImage(img, 0, 0, px, px);
+    cv.toBlob(b => downloadBlob(b, icon.name.replace(/\s+/g,'-') + '-' + px + '.png'), 'image/png');
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(mk);
+}
+
+/* ── Pricing Page ── */
+const FREE_FEATS = [
+  'All Free icons, unlimited use',
+  'Copy SVG, JSX, data URI, Base64',
+  'PNG export & single downloads',
+  'Outline & Solid styles',
+  'Personal & commercial use',
+];
+const PRO_FEATS = [
+  'Everything in Free, plus:',
+  PRO.size + ' Pro icons — full catalogue',
+  'Bulk ZIP export & copy-all JSON',
+  'Every style & format unlocked',
+  'Extended commercial license',
+  'All future additions included',
+];
+const FAQS = [
+  { q: 'Can I cancel anytime?', a: 'Yes — manage or cancel from your account page at any time. You keep access until the end of the billing period.' },
+  { q: 'Is there a personal-use free tier?', a: 'Free icons are usable by anyone, no account required. Sign up only if you want Pro icons or bulk export.' },
+  { q: 'What does Pro license cover?', a: 'Use Pro icons in unlimited commercial projects, client work, and products — no attribution required.' },
+  { q: 'How are payments handled?', a: 'Securely through our payment provider\'s hosted checkout. We never store card details.' },
+];
+
+/* ── Auth modal (defined outside App to keep stable component identity) ── */
+function AuthModal({ authView, authName, authEmail, authPw, authErr, setAuthView, setAuthName, setAuthEmail, setAuthPw, setAuthErr, setSignedIn, showToast }) {
+  if (!authView) return null;
+  const isReg = authView === 'register';
+  const decoIds = ['home','search','heart','star','settings','bell','camera','globe','folder','cart','sun','shield'];
+
+  function signInWithGoogle() {
+    setSignedIn(true);
+    if (!authEmail) setAuthEmail('you@foundry.co');
+    setAuthView(null); setAuthErr('');
+    showToast('Signed in with Google');
+  }
+
+  function submitAuth() {
+    const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(authEmail.trim());
+    if (isReg && !authName.trim()) { setAuthErr('Enter your name.'); return; }
+    if (!emailOk) { setAuthErr('Enter a valid email address.'); return; }
+    if (authPw.length < 6) { setAuthErr('Password must be at least 6 characters.'); return; }
+    setSignedIn(true); setAuthView(null); setAuthPw(''); setAuthErr('');
+    showToast(isReg ? 'Account created — welcome to Foundry' : 'Signed in as ' + authEmail.trim());
+  }
+
+  return h('div', {
+    style: { position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: 'rgba(0,0,0,.62)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }
+  },
+    h('div', { style: { position: 'relative', display: 'flex', width: '100%', maxWidth: '880px', height: '560px', maxHeight: '92vh', background: 'var(--bg)', border: '1px solid var(--line-2)', borderRadius: '18px', overflow: 'hidden', boxShadow: '0 40px 120px rgba(0,0,0,.55)' } },
+      h('div', { style: { flex: '0 0 42%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '36px 34px', background: 'var(--bg-3)', borderRight: '1px solid var(--line)', position: 'relative', overflow: 'hidden' } },
+        h('div', { style: { position: 'absolute', right: '-40px', bottom: '-30px', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '18px', opacity: .10, color: 'var(--ink)', pointerEvents: 'none' } },
+          decoIds.map(id => { const di = ICONS.find(x => x.id === id) || ICONS[0]; return h('span', { key: id, style: { display: 'flex' } }, h(SvgIcon, { body: di.body, size: 30, sw: 1.8, color: 'currentColor' })); })
+        ),
+        h('div', { style: { position: 'relative', display: 'flex', alignItems: 'baseline', gap: '9px' } },
+          h('span', { style: { fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '26px', letterSpacing: '-.02em' } }, 'Foundry'),
+          h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9px', letterSpacing: '.18em', color: 'var(--ink-3)', textTransform: 'uppercase' } }, 'Icons')
+        ),
+        h('div', { style: { position: 'relative' } },
+          h('div', { style: { fontFamily: "'Geist',sans-serif", fontSize: '26px', fontWeight: 500, lineHeight: 1.25, letterSpacing: '-.01em', maxWidth: '280px' } }, 'A precise, monochrome icon system — yours to shape and ship.'),
+          h('div', { style: { marginTop: '16px', fontSize: '13px', lineHeight: 1.6, color: 'var(--ink-2)', maxWidth: '260px' } }, ICONS.length + ' icons across ' + CATS.length + ' categories, two styles, one source of truth.')
+        ),
+        h('div', { style: { position: 'relative', fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.04em', color: 'var(--ink-3)' } }, '© Foundry Studio · MIT')
+      ),
+      h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '34px 40px', overflowY: 'auto' } },
+        h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
+          h('button', { onClick: () => setAuthView(null), style: { height: '32px', width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--line)', borderRadius: '8px', color: 'var(--ink-2)', cursor: 'pointer' } },
+            h(SvgIcon, { body: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>', size: 16, sw: 2, color: 'var(--ink-2)' })
+          )
+        ),
+        h('div', { style: { marginTop: '6px' } },
+          h('h2', { style: { margin: 0, fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '27px', letterSpacing: '-.02em', lineHeight: 1.1 } }, isReg ? 'Create your account' : 'Welcome back'),
+          h('p', { style: { margin: '9px 0 0', fontSize: '14px', lineHeight: 1.5, color: 'var(--ink-2)' } }, isReg ? 'Start curating and exporting the Foundry set.' : 'Sign in to manage and export your icon library.')
+        ),
+        h('button', {
+          onClick: signInWithGoogle,
+          style: { marginTop: '24px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', background: 'transparent', color: 'var(--ink)', border: '1px solid var(--line-2)', borderRadius: '11px', fontFamily: "'Geist',sans-serif", fontSize: '14px', fontWeight: 600, cursor: 'pointer' }
+        },
+          h(SvgIcon, { body: '<path d="M21 12.2c0-.7-.1-1.3-.2-1.9H12v3.8h5.1a4.4 4.4 0 0 1-1.9 2.9v2.4h3.1c1.8-1.7 2.7-4.1 2.7-7.2z"/><path d="M12 21c2.4 0 4.5-.8 6-2.2l-3.1-2.4c-.8.6-2 1-2.9 1a5 5 0 0 1-4.7-3.5H4.1v2.4A9 9 0 0 0 12 21z"/><path d="M7.3 13.9a5.3 5.3 0 0 1 0-3.4V8.1H4.1a9 9 0 0 0 0 8.2z"/><path d="M12 7.6c1.3 0 2.5.5 3.5 1.4l2.6-2.6A9 9 0 0 0 4.1 8.1l3.2 2.4A5 5 0 0 1 12 7.6z"/>', style: 'solid', size: 18, sw: 2 }),
+          'Continue with Google'
+        ),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' } },
+          h('span', { style: { flex: 1, height: '1px', background: 'var(--line)' } }),
+          h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, 'or'),
+          h('span', { style: { flex: 1, height: '1px', background: 'var(--line)' } })
+        ),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '13px' } },
+          isReg && h('label', { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
+            h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, 'Full name'),
+            h('input', { value: authName, onInput: e => setAuthName(e.target.value), placeholder: 'Jane Mercer', spellCheck: false, style: { height: '44px', padding: '0 14px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '10px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '14px', outline: 'none' } })
+          ),
+          h('label', { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
+            h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, 'Email'),
+            h('input', { value: authEmail, onInput: e => setAuthEmail(e.target.value), type: 'email', placeholder: 'you@studio.co', spellCheck: false, style: { height: '44px', padding: '0 14px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '10px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '14px', outline: 'none' } })
+          ),
+          h('label', { style: { display: 'flex', flexDirection: 'column', gap: '7px' } },
+            h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, 'Password'),
+            h('input', { value: authPw, onInput: e => setAuthPw(e.target.value), type: 'password', placeholder: '••••••••', style: { height: '44px', padding: '0 14px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '10px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '14px', outline: 'none' } })
+          ),
+          !isReg && h('button', { onClick: () => showToast('Password reset link sent'), style: { alignSelf: 'flex-end', background: 'transparent', border: 'none', padding: 0, color: 'var(--ink-2)', fontSize: '12.5px', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '3px' } }, 'Forgot password?')
+        ),
+        authErr && h('div', { style: { marginTop: '14px', fontSize: '13px', background: 'var(--bg-3)', border: '1px solid var(--line-2)', borderRadius: '9px', padding: '10px 13px' } }, authErr),
+        h('button', {
+          onClick: submitAuth,
+          style: { marginTop: '20px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '12px', fontFamily: "'Geist',sans-serif", fontSize: '14.5px', fontWeight: 600, cursor: 'pointer' }
+        }, isReg ? 'Create account' : 'Sign in'),
+        h('div', { style: { marginTop: '18px', textAlign: 'center', fontSize: '13px', color: 'var(--ink-2)' } },
+          isReg ? 'Already have an account?' : 'New to Foundry?',
+          h('button', {
+            onClick: () => { setAuthView(isReg ? 'login' : 'register'); setAuthErr(''); },
+            style: { background: 'transparent', border: 'none', padding: '0 0 0 4px', color: 'var(--ink)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '3px' }
+          }, isReg ? 'Sign in' : 'Create one')
+        )
+      )
+    )
+  );
+}
+
+/* ── Main App ── */
+function App() {
+  const [theme, setTheme] = useState('dark');
+  const [density, setDensity] = useState(28);
+  const [search, setSearch] = useState('');
+  const [searchAllStyles, setSearchAllStyles] = useState(false);
+  const [navStyle, setNavStyle] = useState('outline');
+  const [cat, setCat] = useState(CATS[0]);
+  const [expanded, setExpanded] = useState({ 't:foundry': true, 's:outline': true });
+  const [selectedId, setSelectedId] = useState(null);
+  const [openStyle, setOpenStyle] = useState('outline');
+  const [size, setSize] = useState(48);
+  const [stroke, setStroke] = useState(2);
+  const [color, setColor] = useState(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [sel, setSel] = useState({});
+  const [toast, setToast] = useState('');
+  const [entitled, setEntitled] = useState(false);
+  const [route, setRoute] = useState('browse'); // 'browse' | 'pricing' | 'account'
+  const [billing, setBilling] = useState('yearly');
+  const [authView, setAuthView] = useState(null);
+  const [signedIn, setSignedIn] = useState(false);
+  const [authName, setAuthName] = useState('');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPw, setAuthPw] = useState('');
+  const [authErr, setAuthErr] = useState('');
+  const toastTimerRef = useRef(null);
+
+  const defaultColor = () => theme === 'light' ? '#17171A' : '#EDEDEA';
+  const curColor = color || defaultColor();
+
+  function showToast(msg) {
+    setToast(msg);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(''), 1700);
+  }
+
+  function doCopy(text, label) { copyText(text); showToast(label); }
+
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === 'Escape') {
+        if (authView) setAuthView(null);
+        else if (route !== 'browse') setRoute('browse');
+        else setSelectedId(null);
+      }
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [authView, route]);
+
+  function toggle(key, forceOpen) {
+    setExpanded(prev => ({ ...prev, [key]: forceOpen ? true : !prev[key] }));
+  }
+
+  const searchMode = search.trim().length > 0;
+  const q = search.trim().toLowerCase();
+
+  function catList() {
+    if (cat === '__all__') return ICONS.slice();
+    return ICONS.filter(ic => ic.cat === cat);
+  }
+
+  function searchList() {
+    const terms = q.split(/\s+/);
+    return ICONS.filter(ic => {
+      const hay = (ic.name + ' ' + ic.cat + ' ' + ic.sub + ' ' + ic.tags.join(' ')).toLowerCase();
+      return terms.every(t => hay.indexOf(t) >= 0);
+    });
+  }
+
+  function openIcon(id) {
+    const ic = ICONS.find(x => x.id === id);
+    const avail = styleAvail(ic);
+    const os = (navStyle === 'solid' && avail.includes('solid')) ? 'solid' : 'outline';
+    setSelectedId(id);
+    setOpenStyle(os);
+    if (!color) setColor(defaultColor());
+  }
+
+  function toggleSel(id) {
+    setSel(prev => { const s = { ...prev }; if (s[id]) delete s[id]; else s[id] = true; return s; });
+  }
+
+  function submitAuth(isReg) {
+    const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(authEmail.trim());
+    if (isReg && !authName.trim()) { setAuthErr('Enter your name.'); return; }
+    if (!emailOk) { setAuthErr('Enter a valid email address.'); return; }
+    if (authPw.length < 6) { setAuthErr('Password must be at least 6 characters.'); return; }
+    setSignedIn(true); setAuthView(null); setAuthPw(''); setAuthErr('');
+    showToast(isReg ? 'Account created — welcome to Foundry' : 'Signed in as ' + authEmail.trim());
+  }
+
+  function exportZip() {
+    const ids = Object.keys(sel);
+    let icons = ids.length ? ICONS.filter(i => ids.includes(i.id)) : [];
+    if (!icons.length) { showToast('Select icons first'); return; }
+    if (typeof JSZip === 'undefined') { showToast('ZIP library loading…'); return; }
+    const lockedN = icons.filter(i => PRO.has(i.id)).length;
+    if (lockedN && !entitled) {
+      icons = icons.filter(i => !PRO.has(i.id));
+      if (!icons.length) { showToast('Upgrade to Pro to export Pro icons'); return; }
+    }
+    const zip = new JSZip();
+    icons.forEach(i => {
+      const stl = gridStyleFor(i, navStyle);
+      zip.file(i.name.replace(/\s+/g,'-') + '.svg', markupStr(i, stl, 24, 2, 'currentColor'));
+    });
+    zip.generateAsync({ type: 'blob' }).then(blob => {
+      downloadBlob(blob, 'foundry-icons.zip');
+      showToast('Exported ' + icons.length + ' icons' + (lockedN && !entitled ? ' (Pro icons skipped)' : ''));
+    });
+  }
+
+  function copyJson() {
+    const ids = Object.keys(sel);
+    const base = ids.length ? ICONS.filter(i => ids.includes(i.id)) : (searchMode ? searchList() : catList());
+    const data = base.map(i => ({ id: i.id, typeId: 'foundry', name: i.name, category: i.cat, subcategory: i.sub, tags: i.tags, styles: styleAvail(i) }));
+    doCopy(JSON.stringify(data, null, 2), 'Copied ' + data.length + ' icons as JSON');
+  }
+
+  /* ── icon grid helpers ── */
+  const box = density === 24 ? 78 : density === 28 ? 92 : 106;
+
+  function CellItem({ ic }) {
+    const checked = !!sel[ic.id];
+    const gs = gridStyleFor(ic, navStyle);
+    const isProIcon = PRO.has(ic.id);
+    const locked = isProIcon && !entitled;
+    function handleClick() {
+      if (selectionMode) toggleSel(ic.id);
+      else openIcon(ic.id);
+    }
+    return h('div', {
+      onClick: handleClick,
+      title: ic.name,
+      className: 'icon-cell',
+      style: {
+        position: 'relative', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '14px 8px', minHeight: box + 'px',
+        borderRadius: '12px', cursor: 'pointer', transition: 'background .12s,border-color .12s',
+        border: '1px solid ' + (checked ? 'var(--line-2)' : 'transparent'),
+        background: (checked || selectedId === ic.id) ? 'var(--bg-3)' : 'transparent',
+        opacity: locked ? 0.62 : 1,
+      }
+    },
+      selectionMode && h('span', {
+        style: {
+          position: 'absolute', top: '8px', left: '8px',
+          height: '18px', width: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderRadius: '5px', fontSize: '11px', fontWeight: 700,
+          border: '1px solid ' + (checked ? 'transparent' : 'var(--line-2)'),
+          background: checked ? 'var(--inv-bg)' : 'transparent',
+          color: 'var(--inv-ink)',
+        }
+      }, checked ? '✓' : ''),
+      locked && h('span', {
+        style: {
+          position: 'absolute', top: '7px', right: '7px',
+          height: '16px', width: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          borderRadius: '4px', background: 'var(--bg-3)', border: '1px solid var(--line-2)',
+        }
+      }, h(SvgIcon, { body: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', size: 10, sw: 2, color: 'var(--ink-3)' })),
+      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: density + 'px', color: 'var(--ink)' } },
+        h(SvgIcon, { body: ic.body, style: gs, size: density, sw: 2 })
+      ),
+      h('div', {
+        style: {
+          marginTop: '9px', width: '100%', textAlign: 'center',
+          fontFamily: "'Geist Mono',monospace", fontSize: '9px', letterSpacing: '.01em',
+          color: 'var(--ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }
+      }, ic.name)
+    );
+  }
+
+  /* ── Density buttons ── */
+  function DensityBtns() {
+    return h('div', { style: { display: 'flex', border: '1px solid var(--line)', borderRadius: '9px', overflow: 'hidden' } },
+      [24, 28, 32].map((val, i) =>
+        h('button', {
+          key: val,
+          onClick: () => setDensity(val),
+          title: val + 'px',
+          style: {
+            height: '34px', width: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: density === val ? 'var(--bg-3)' : 'transparent',
+            color: density === val ? 'var(--ink)' : 'var(--ink-3)',
+            border: 'none', borderRight: i < 2 ? '1px solid var(--line)' : 'none',
+            fontFamily: "'Geist Mono',monospace", fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+          }
+        }, val)
+      )
+    );
+  }
+
+  /* ── Sidebar tree ── */
+  function Sidebar() {
+    const STYLES = [{ id: 'outline', name: 'Outline' }, { id: 'solid', name: 'Solid' }];
+    const typeKey = 't:foundry';
+    const typeOpen = !!expanded[typeKey];
+
+    const rows = [];
+
+    rows.push(h('div', {
+      key: typeKey,
+      className: 'tree-row',
+      onClick: () => toggle(typeKey),
+      style: { display: 'flex', alignItems: 'center', gap: '4px', height: '30px', padding: '0 8px 0 6px', borderRadius: '7px', cursor: 'pointer' }
+    },
+      h('span', { style: { flex: '0 0 auto', width: '16px', textAlign: 'center', fontSize: '9px', color: 'var(--ink-2)' } }, typeOpen ? '▾' : '▸'),
+      h('span', { style: { fontSize: '13.5px', fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, 'Foundry')
+    ));
+
+    if (typeOpen) {
+      STYLES.forEach(sd => {
+        const sKey = 's:' + sd.id;
+        const sOpen = !!expanded[sKey];
+        const sActive = navStyle === sd.id && !searchMode;
+        rows.push(h('div', {
+          key: sKey,
+          className: 'tree-row',
+          onClick: () => { setNavStyle(sd.id); setSearch(''); toggle(sKey, true); },
+          style: { display: 'flex', alignItems: 'center', gap: '4px', height: '28px', padding: '0 8px 0 18px', borderRadius: '7px', cursor: 'pointer' }
+        },
+          h('span', {
+            onClick: e => { e.stopPropagation(); toggle(sKey); },
+            style: { flex: '0 0 auto', width: '16px', textAlign: 'center', fontSize: '9px', color: 'var(--ink-3)', cursor: 'pointer' }
+          }, sOpen ? '▾' : '▸'),
+          h('span', { style: { fontSize: '12.5px', fontWeight: sActive ? 600 : 500, color: sActive ? 'var(--ink)' : 'var(--ink-2)', whiteSpace: 'nowrap' } },
+            sd.name
+          )
+        ));
+
+        if (sOpen) {
+          const allActive = !searchMode && navStyle === sd.id && cat === '__all__';
+          rows.push(h('div', {
+            key: 'all:' + sd.id,
+            className: 'tree-row',
+            onClick: () => { setNavStyle(sd.id); setCat('__all__'); setSearch(''); },
+            style: { display: 'flex', alignItems: 'center', gap: '4px', height: '28px', padding: '0 8px 0 36px', borderRadius: '7px', cursor: 'pointer', background: allActive ? 'var(--bg-3)' : 'transparent' }
+          },
+            h('span', { style: { flex: '0 0 auto', width: '12px' } }),
+            h('span', { style: { flex: '0 0 auto', width: '4px', height: '4px', borderRadius: '50%', background: allActive ? 'var(--ink)' : 'transparent', border: '1px solid ' + (allActive ? 'var(--ink)' : 'var(--line-2)'), marginRight: '4px' } }),
+            h('span', { style: { fontSize: '12.5px', fontWeight: allActive ? 700 : 600, color: allActive ? 'var(--ink)' : 'var(--ink-2)', whiteSpace: 'nowrap' } }, 'All')
+          ));
+
+          CATS.forEach(c => {
+            const active = !searchMode && navStyle === sd.id && cat === c;
+            rows.push(h('div', {
+              key: 'c:' + sd.id + ':' + c,
+              className: 'tree-row',
+              onClick: () => { setNavStyle(sd.id); setCat(c); setSearch(''); },
+              style: { display: 'flex', alignItems: 'center', gap: '4px', height: '28px', padding: '0 8px 0 36px', borderRadius: '7px', cursor: 'pointer', background: active ? 'var(--bg-3)' : 'transparent' }
+            },
+              h('span', { style: { flex: '0 0 auto', width: '12px' } }),
+              h('span', { style: { flex: '0 0 auto', width: '4px', height: '4px', borderRadius: '50%', background: active ? 'var(--ink)' : 'var(--line-2)', marginRight: '4px' } }),
+              h('span', { style: { fontSize: '12.5px', fontWeight: active ? 600 : 500, color: active ? 'var(--ink)' : 'var(--ink-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, c)
+            ));
+          });
+        }
+      });
+    }
+
+    return h('aside', {
+      style: { flex: '0 0 228px', borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }
+    },
+      h('div', { style: { flex: 1, overflowY: 'auto', padding: '10px 8px 40px' } },
+        h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9px', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--ink-3)', padding: '8px 8px 7px' } }, 'Library'),
+        ...rows
+      )
+    );
+  }
+
+  /* ── Browse grid ── */
+  function BrowseGrid() {
+    const isAll = cat === '__all__';
+    const catIcons = catList();
+    const styleName = navStyle === 'solid' ? 'Solid' : 'Outline';
+    const gridStyle = { display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${box}px, 1fr))`, gap: '6px', alignContent: 'start' };
+
+    let sections;
+    if (isAll) {
+      sections = CATS.map(c => ({ name: c, items: catIcons.filter(ic => ic.cat === c) }));
+    } else {
+      const subs = SUBS[cat] || [];
+      sections = subs.map(sub => ({ name: sub, items: catIcons.filter(ic => ic.sub === sub) }));
+    }
+
+    const mkCrumb = (label, onClick, active) => ({
+      label, onClick, active,
+      style: { background: 'transparent', border: 'none', padding: '0', cursor: onClick ? 'pointer' : 'default', fontFamily: "'Geist Mono',monospace", fontSize: '11.5px', letterSpacing: '.04em', textTransform: 'uppercase', fontWeight: active ? 700 : 500, color: active ? 'var(--ink)' : 'var(--ink-3)' }
+    });
+    const crumbs = [
+      mkCrumb('Icons', null, false),
+      mkCrumb('Foundry', () => setExpanded(prev => ({ ...prev, 't:foundry': true })), false),
+      mkCrumb(styleName, null, false),
+      mkCrumb(isAll ? 'All' : cat, null, true),
+    ];
+
+    return h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 } },
+      h('div', { style: { flexShrink: 0, padding: '24px 30px 0' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '7px', flexWrap: 'wrap', marginBottom: '14px' } },
+          crumbs.map((c, i) => [
+            h('button', { key: 'cb' + i, onClick: c.onClick || undefined, style: c.style }, c.label),
+            i < crumbs.length - 1 && h('span', { key: 'cs' + i, style: { color: 'var(--ink-3)', fontSize: '12px' } }, '›'),
+          ])
+        ),
+        h('h1', { style: { margin: 0, fontFamily: "'Geist',sans-serif", fontWeight: 500, fontSize: '38px', letterSpacing: '-.02em', lineHeight: 1 } }, isAll ? 'All Icons' : cat),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '18px', marginTop: '16px', paddingBottom: '18px', borderBottom: '1px solid var(--line)' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h(SvgIcon, { body: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.4"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.4"/>', size: 15, sw: 1.8, color: 'var(--ink-3)' }),
+            h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '12.5px', fontWeight: 600, letterSpacing: '.02em' } }, catIcons.length + ' icons')
+          ),
+          h('span', { style: { width: '1px', height: '14px', background: 'var(--line-2)' } }),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h(SvgIcon, { body: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>', size: 15, sw: 1.8, color: 'var(--ink-3)' }),
+            h('span', { style: { fontSize: '13px', color: 'var(--ink-2)' } }, 'by ', h('span', { style: { color: 'var(--ink)', fontWeight: 500 } }, 'Foundry Studio'))
+          ),
+          h('span', { style: { width: '1px', height: '14px', background: 'var(--line-2)' } }),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h(SvgIcon, { body: '<circle cx="12" cy="12" r="9"/><path d="M15 9.5a3.5 3.5 0 1 0 0 5"/>', size: 15, sw: 1.8, color: 'var(--ink-3)' }),
+            h('span', { style: { fontSize: '13px', color: 'var(--ink-2)' } }, 'MIT · Commercial OK')
+          ),
+          h('div', { style: { flex: 1, minWidth: '14px' } }),
+          h(DensityBtns),
+          h('button', {
+            onClick: () => { setSelectionMode(v => !v); if (selectionMode) setSel({}); },
+            style: { height: '36px', padding: '0 14px', background: selectionMode ? 'var(--inv-bg)' : 'transparent', color: selectionMode ? 'var(--inv-ink)' : 'var(--ink-2)', border: '1px solid ' + (selectionMode ? 'transparent' : 'var(--line)'), borderRadius: '9px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }
+          }, 'Select')
+        )
+      ),
+      h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px 30px 40px' } },
+        sections.map(sec =>
+          h('div', { key: sec.name, style: { marginTop: '26px' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' } },
+              h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10.5px', fontWeight: 600, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-2)' } }, sec.name),
+              h('span', { style: { flex: 1, height: '1px', background: 'var(--line)' } }),
+              h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', color: 'var(--ink-3)' } }, sec.items.length)
+            ),
+            h('div', { style: gridStyle },
+              sec.items.map(ic => h(CellItem, { key: ic.id, ic }))
+            )
+          )
+        )
+      )
+    );
+  }
+
+  /* ── Search results ── */
+  function SearchGrid() {
+    const results = searchList();
+    const isEmpty = results.length === 0;
+    const gridStyle = { display: 'grid', gridTemplateColumns: `repeat(auto-fill, minmax(${box}px, 1fr))`, gap: '6px', alignContent: 'start' };
+
+    return h('div', { style: { display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 } },
+      h('div', { style: { flexShrink: 0, padding: '24px 30px 18px', borderBottom: '1px solid var(--line)' } },
+        h('div', { style: { display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' } },
+          h('div', null,
+            h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: '8px' } }, 'Search results'),
+            h('h1', { style: { margin: 0, fontFamily: "'Geist',sans-serif", fontWeight: 500, fontStyle: 'italic', fontSize: '30px', letterSpacing: '-.01em', lineHeight: 1.05 } },
+              '"' + search.trim() + '" ',
+              h('span', { style: { fontStyle: 'normal', color: 'var(--ink-3)', fontSize: '20px' } }, '· ' + results.length + (results.length === 1 ? ' icon' : ' icons'))
+            )
+          ),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            h(DensityBtns),
+            h('button', {
+              onClick: () => { setSelectionMode(v => !v); if (selectionMode) setSel({}); },
+              style: { height: '36px', padding: '0 14px', background: selectionMode ? 'var(--inv-bg)' : 'transparent', color: selectionMode ? 'var(--inv-ink)' : 'var(--ink-2)', border: '1px solid ' + (selectionMode ? 'transparent' : 'var(--line)'), borderRadius: '9px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }
+            }, 'Select'),
+            h('button', {
+              onClick: () => setSearchAllStyles(v => !v),
+              style: { height: '32px', padding: '0 13px', background: searchAllStyles ? 'var(--inv-bg)' : 'transparent', color: searchAllStyles ? 'var(--inv-ink)' : 'var(--ink-2)', border: '1px solid ' + (searchAllStyles ? 'transparent' : 'var(--line-2)'), borderRadius: '8px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Geist Mono',monospace" }
+            }, searchAllStyles ? 'Scope · All styles' : 'Scope · ' + (navStyle === 'solid' ? 'Solid' : 'Outline') + ' only')
+          )
+        )
+      ),
+      h('div', { style: { flex: 1, overflowY: 'auto', padding: '22px 30px 40px' } },
+        isEmpty
+          ? h('div', { style: { height: '60%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '14px', color: 'var(--ink-3)' } },
+              h('div', { style: { opacity: .5 } }, h(SvgIcon, { body: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/>', size: 40, sw: 1.5 })),
+              h('div', { style: { fontFamily: "'Geist',sans-serif", fontSize: '19px', fontStyle: 'italic', color: 'var(--ink-2)' } }, 'No icons match "' + search.trim() + '"'),
+              h('button', { onClick: () => setSearch(''), style: { height: '34px', padding: '0 16px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, 'Clear search')
+            )
+          : h('div', { style: gridStyle }, results.map(ic => h(CellItem, { key: ic.id, ic })))
+      )
+    );
+  }
+
+  /* ── Detail panel ── */
+  function DetailPanel() {
+    const ic = selectedId ? ICONS.find(x => x.id === selectedId) : null;
+    if (!ic) return null;
+
+    const isProIcon = PRO.has(ic.id);
+    const locked = isProIcon && !entitled;
+
+    const avail = styleAvail(ic);
+    const style = avail.includes(openStyle) ? openStyle : 'outline';
+    const strokeBased = style !== 'solid';
+    const mk = markupStr(ic, style, size, stroke, curColor);
+    const ramp = ['#FFFFFF','#C9C9C4','#8A8A86','#4A4A48','#17171A','#000000'];
+
+    const actions = [
+      { label: 'JSX', fn: () => doCopy(toJsx(mk, ic.name), 'Copied JSX component') },
+      { label: 'Data URI', fn: () => doCopy('data:image/svg+xml,' + encodeURIComponent(mk), 'Copied data URI') },
+      { label: 'Base64', fn: () => doCopy('data:image/svg+xml;base64,' + btoa(mk), 'Copied Base64') },
+      { label: 'PNG', fn: () => { exportPng(ic, style, size, stroke, curColor); showToast('Exported PNG @' + Math.max(size,64) + 'px'); } },
+      { label: 'Raw SVG', fn: () => doCopy(mk, 'Copied raw SVG') },
+    ];
+
+    return h('aside', {
+      className: 'panel-anim',
+      style: { flex: '0 0 332px', borderLeft: '1px solid var(--line)', background: 'var(--bg)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+    },
+      h('div', { style: { flexShrink: 0, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', padding: '20px 22px 16px' } },
+        h('div', { style: { minWidth: 0 } },
+          h('div', { style: { fontFamily: "'Geist',sans-serif", fontSize: '23px', fontWeight: 500, letterSpacing: '-.01em', lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, ic.name),
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' } },
+            h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, ic.cat),
+            isProIcon && h('span', { className: 'pro-badge' }, 'PRO')
+          )
+        ),
+        h('button', {
+          onClick: () => setSelectedId(null),
+          style: { flexShrink: 0, height: '34px', width: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink-2)', cursor: 'pointer', marginLeft: '12px' }
+        }, h(SvgIcon, { body: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>', size: 16, sw: 2, color: 'var(--ink-2)' }))
+      ),
+
+      h('div', { style: { flex: 1, overflowY: 'auto', padding: '0 22px 24px' } },
+        /* Preview */
+        h('div', { style: { position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '206px', border: '1px solid var(--line)', borderRadius: '14px', background: 'var(--field)', marginBottom: '18px', overflow: 'hidden' } },
+          h('div', { style: { position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px)', backgroundSize: '22px 22px', opacity: .5, pointerEvents: 'none' } }),
+          h('div', { style: { position: 'relative', color: curColor, display: 'flex' } }, h(SvgIcon, { body: ic.body, style, size: Math.min(size, 150), sw: stroke, color: curColor })),
+          h('span', { style: { position: 'absolute', left: '12px', bottom: '10px', fontFamily: "'Geist Mono',monospace", fontSize: '10px', color: 'var(--ink-3)' } }, size + ' × ' + size + ' px')
+        ),
+
+        /* Style variants */
+        avail.length > 1 && h('div', { style: { marginBottom: '18px' } },
+          h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: '9px' } }, 'Style'),
+          h('div', { style: { display: 'flex', gap: '6px' } },
+            avail.map(s => h('button', {
+              key: s,
+              onClick: () => setOpenStyle(s),
+              style: { flex: 1, height: '34px', background: style === s ? 'var(--inv-bg)' : 'transparent', color: style === s ? 'var(--inv-ink)' : 'var(--ink-2)', border: '1px solid ' + (style === s ? 'transparent' : 'var(--line)'), borderRadius: '9px', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize' }
+            }, s))
+          )
+        ),
+
+        /* Sliders */
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' } },
+          h('div', null,
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' } },
+              h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, 'Size'),
+              h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '11px', color: 'var(--ink-2)' } }, size + 'px')
+            ),
+            h('input', { type: 'range', min: 16, max: 96, step: 1, value: size, onInput: e => setSize(+e.target.value) })
+          ),
+          h('div', null,
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' } },
+              h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, 'Stroke width'),
+              h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '11px', color: 'var(--ink-3)' } }, strokeBased ? stroke.toFixed(2).replace(/0+$/, '').replace(/\.$/, '') + 'px' : 'n/a')
+            ),
+            h('input', { type: 'range', min: 0.5, max: 3, step: 0.25, value: stroke, disabled: !strokeBased, onInput: e => setStroke(+e.target.value), style: { width: '100%', accentColor: 'var(--ink)', opacity: strokeBased ? 1 : 0.35, cursor: strokeBased ? 'pointer' : 'not-allowed' } })
+          ),
+          /* Color */
+          h('div', null,
+            h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: '9px' } }, 'Color'),
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+              h('div', { style: { display: 'flex', gap: '6px' } },
+                ramp.map(hex => h('button', {
+                  key: hex, onClick: () => setColor(hex), title: hex,
+                  style: { height: '26px', width: '26px', borderRadius: '7px', background: hex, border: '1px solid ' + (curColor.toUpperCase() === hex ? 'var(--ink)' : 'var(--line-2)'), boxShadow: curColor.toUpperCase() === hex ? '0 0 0 2px var(--bg), 0 0 0 3px var(--ink)' : 'none', cursor: 'pointer', padding: 0 }
+                }))
+              ),
+              h('div', { style: { flex: 1, display: 'flex', alignItems: 'center', gap: '7px', height: '34px', padding: '0 11px', border: '1px solid var(--line)', borderRadius: '9px', background: 'var(--field)' } },
+                h('span', { style: { height: '15px', width: '15px', borderRadius: '4px', border: '1px solid var(--line-2)', background: curColor, flexShrink: 0 } }),
+                h('input', { value: curColor, onInput: e => setColor(e.target.value), spellCheck: false, style: { flex: 1, minWidth: 0, background: 'transparent', border: 'none', outline: 'none', color: 'var(--ink)', fontFamily: "'Geist Mono',monospace", fontSize: '12px' } })
+              )
+            )
+          )
+        ),
+
+        /* Copy/Download or locked card */
+        !locked && h('div', { style: { display: 'flex', gap: '8px', marginBottom: '10px' } },
+          h('button', {
+            onClick: () => doCopy(mk, 'Copied optimized SVG'),
+            style: { flex: 1, height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '10px', fontSize: '13.5px', fontWeight: 600, cursor: 'pointer' }
+          }, h(SvgIcon, { body: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>', size: 15, sw: 2, color: 'currentColor' }), 'Copy SVG'),
+          h('button', {
+            onClick: () => downloadBlob(new Blob([mk], { type: 'image/svg+xml' }), ic.name.replace(/\s+/g,'-') + '.svg'),
+            style: { flexShrink: 0, height: '42px', padding: '0 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'transparent', color: 'var(--ink)', border: '1px solid var(--line-2)', borderRadius: '10px', fontSize: '13.5px', fontWeight: 600, cursor: 'pointer' }
+          }, h(SvgIcon, { body: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>', size: 15, sw: 2, color: 'currentColor' }), 'SVG')
+        ),
+
+        !locked && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '22px' } },
+          actions.map(a => h('button', {
+            key: a.label,
+            onClick: a.fn,
+            style: { height: '38px', padding: '0 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', background: 'var(--bg-3)', color: 'var(--ink)', border: '1px solid var(--line)', borderRadius: '9px', fontSize: '12px', fontWeight: 500, cursor: 'pointer', fontFamily: "'Geist Mono',monospace" }
+          }, a.label))
+        ),
+
+        locked && h('div', { style: { marginBottom: '22px', padding: '18px', border: '1px solid var(--line-2)', borderRadius: '14px', background: 'var(--bg-3)' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '9px' } },
+            h(SvgIcon, { body: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', size: 18, sw: 2, color: 'var(--ink)' }),
+            h('span', { style: { fontFamily: "'Geist',sans-serif", fontSize: '15px', fontWeight: 600 } }, 'Pro icon')
+          ),
+          h('p', { style: { margin: '0 0 15px', fontSize: '13px', lineHeight: 1.55, color: 'var(--ink-2)' } },
+            'Unlock this and ' + (PRO.size - 1) + ' other Pro icons — every style, all export formats, and bulk download.'
+          ),
+          h('button', {
+            onClick: () => setRoute('pricing'),
+            style: { width: '100%', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '11px', fontFamily: "'Geist',sans-serif", fontSize: '14px', fontWeight: 600, cursor: 'pointer' }
+          }, signedIn ? 'Upgrade to Pro' : 'See pricing')
+        ),
+
+        /* Tags */
+        h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: '9px' } }, 'Tags'),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '20px' } },
+          ic.tags.map(tg => h('span', { key: tg, style: { height: '26px', display: 'inline-flex', alignItems: 'center', padding: '0 10px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '7px', fontFamily: "'Geist Mono',monospace", fontSize: '11px', color: 'var(--ink-2)' } }, tg))
+        ),
+
+        /* Markup */
+        h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: '9px' } }, 'Markup'),
+        locked
+          ? h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '14px', background: 'var(--field)', border: '1px dashed var(--line-2)', borderRadius: '11px', color: 'var(--ink-3)', fontFamily: "'Geist Mono',monospace", fontSize: '11.5px' } },
+              h(SvgIcon, { body: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', size: 15, sw: 2, color: 'var(--ink-3)' }),
+              'Source locked — available with Pro'
+            )
+          : h('pre', { style: { margin: 0, padding: '14px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '11px', overflowX: 'auto', fontFamily: "'Geist Mono',monospace", fontSize: '11px', lineHeight: 1.65, color: 'var(--ink-2)', whiteSpace: 'pre-wrap', wordBreak: 'break-all' } }, mk)
+      )
+    );
+  }
+
+  /* ── Root render ── */
+  return h('div', {
+    className: 'app-root' + (theme === 'light' ? ' light' : ''),
+    style: { height: '100vh', width: '100%', display: 'flex', flexDirection: 'column', background: 'var(--bg)', color: 'var(--ink)', fontFamily: "'Geist',system-ui,sans-serif", overflow: 'hidden' }
+  },
+
+    /* Header */
+    h('header', { style: { flexShrink: 0, height: '62px', display: 'flex', alignItems: 'center', gap: '24px', padding: '0 20px', borderBottom: '1px solid var(--line)', background: 'var(--bg)', position: 'relative', zIndex: 20 } },
+      h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '9px', width: '228px', flexShrink: 0 } },
+        h('span', { style: { fontFamily: "'Geist',sans-serif", fontStyle: 'italic', fontWeight: 500, fontSize: '24px', letterSpacing: '-.01em', lineHeight: 1 } }, 'Foundry'),
+        h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9.5px', letterSpacing: '.18em', color: 'var(--ink-3)', textTransform: 'uppercase' } }, 'Icons')
+      ),
+      h('div', { style: { flex: 1, display: 'flex', justifyContent: 'center' } },
+        h('div', { style: { position: 'relative', width: '100%', maxWidth: '520px' } },
+          h('span', { style: { position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--ink-3)', display: 'flex', pointerEvents: 'none' } },
+            h(SvgIcon, { body: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/>', size: 17, sw: 2, color: 'var(--ink-3)' })
+          ),
+          h('input', {
+            value: search,
+            onInput: e => setSearch(e.target.value),
+            placeholder: 'Search all icons by name or tag…',
+            spellCheck: false,
+            style: { width: '100%', height: '40px', padding: '0 44px 0 42px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '10px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '14px', outline: 'none' }
+          }),
+          searchMode && h('button', {
+            onClick: () => setSearch(''),
+            style: { position: 'absolute', right: '9px', top: '50%', transform: 'translateY(-50%)', height: '24px', width: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-3)', border: 'none', borderRadius: '6px', color: 'var(--ink-2)', cursor: 'pointer', fontSize: '15px', lineHeight: 1 }
+          }, '×')
+        )
+      ),
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
+        h('button', {
+          onClick: () => setRoute('pricing'),
+          style: { height: '36px', padding: '0 13px', display: 'flex', alignItems: 'center', background: 'transparent', border: 'none', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }
+        }, 'Pricing'),
+        h('button', {
+          onClick: () => setTheme(t => t === 'light' ? 'dark' : 'light'),
+          title: 'Toggle theme',
+          style: { height: '36px', width: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink-2)', cursor: 'pointer' }
+        },
+          theme === 'light'
+            ? h(SvgIcon, { body: '<path d="M20 13a8 8 0 1 1-9-9 6 6 0 0 0 9 9z"/>', size: 17, sw: 2, color: 'var(--ink-2)' })
+            : h(SvgIcon, { body: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5"/><path d="M12 19.5V22"/><path d="M22 12h-2.5"/><path d="M4.5 12H2"/><path d="m18.4 5.6-1.8 1.8"/><path d="m7.4 16.6-1.8 1.8"/><path d="m18.4 18.4-1.8-1.8"/><path d="m7.4 7.4-1.8-1.8"/>', size: 17, sw: 2, color: 'var(--ink-2)' })
+        ),
+        h('span', { style: { width: '1px', height: '22px', background: 'var(--line)', margin: '0 2px' } }),
+        signedIn
+          ? h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', height: '36px', padding: '0 6px 0 10px', border: '1px solid var(--line)', borderRadius: '9px' } },
+              h('button', {
+                onClick: () => setRoute('account'),
+                style: { display: 'flex', alignItems: 'center', gap: '9px', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }
+              },
+                h('span', { style: { height: '24px', width: '24px', borderRadius: '6px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 } }, ((authName || authEmail || 'F').trim().charAt(0) || 'F').toUpperCase()),
+                h('span', { style: { fontSize: '12.5px', color: 'var(--ink-2)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, authEmail || 'you@foundry.co')
+              ),
+              entitled && h('span', { style: { display: 'inline-flex', alignItems: 'center', padding: '2px 7px', borderRadius: '5px', fontSize: '9.5px', fontWeight: 700, fontFamily: "'Geist Mono',monospace", letterSpacing: '.08em', textTransform: 'uppercase', background: 'var(--pro-bg)', color: 'var(--pro)', border: '1px solid rgba(124,106,232,.25)', lineHeight: 1.4 } }, 'PRO'),
+              h('button', {
+                onClick: () => { setSignedIn(false); setEntitled(false); setAuthName(''); setAuthEmail(''); setAuthPw(''); showToast('Signed out'); },
+                title: 'Sign out',
+                style: { height: '26px', width: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: '6px', color: 'var(--ink-3)', cursor: 'pointer' }
+              }, h(SvgIcon, { body: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>', size: 15, sw: 1.9, color: 'var(--ink-3)' }))
+            )
+          : h('button', {
+              onClick: () => { setAuthView('login'); setAuthErr(''); },
+              style: { height: '36px', padding: '0 16px', display: 'flex', alignItems: 'center', gap: '7px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '9px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }
+            },
+              h(SvgIcon, { body: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>', size: 15, sw: 2, color: 'currentColor' }),
+              'Sign in'
+            )
+      )
+    ),
+
+    /* Body */
+    h('div', { style: { flex: 1, display: 'flex', minHeight: 0 } },
+      h(Sidebar),
+      h('main', { style: { flex: 1, minWidth: 0, display: 'flex', background: 'var(--bg-2)' } },
+        searchMode ? h(SearchGrid) : h(BrowseGrid)
+      ),
+      selectedId && h(DetailPanel)
+    ),
+
+    /* Selection bar */
+    selectionMode && h('div', { style: { flexShrink: 0, display: 'flex', alignItems: 'center', gap: '14px', padding: '0 22px', height: '58px', borderTop: '1px solid var(--line)', background: 'var(--bg)', position: 'relative', zIndex: 30 } },
+      h('span', { style: { fontFamily: "'Geist',sans-serif", fontStyle: 'italic', fontSize: '18px' } }, Object.keys(sel).length + ' selected'),
+      h('button', {
+        onClick: () => {
+          const s = { ...sel };
+          (searchMode ? searchList() : catList()).forEach(ic => s[ic.id] = true);
+          setSel(s);
+        },
+        style: { height: '32px', padding: '0 13px', background: 'transparent', border: '1px solid var(--line-2)', borderRadius: '8px', color: 'var(--ink)', fontSize: '12.5px', fontWeight: 500, cursor: 'pointer' }
+      }, 'Select all in view'),
+      h('button', {
+        onClick: () => setSel({}),
+        style: { height: '32px', padding: '0 13px', background: 'transparent', border: 'none', color: 'var(--ink-2)', fontSize: '12.5px', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '3px' }
+      }, 'Clear'),
+      h('div', { style: { flex: 1 } }),
+      h('button', {
+        onClick: copyJson,
+        style: { height: '36px', padding: '0 15px', display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', color: 'var(--ink)', border: '1px solid var(--line-2)', borderRadius: '9px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Geist Mono',monospace" }
+      }, 'Copy JSON'),
+      h('button', {
+        onClick: exportZip,
+        style: { height: '36px', padding: '0 17px', display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '9px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }
+      }, h(SvgIcon, { body: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>', size: 15, sw: 2, color: 'currentColor' }), 'Export ZIP')
+    ),
+
+    h(AuthModal, { authView, authName, authEmail, authPw, authErr, setAuthView, setAuthName, setAuthEmail, setAuthPw, setAuthErr, setSignedIn, showToast }),
+
+    /* Full-page Pricing */
+    route === 'pricing' && h('div', {
+      style: { position: 'fixed', inset: 0, zIndex: 85, background: 'var(--bg)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+    },
+      h('div', { style: { flexShrink: 0, height: '62px', display: 'flex', alignItems: 'center', gap: '14px', padding: '0 22px', borderBottom: '1px solid var(--line)' } },
+        h('button', { onClick: () => setRoute('browse'), style: { display: 'flex', alignItems: 'center', gap: '5px', height: '36px', padding: '0 12px 0 8px', background: 'transparent', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } },
+          h(SvgIcon, { body: '<path d="M15 6l-6 6 6 6"/>', size: 16, sw: 2, color: 'var(--ink-2)' }), 'Back'
+        ),
+        h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '9px' } },
+          h('span', { style: { fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '20px', letterSpacing: '-.01em' } }, 'Foundry'),
+          h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9px', letterSpacing: '.18em', color: 'var(--ink-3)', textTransform: 'uppercase' } }, 'Pricing')
+        )
+      ),
+      h('div', { style: { flex: 1, overflowY: 'auto' } },
+        h('div', { style: { maxWidth: '920px', margin: '0 auto', padding: '54px 30px 70px' } },
+          h('div', { style: { textAlign: 'center', marginBottom: '34px' } },
+            h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '11px', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: '14px' } }, 'Simple, honest pricing'),
+            h('h1', { style: { margin: 0, fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '42px', letterSpacing: '-.025em', lineHeight: 1.05 } }, 'Unlock the full catalogue'),
+            h('p', { style: { margin: '14px auto 0', maxWidth: '460px', fontSize: '15px', lineHeight: 1.55, color: 'var(--ink-2)' } },
+              'Browse ' + ICONS.length + ' icons free. Go Pro for ' + PRO.size + ' premium icons, bulk export, and an extended commercial license.'
+            )
+          ),
+          h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: '30px' } },
+            h('div', { style: { display: 'flex', width: '280px', gap: '4px', padding: '4px', background: 'var(--bg-3)', border: '1px solid var(--line)', borderRadius: '10px' } },
+              h('button', { onClick: () => setBilling('monthly'), style: { flex: 1, height: '34px', background: billing === 'monthly' ? 'var(--bg)' : 'transparent', border: billing === 'monthly' ? '1px solid var(--line)' : 'none', borderRadius: '7px', fontFamily: "'Geist',sans-serif", fontSize: '13px', fontWeight: 600, color: billing === 'monthly' ? 'var(--ink)' : 'var(--ink-3)', cursor: 'pointer' } }, 'Monthly'),
+              h('button', { onClick: () => setBilling('yearly'), style: { flex: 1, height: '34px', background: billing === 'yearly' ? 'var(--bg)' : 'transparent', border: billing === 'yearly' ? '1px solid var(--line)' : 'none', borderRadius: '7px', fontFamily: "'Geist',sans-serif", fontSize: '13px', fontWeight: 600, color: billing === 'yearly' ? 'var(--ink)' : 'var(--ink-3)', cursor: 'pointer' } },
+                'Yearly ', h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', opacity: .75 } }, '-33%')
+              )
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px', alignItems: 'start' } },
+            /* Free card */
+            h('div', { style: { border: '1px solid var(--line)', borderRadius: '18px', padding: '30px 28px', background: 'var(--bg-2)' } },
+              h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '11px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, 'Free'),
+              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '4px', margin: '14px 0 4px' } },
+                h('span', { style: { fontFamily: "'Geist',sans-serif", fontSize: '44px', fontWeight: 600, letterSpacing: '-.03em' } }, '$0'),
+                h('span', { style: { fontSize: '14px', color: 'var(--ink-3)' } }, 'forever')
+              ),
+              h('p', { style: { margin: '0 0 22px', fontSize: '13.5px', color: 'var(--ink-2)' } }, 'No account needed.'),
+              h('button', { onClick: () => setRoute('browse'), style: { width: '100%', height: '46px', background: 'transparent', color: 'var(--ink)', border: '1px solid var(--line-2)', borderRadius: '11px', fontFamily: "'Geist',sans-serif", fontSize: '14px', fontWeight: 600, cursor: 'pointer' } }, 'Browse free icons'),
+              h('div', { style: { height: '1px', background: 'var(--line)', margin: '24px 0' } }),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+                FREE_FEATS.map((t, i) => h('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
+                  h(SvgIcon, { body: '<path d="M5 13l4 4L19 7"/>', size: 15, sw: 2.2, color: 'var(--ink-3)' }),
+                  h('span', { style: { fontSize: '13.5px', lineHeight: 1.4, color: 'var(--ink-2)' } }, t)
+                ))
+              )
+            ),
+            /* Pro card */
+            h('div', { style: { position: 'relative', border: '1px solid var(--line-2)', borderRadius: '18px', padding: '30px 28px', background: 'var(--bg-3)', boxShadow: '0 24px 70px rgba(0,0,0,.28)' } },
+              h('div', { style: { position: 'absolute', top: '22px', right: '24px', fontFamily: "'Geist Mono',monospace", fontSize: '9.5px', fontWeight: 700, letterSpacing: '.12em', background: 'var(--inv-bg)', color: 'var(--inv-ink)', padding: '4px 9px', borderRadius: '6px' } }, 'MOST POPULAR'),
+              h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '11px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-2)' } }, 'Pro'),
+              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '5px', margin: '14px 0 4px' } },
+                h('span', { style: { fontFamily: "'Geist',sans-serif", fontSize: '44px', fontWeight: 600, letterSpacing: '-.03em' } }, billing === 'yearly' ? '$6' : '$9'),
+                h('span', { style: { fontSize: '14px', color: 'var(--ink-2)' } }, '/ month')
+              ),
+              h('p', { style: { margin: '0 0 22px', fontSize: '13px', color: 'var(--ink-3)' } }, billing === 'yearly' ? 'Billed $72/year. Cancel anytime.' : 'Billed monthly. Cancel anytime.'),
+              entitled
+                ? h('div', { style: { width: '100%', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pro-bg)', color: 'var(--pro)', border: '1px solid rgba(124,106,232,.25)', borderRadius: '11px', fontFamily: "'Geist',sans-serif", fontSize: '14px', fontWeight: 600 } }, 'Current plan')
+                : h('button', {
+                    onClick: () => { setEntitled(true); if (!signedIn) { setSignedIn(true); setAuthEmail('you@foundry.co'); } showToast('Welcome to Pro — all features unlocked'); setRoute('browse'); },
+                    style: { width: '100%', height: '46px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '11px', fontFamily: "'Geist',sans-serif", fontSize: '14.5px', fontWeight: 600, cursor: 'pointer' }
+                  }, 'Upgrade to Pro'
+                ),
+              h('div', { style: { height: '1px', background: 'var(--line-2)', margin: '24px 0' } }),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+                PRO_FEATS.map((t, i) => h('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
+                  h(SvgIcon, { body: '<path d="M5 13l4 4L19 7"/>', size: 15, sw: 2.2, color: 'var(--ink)' }),
+                  h('span', { style: { fontSize: '13.5px', lineHeight: 1.4, color: 'var(--ink)' } }, t)
+                ))
+              )
+            )
+          ),
+          h('div', { style: { marginTop: '54px' } },
+            h('h2', { style: { margin: '0 0 18px', fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '22px', letterSpacing: '-.01em', textAlign: 'center' } }, 'Questions'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' } },
+              FAQS.map((fq, i) => h('div', { key: i, style: { border: '1px solid var(--line)', borderRadius: '13px', padding: '18px 20px', background: 'var(--bg-2)' } },
+                h('div', { style: { fontFamily: "'Geist',sans-serif", fontSize: '14.5px', fontWeight: 600, marginBottom: '7px' } }, fq.q),
+                h('div', { style: { fontSize: '13px', lineHeight: 1.55, color: 'var(--ink-2)' } }, fq.a)
+              ))
+            )
+          )
+        )
+      )
+    ),
+
+    /* Full-page Account */
+    route === 'account' && signedIn && h('div', {
+      style: { position: 'fixed', inset: 0, zIndex: 85, background: 'var(--bg)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+    },
+      h('div', { style: { flexShrink: 0, height: '62px', display: 'flex', alignItems: 'center', gap: '14px', padding: '0 22px', borderBottom: '1px solid var(--line)' } },
+        h('button', { onClick: () => setRoute('browse'), style: { display: 'flex', alignItems: 'center', gap: '5px', height: '36px', padding: '0 12px 0 8px', background: 'transparent', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } },
+          h(SvgIcon, { body: '<path d="M15 6l-6 6 6 6"/>', size: 16, sw: 2, color: 'var(--ink-2)' }), 'Back'
+        ),
+        h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '9px' } },
+          h('span', { style: { fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '20px', letterSpacing: '-.01em' } }, 'Foundry'),
+          h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9px', letterSpacing: '.18em', color: 'var(--ink-3)', textTransform: 'uppercase' } }, 'Account')
+        )
+      ),
+      h('div', { style: { flex: 1, overflowY: 'auto' } },
+        h('div', { style: { maxWidth: '620px', margin: '0 auto', padding: '48px 30px 70px' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '30px' } },
+            h('span', { style: { height: '56px', width: '56px', borderRadius: '14px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Geist',sans-serif", fontSize: '24px', fontWeight: 700 } }, ((authName || authEmail || 'F').trim().charAt(0) || 'F').toUpperCase()),
+            h('div', null,
+              h('div', { style: { fontFamily: "'Geist',sans-serif", fontSize: '21px', fontWeight: 600, letterSpacing: '-.01em' } }, authName || 'Foundry User'),
+              h('div', { style: { fontSize: '13.5px', color: 'var(--ink-2)', marginTop: '3px' } }, authEmail || 'you@foundry.co')
+            )
+          ),
+          h('div', { style: { border: '1px solid var(--line)', borderRadius: '16px', padding: '24px', background: 'var(--bg-2)', marginBottom: '16px' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' } },
+              h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '11px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, 'Plan'),
+              h('span', { style: { padding: '3px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, fontFamily: "'Geist Mono',monospace", background: entitled ? 'var(--pro-bg)' : 'var(--bg-3)', color: entitled ? 'var(--pro)' : 'var(--ink-3)', border: entitled ? '1px solid rgba(124,106,232,.25)' : '1px solid var(--line)' } }, entitled ? 'Active' : 'Free')
+            ),
+            h('span', { style: { fontFamily: "'Geist',sans-serif", fontSize: '26px', fontWeight: 600, letterSpacing: '-.02em' } }, entitled ? 'Pro' : 'Free'),
+            h('div', { style: { fontSize: '13px', color: 'var(--ink-2)', marginTop: '6px' } }, entitled ? 'Renews monthly. Next charge on your billing date.' : 'Upgrade for Pro icons and bulk export.'),
+            h('div', { style: { display: 'flex', gap: '9px', marginTop: '20px' } },
+              entitled
+                ? h('button', { onClick: () => showToast('Opening billing portal…'), style: { height: '42px', padding: '0 18px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '10px', fontFamily: "'Geist',sans-serif", fontSize: '13.5px', fontWeight: 600, cursor: 'pointer' } }, 'Manage billing')
+                : h('button', { onClick: () => setRoute('pricing'), style: { height: '42px', padding: '0 18px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '10px', fontFamily: "'Geist',sans-serif", fontSize: '13.5px', fontWeight: 600, cursor: 'pointer' } }, 'Upgrade to Pro')
+            )
+          ),
+          h('button', {
+            onClick: () => { setSignedIn(false); setEntitled(false); setAuthName(''); setAuthEmail(''); setAuthPw(''); setRoute('browse'); showToast('Signed out'); },
+            style: { width: '100%', height: '46px', background: 'transparent', color: 'var(--ink-2)', border: '1px solid var(--line)', borderRadius: '11px', fontFamily: "'Geist',sans-serif", fontSize: '14px', fontWeight: 600, cursor: 'pointer' }
+          }, 'Sign out')
+        )
+      )
+    ),
+
+    /* Toast */
+    toast && h('div', {
+      className: 'toast-anim',
+      style: { position: 'fixed', bottom: '26px', left: '50%', zIndex: 90, display: 'flex', alignItems: 'center', gap: '9px', height: '42px', padding: '0 18px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', borderRadius: '11px', fontSize: '13.5px', fontWeight: 600, boxShadow: '0 12px 34px rgba(0,0,0,.4)' }
+    },
+      h(SvgIcon, { body: '<path d="M5 13l4 4L19 7"/>', size: 15, sw: 2.4, color: 'currentColor' }),
+      toast
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script>
+</body>
+</html>
