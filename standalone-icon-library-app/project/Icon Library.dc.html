@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  ::selection{background:var(--ink);color:var(--bg);}
+  .app-root{
+    --bg:#0a0a0b; --bg-2:#0d0d0f; --bg-3:#1a1a1d; --field:#0e0e10;
+    --line:rgba(255,255,255,.085); --line-2:rgba(255,255,255,.15);
+    --ink:rgba(255,255,255,.92); --ink-2:rgba(255,255,255,.52); --ink-3:rgba(255,255,255,.32);
+    --inv-bg:#f3f3f0; --inv-ink:#0a0a0b;
+  }
+  .app-root.light{
+    --bg:#f6f6f3; --bg-2:#fbfbf9; --bg-3:#eeeeea; --field:#ffffff;
+    --line:rgba(0,0,0,.10); --line-2:rgba(0,0,0,.17);
+    --ink:#17171a; --ink-2:rgba(0,0,0,.55); --ink-3:rgba(0,0,0,.34);
+    --inv-bg:#17171a; --inv-ink:#fafafa;
+  }
+  .app-root *::-webkit-scrollbar{width:10px;height:10px;}
+  .app-root *::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:10px;border:3px solid transparent;background-clip:content-box;}
+  .app-root *::-webkit-scrollbar-track{background:transparent;}
+  @keyframes panelIn{from{transform:translateX(24px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+  @keyframes toastIn{from{transform:translateY(12px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+</style>
+</helmet>
+<div class="{{ rootClass }}" style="height:100vh;width:100%;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font-family:'Geist',system-ui,sans-serif;overflow:hidden;">
+
+  <header style="flex:0 0 auto;height:62px;display:flex;align-items:center;gap:24px;padding:0 20px;border-bottom:1px solid var(--line);background:var(--bg);position:relative;z-index:20;">
+    <div style="display:flex;align-items:baseline;gap:9px;width:228px;flex:0 0 auto;">
+      <span style="font-family:'Geist',sans-serif;font-style:italic;font-weight:500;font-size:24px;letter-spacing:-.01em;line-height:1;">Foundry</span>
+      <span style="font-family:'Geist Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;">Icons</span>
+    </div>
+    <div style="flex:1;display:flex;justify-content:center;">
+      <div style="position:relative;width:100%;max-width:520px;">
+        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-3);display:flex;">{{ searchIcon }}</span>
+        <input value="{{ search }}" onInput="{{ onSearch }}" placeholder="Search all icons by name or tag…" spellcheck="false" style="width:100%;height:40px;padding:0 44px 0 42px;background:var(--field);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:'Geist',sans-serif;font-size:14px;outline:none;" />
+        <sc-if value="{{ searchMode }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ onClearSearch }}" style="position:absolute;right:9px;top:50%;transform:translateY(-50%);height:24px;width:24px;display:flex;align-items:center;justify-content:center;background:var(--bg-3);border:none;border-radius:6px;color:var(--ink-2);cursor:pointer;font-size:15px;line-height:1;">×</button>
+        </sc-if>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex:0 0 auto;justify-content:flex-end;">
+      <button onClick="{{ onToggleTheme }}" title="Toggle theme" style="height:36px;width:36px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--line);border-radius:9px;color:var(--ink-2);cursor:pointer;">{{ themeIcon }}</button>
+      <span style="width:1px;height:22px;background:var(--line);margin:0 2px;"></span>
+      <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:9px;height:36px;padding:0 6px 0 10px;border:1px solid var(--line);border-radius:9px;">
+          <span style="height:24px;width:24px;border-radius:6px;background:var(--inv-bg);color:var(--inv-ink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">{{ userInitial }}</span>
+          <span style="font-size:12.5px;color:var(--ink-2);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ userEmail }}</span>
+          <button onClick="{{ onSignOut }}" title="Sign out" style="height:26px;width:26px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:6px;color:var(--ink-3);cursor:pointer;">{{ signOutIcon }}</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{ signedOut }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ onOpenAuth }}" style="height:36px;padding:0 16px;display:flex;align-items:center;gap:7px;background:var(--inv-bg);color:var(--inv-ink);border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;">{{ userIcon }} Sign in</button>
+      </sc-if>
+    </div>
+  </header>
+
+  <div style="flex:1;display:flex;min-height:0;">
+
+    <aside style="flex:0 0 228px;border-right:1px solid var(--line);overflow-y:auto;padding:10px 8px 40px;background:var(--bg);">
+      <div style="font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);padding:8px 8px 7px;">Library</div>
+      <sc-for list="{{ tree }}" as="n" hint-placeholder-count="13">
+        <div onClick="{{ n.onRow }}" style="{{ n.rowStyle }}">
+          <span onClick="{{ n.onChev }}" style="{{ n.chevStyle }}">{{ n.chev }}</span>
+          <span style="{{ n.iconStyle }}">{{ n.icon }}</span>
+          <span style="{{ n.labelStyle }}">{{ n.label }}</span>
+        </div>
+      </sc-for>
+    </aside>
+
+    <main style="flex:1;min-width:0;display:flex;flex-direction:column;background:var(--bg-2);">
+
+      <sc-if value="{{ browseMode }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:0 0 auto;padding:24px 30px 0;">
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:14px;">
+            <sc-for list="{{ crumbs }}" as="c" hint-placeholder-count="4">
+              <button onClick="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+              <span style="{{ c.sepStyle }}">›</span>
+            </sc-for>
+          </div>
+          <h1 style="margin:0;font-family:'Geist',sans-serif;font-weight:500;font-size:38px;letter-spacing:-.02em;line-height:1;">{{ catName }}</h1>
+          <div style="display:flex;align-items:center;gap:18px;margin-top:16px;padding-bottom:18px;border-bottom:1px solid var(--line);">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="color:var(--ink-3);display:flex;">{{ metaGridIcon }}</span>
+              <span style="font-family:'Geist Mono',monospace;font-size:12.5px;font-weight:600;letter-spacing:.02em;color:var(--ink);">{{ metaCount }}</span>
+            </div>
+            <span style="width:1px;height:14px;background:var(--line-2);"></span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="color:var(--ink-3);display:flex;">{{ metaAuthorIcon }}</span>
+              <span style="font-size:13px;color:var(--ink-2);">by <span style="color:var(--ink);font-weight:500;">{{ author }}</span></span>
+            </div>
+            <span style="width:1px;height:14px;background:var(--line-2);"></span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="color:var(--ink-3);display:flex;">{{ metaLicenseIcon }}</span>
+              <span style="font-size:13px;color:var(--ink-2);">{{ license }}</span>
+            </div>
+            <div style="flex:1;min-width:14px;"></div>
+            <div style="display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;">
+              <sc-for list="{{ densities }}" as="d" hint-placeholder-count="3">
+                <button onClick="{{ d.onClick }}" title="{{ d.title }}" style="{{ d.style }}">{{ d.label }}</button>
+              </sc-for>
+            </div>
+            <button onClick="{{ onToggleSelMode }}" style="{{ selBtnStyle }}">Select</button>
+          </div>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding:8px 30px 40px;">
+          <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="2">
+            <div style="margin-top:26px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                <span style="font-family:'Geist Mono',monospace;font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);">{{ sec.name }}</span>
+                <span style="flex:1;height:1px;background:var(--line);"></span>
+                <span style="font-family:'Geist Mono',monospace;font-size:10px;color:var(--ink-3);">{{ sec.count }}</span>
+              </div>
+              <div style="{{ gridStyle }}">
+                <sc-for list="{{ sec.items }}" as="it" hint-placeholder-count="10">
+                  <div onClick="{{ it.onClick }}" title="{{ it.name }}" style="{{ it.cellStyle }}">
+                    <sc-if value="{{ it.showCheck }}" hint-placeholder-val="{{ false }}">
+                      <span style="{{ it.checkStyle }}">{{ it.checkMark }}</span>
+                    </sc-if>
+                    <div style="display:flex;align-items:center;justify-content:center;height:{{ it.box }}px;color:var(--ink);">{{ it.svg }}</div>
+                    <sc-if value="{{ showCaptions }}" hint-placeholder-val="{{ true }}">
+                      <div style="margin-top:9px;width:100%;text-align:center;font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.01em;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ it.name }}</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ searchMode }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:0 0 auto;padding:24px 30px 18px;border-bottom:1px solid var(--line);">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+            <div>
+              <div style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;">Search results</div>
+              <h1 style="margin:0;font-family:'Geist',sans-serif;font-weight:500;font-style:italic;font-size:30px;letter-spacing:-.01em;line-height:1.05;">“{{ searchQuery }}” <span style="font-style:normal;color:var(--ink-3);font-size:20px;">· {{ resultN }}</span></h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;">
+                <sc-for list="{{ densities }}" as="d" hint-placeholder-count="3">
+                  <button onClick="{{ d.onClick }}" title="{{ d.title }}" style="{{ d.style }}">{{ d.label }}</button>
+                </sc-for>
+              </div>
+              <button onClick="{{ onToggleSelMode }}" style="{{ selBtnStyle }}">Select</button>
+              <button onClick="{{ onToggleScope }}" style="{{ scopeStyle }}">{{ scopeLabel }}</button>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:22px 30px 40px;">
+          <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="height:60%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--ink-3);">
+              <div style="opacity:.5;">{{ searchIconLg }}</div>
+              <div style="font-family:'Geist',sans-serif;font-size:19px;font-style:italic;color:var(--ink-2);">No icons match “{{ searchQuery }}”</div>
+              <button onClick="{{ onClearSearch }}" style="height:34px;padding:0 16px;background:var(--inv-bg);color:var(--inv-ink);border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Clear search</button>
+            </div>
+          </sc-if>
+          <div style="{{ gridStyle }}">
+            <sc-for list="{{ results }}" as="it" hint-placeholder-count="24">
+              <div onClick="{{ it.onClick }}" title="{{ it.name }}" style="{{ it.cellStyle }}">
+                <sc-if value="{{ it.showCheck }}" hint-placeholder-val="{{ false }}">
+                  <span style="{{ it.checkStyle }}">{{ it.checkMark }}</span>
+                </sc-if>
+                <div style="display:flex;align-items:center;justify-content:center;height:{{ it.box }}px;color:var(--ink);">{{ it.svg }}</div>
+                <sc-if value="{{ showCaptions }}" hint-placeholder-val="{{ true }}">
+                  <div style="margin-top:9px;width:100%;text-align:center;font-family:'Geist Mono',monospace;font-size:9px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ it.name }}</div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </main>
+
+    <sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ false }}">
+      <aside style="flex:0 0 332px;border-left:1px solid var(--line);background:var(--bg);display:flex;flex-direction:column;animation:panelIn .26s cubic-bezier(.2,.8,.2,1);overflow:hidden;">
+        <div style="flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-between;padding:20px 22px 16px;">
+          <div style="min-width:0;">
+            <div style="font-family:'Geist',sans-serif;font-size:23px;font-weight:500;letter-spacing:-.01em;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ detail.name }}</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-top:5px;">{{ detail.cat }}</div>
+          </div>
+          <button onClick="{{ onClose }}" style="flex:0 0 auto;height:34px;width:34px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--line);border-radius:9px;color:var(--ink-2);cursor:pointer;margin-left:12px;">{{ closeIcon }}</button>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;padding:0 22px 24px;">
+          <div style="position:relative;display:flex;align-items:center;justify-content:center;height:206px;border:1px solid var(--line);border-radius:14px;background:var(--field);margin-bottom:18px;overflow:hidden;">
+            <div style="position:absolute;inset:0;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:22px 22px;opacity:.5;"></div>
+            <div style="position:relative;color:var(--ink);display:flex;">{{ detail.preview }}</div>
+            <span style="position:absolute;left:12px;bottom:10px;font-family:'Geist Mono',monospace;font-size:10px;color:var(--ink-3);">{{ detail.dimLabel }}</span>
+          </div>
+
+          <sc-if value="{{ detail.hasVariants }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-bottom:18px;">
+              <div style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:9px;">Style</div>
+              <div style="display:flex;gap:6px;">
+                <sc-for list="{{ detail.variants }}" as="v" hint-placeholder-count="2">
+                  <button onClick="{{ v.onClick }}" style="{{ v.style }}">{{ v.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:20px;">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+                <span style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);">Size</span>
+                <span style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--ink-2);">{{ detail.sizeLabel }}</span>
+              </div>
+              <input type="range" min="16" max="96" step="1" value="{{ detail.size }}" onInput="{{ detail.onSize }}" style="width:100%;accent-color:var(--ink);" />
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+                <span style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);">Stroke width</span>
+                <span style="font-family:'Geist Mono',monospace;font-size:11px;color:var(--ink-3);">{{ detail.strokeLabel }}</span>
+              </div>
+              <input type="range" min="0.5" max="3" step="0.25" value="{{ detail.stroke }}" onInput="{{ detail.onStroke }}" disabled="{{ detail.strokeDisabled }}" style="{{ detail.strokeSliderStyle }}" />
+            </div>
+            <div>
+              <div style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:9px;">Color</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="display:flex;gap:6px;">
+                  <sc-for list="{{ detail.swatches }}" as="sw" hint-placeholder-count="6">
+                    <button onClick="{{ sw.onClick }}" title="{{ sw.hex }}" style="{{ sw.style }}"></button>
+                  </sc-for>
+                </div>
+                <div style="flex:1;display:flex;align-items:center;gap:7px;height:34px;padding:0 11px;border:1px solid var(--line);border-radius:9px;background:var(--field);">
+                  <span style="height:15px;width:15px;border-radius:4px;border:1px solid var(--line-2);background:{{ detail.color }};flex:0 0 auto;"></span>
+                  <input value="{{ detail.color }}" onInput="{{ detail.onColor }}" spellcheck="false" style="flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--ink);font-family:'Geist Mono',monospace;font-size:12px;" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-bottom:10px;">
+            <button onClick="{{ detail.onCopySvg }}" style="flex:1;height:42px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--inv-bg);color:var(--inv-ink);border:none;border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;">{{ copyIcon }} Copy SVG</button>
+            <button onClick="{{ detail.onDownload }}" style="flex:0 0 auto;height:42px;padding:0 16px;display:flex;align-items:center;justify-content:center;gap:8px;background:transparent;color:var(--ink);border:1px solid var(--line-2);border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer;">{{ dlIcon }} SVG</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:22px;">
+            <sc-for list="{{ detail.actions }}" as="a" hint-placeholder-count="5">
+              <button onClick="{{ a.onClick }}" style="height:38px;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:7px;background:var(--bg-3);color:var(--ink);border:1px solid var(--line);border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;font-family:'Geist Mono',monospace;">{{ a.label }}</button>
+            </sc-for>
+          </div>
+
+          <div style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:9px;">Tags</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;">
+            <sc-for list="{{ detail.tags }}" as="tg" hint-placeholder-count="4">
+              <span style="height:26px;display:inline-flex;align-items:center;padding:0 10px;background:var(--field);border:1px solid var(--line);border-radius:7px;font-family:'Geist Mono',monospace;font-size:11px;color:var(--ink-2);">{{ tg }}</span>
+            </sc-for>
+          </div>
+
+          <div style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);margin-bottom:9px;">Markup</div>
+          <pre style="margin:0;padding:14px;background:var(--field);border:1px solid var(--line);border-radius:11px;overflow-x:auto;font-family:'Geist Mono',monospace;font-size:11px;line-height:1.65;color:var(--ink-2);white-space:pre-wrap;word-break:break-all;">{{ detail.markup }}</pre>
+        </div>
+      </aside>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ selectionMode }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:0 0 auto;display:flex;align-items:center;gap:14px;padding:0 22px;height:58px;border-top:1px solid var(--line);background:var(--bg);position:relative;z-index:30;">
+      <span style="font-family:'Geist',sans-serif;font-style:italic;font-size:18px;">{{ selectedCount }} selected</span>
+      <button onClick="{{ onSelectAllFiltered }}" style="height:32px;padding:0 13px;background:transparent;border:1px solid var(--line-2);border-radius:8px;color:var(--ink);font-size:12.5px;font-weight:500;cursor:pointer;">Select all in view</button>
+      <button onClick="{{ onClearSel }}" style="height:32px;padding:0 13px;background:transparent;border:none;color:var(--ink-2);font-size:12.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;">Clear</button>
+      <div style="flex:1;"></div>
+      <button onClick="{{ onCopyJson }}" style="height:36px;padding:0 15px;display:flex;align-items:center;gap:8px;background:transparent;color:var(--ink);border:1px solid var(--line-2);border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Geist Mono',monospace;">Copy JSON</button>
+      <button onClick="{{ onExportZip }}" style="height:36px;padding:0 17px;display:flex;align-items:center;gap:8px;background:var(--inv-bg);color:var(--inv-ink);border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;">{{ dlIcon }} Export ZIP</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ authOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);">
+      <div style="position:relative;display:flex;width:100%;max-width:880px;height:560px;max-height:92vh;background:var(--bg);border:1px solid var(--line-2);border-radius:18px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.55);">
+
+        <div style="flex:0 0 42%;display:flex;flex-direction:column;justify-content:space-between;padding:36px 34px;background:var(--bg-3);border-right:1px solid var(--line);position:relative;overflow:hidden;">
+          <div style="position:absolute;right:-40px;bottom:-30px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;opacity:.10;color:var(--ink);pointer-events:none;">
+            <sc-for list="{{ authDeco }}" as="g" hint-placeholder-count="12">
+              <span style="display:flex;">{{ g }}</span>
+            </sc-for>
+          </div>
+          <div style="position:relative;display:flex;align-items:baseline;gap:9px;">
+            <span style="font-family:'Geist',sans-serif;font-weight:600;font-size:26px;letter-spacing:-.02em;">Foundry</span>
+            <span style="font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;">Icons</span>
+          </div>
+          <div style="position:relative;">
+            <div style="font-family:'Geist',sans-serif;font-size:26px;font-weight:500;line-height:1.25;letter-spacing:-.01em;color:var(--ink);max-width:280px;">A precise, monochrome icon system — yours to shape and ship.</div>
+            <div style="margin-top:16px;font-size:13px;line-height:1.6;color:var(--ink-2);max-width:260px;">{{ metaCountHint }} icons across {{ catCountHint }} categories, two styles, one source of truth.</div>
+          </div>
+          <div style="position:relative;font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.04em;color:var(--ink-3);">© Foundry Studio · MIT</div>
+        </div>
+
+        <div style="flex:1;display:flex;flex-direction:column;padding:34px 40px;overflow-y:auto;">
+          <div style="display:flex;justify-content:flex-end;">
+            <button onClick="{{ onAuthClose }}" style="height:32px;width:32px;display:flex;align-items:center;justify-content:center;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--ink-2);cursor:pointer;">{{ closeIcon }}</button>
+          </div>
+          <div style="margin-top:6px;">
+            <h2 style="margin:0;font-family:'Geist',sans-serif;font-weight:600;font-size:27px;letter-spacing:-.02em;line-height:1.1;">{{ authTitle }}</h2>
+            <p style="margin:9px 0 0;font-size:14px;line-height:1.5;color:var(--ink-2);">{{ authSub }}</p>
+          </div>
+
+          <button onClick="{{ onAuthSubmit }}" style="margin-top:24px;height:46px;display:flex;align-items:center;justify-content:center;gap:10px;background:transparent;color:var(--ink);border:1px solid var(--line-2);border-radius:11px;font-family:'Geist',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">{{ googleIcon }} Continue with Google</button>
+          <div style="display:flex;align-items:center;gap:12px;margin:20px 0;">
+            <span style="flex:1;height:1px;background:var(--line);"></span>
+            <span style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);">or</span>
+            <span style="flex:1;height:1px;background:var(--line);"></span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:13px;">
+            <sc-if value="{{ isRegister }}" hint-placeholder-val="{{ false }}">
+              <label style="display:flex;flex-direction:column;gap:7px;">
+                <span style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);">Full name</span>
+                <input value="{{ authName }}" onInput="{{ onAuthName }}" placeholder="Jane Mercer" spellcheck="false" style="height:44px;padding:0 14px;background:var(--field);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:'Geist',sans-serif;font-size:14px;outline:none;" />
+              </label>
+            </sc-if>
+            <label style="display:flex;flex-direction:column;gap:7px;">
+              <span style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);">Email</span>
+              <input value="{{ authEmail }}" onInput="{{ onAuthEmail }}" type="email" placeholder="you@studio.co" spellcheck="false" style="height:44px;padding:0 14px;background:var(--field);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:'Geist',sans-serif;font-size:14px;outline:none;" />
+            </label>
+            <label style="display:flex;flex-direction:column;gap:7px;">
+              <span style="font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);">Password</span>
+              <input value="{{ authPw }}" onInput="{{ onAuthPw }}" type="password" placeholder="••••••••" style="height:44px;padding:0 14px;background:var(--field);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:'Geist',sans-serif;font-size:14px;outline:none;" />
+            </label>
+            <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ onForgot }}" style="align-self:flex-end;background:transparent;border:none;padding:0;color:var(--ink-2);font-size:12.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;">Forgot password?</button>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{ authErr }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:14px;font-size:13px;color:var(--ink);background:var(--bg-3);border:1px solid var(--line-2);border-radius:9px;padding:10px 13px;">{{ authErr }}</div>
+          </sc-if>
+
+          <button onClick="{{ onAuthSubmit }}" style="margin-top:20px;height:48px;display:flex;align-items:center;justify-content:center;background:var(--inv-bg);color:var(--inv-ink);border:none;border-radius:12px;font-family:'Geist',sans-serif;font-size:14.5px;font-weight:600;cursor:pointer;">{{ authCta }}</button>
+
+          <div style="margin-top:18px;text-align:center;font-size:13px;color:var(--ink-2);">
+            {{ authSwitchText }}
+            <button onClick="{{ onSwitchAuth }}" style="background:transparent;border:none;padding:0 0 0 4px;color:var(--ink);font-size:13px;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px;">{{ authSwitchCta }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:9px;height:42px;padding:0 18px;background:var(--inv-bg);color:var(--inv-ink);border-radius:11px;font-size:13.5px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.4);animation:toastIn .22s ease;">{{ toastCheck }} {{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startTheme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;dark&quot;,&quot;light&quot;],&quot;default&quot;:&quot;dark&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;showCaptions&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Grid&quot;},&quot;defaultStrokeWidth&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:2,&quot;min&quot;:1,&quot;max&quot;:3,&quot;step&quot;:0.25,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Defaults&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.TYPE = { id:'foundry', name:'Foundry', author:'Foundry Studio', license:'MIT · Commercial OK' };
+    this.STYLES = [ {id:'outline', name:'Outline', strokeBased:true}, {id:'solid', name:'Solid', strokeBased:false} ];
+    this.ICONS = this.buildData();
+    this.CATS = []; this.SUBS = {};
+    this.ICONS.forEach(ic=>{ if(this.CATS.indexOf(ic.cat)<0) this.CATS.push(ic.cat); (this.SUBS[ic.cat]=this.SUBS[ic.cat]||[]); if(this.SUBS[ic.cat].indexOf(ic.sub)<0) this.SUBS[ic.cat].push(ic.sub); });
+
+    this.state = {
+      theme: (props.startTheme === 'light' ? 'light' : 'dark'),
+      density: 28,
+      search: '',
+      searchAllStyles: false,
+      navStyle: 'outline',
+      cat: this.CATS[0],
+      expanded: { 't:foundry':true, 's:outline':true },
+      selectedId: null,
+      openStyle: 'outline',
+      size: 48,
+      stroke: (typeof props.defaultStrokeWidth === 'number' ? props.defaultStrokeWidth : 2),
+      color: null,
+      selectionMode: false,
+      sel: {},
+      toast: '',
+      authView: null,
+      signedIn: false,
+      authName: '',
+      authEmail: '',
+      authPw: '',
+      authErr: '',
+    };
+    this._toastT = null;
+  }
+  componentDidMount(){ this._onKey=(e)=>{ if(e.key==='Escape'){ if(this.state.authView){ this.setState({authView:null}); } else { this.setState({selectedId:null}); } } }; window.addEventListener('keydown', this._onKey); }
+  componentWillUnmount(){ window.removeEventListener('keydown', this._onKey); if(this._toastT) clearTimeout(this._toastT); }
+
+  buildData(){
+    const L = (id,name,cat,sub,tags,body,fill)=>({id,name,cat,sub,tags,body,fill:!!fill});
+    return [
+      L('home','home','Interface','Core Actions',['house','main','start'],'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6h5v6"/>'),
+      L('search','search','Interface','Core Actions',['find','magnify','look'],'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/>'),
+      L('settings','settings','Interface','Core Actions',['gear','cog','prefs'],'<circle cx="12" cy="12" r="3"/><path d="M19 12c0-.5 0-.9-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.3-1.3L13.8 2h-3.6l-.5 2.5a7 7 0 0 0-2.3 1.3l-2.3-1-2 3.4 2 1.5C5 11.1 5 11.5 5 12s0 .9.1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.3 1.3l.5 2.5h3.6l.5-2.5a7 7 0 0 0 2.3-1.3l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.3z"/>'),
+      L('menu','menu','Interface','Core Actions',['nav','bars','hamburger'],'<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>'),
+      L('more','more horizontal','Interface','Core Actions',['dots','overflow','options'],'<circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/>'),
+      L('grid','grid','Interface','Core Actions',['layout','tiles','dashboard'],'<rect x="3.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.4"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.4"/>'),
+      L('refresh','refresh','Interface','Core Actions',['reload','sync','update'],'<path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4.5v5h-5"/>'),
+      L('check','check','Interface','Controls',['done','tick','ok'],'<path d="M5 13l4 4L19 7"/>'),
+      L('close','close','Interface','Controls',['x','cancel','remove'],'<path d="M6 6l12 12"/><path d="M18 6 6 18"/>'),
+      L('plus','plus','Interface','Controls',['add','new','create'],'<path d="M12 5v14"/><path d="M5 12h14"/>'),
+      L('minus','minus','Interface','Controls',['subtract','remove','collapse'],'<path d="M5 12h14"/>'),
+      L('filter','filter','Interface','Controls',['funnel','sort','refine'],'<path d="M3.5 5h17l-6.5 8v6l-4 2v-8z"/>',true),
+
+      L('arrow-right','arrow right','Navigation','Wayfinding',['next','forward','direction'],'<path d="M4 12h16"/><path d="m14 6 6 6-6 6"/>'),
+      L('chevron-right','chevron right','Navigation','Wayfinding',['next','expand','caret'],'<path d="m9 6 6 6-6 6"/>'),
+      L('map-pin','map pin','Navigation','Wayfinding',['location','marker','place'],'<path d="M12 22s7-6 7-12a7 7 0 0 0-14 0c0 6 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',true),
+      L('compass','compass','Navigation','Wayfinding',['direction','navigate','explore'],'<circle cx="12" cy="12" r="9"/><path d="m15.6 8.4-2 5.2-5.2 2 2-5.2z"/>'),
+      L('globe','globe','Navigation','Global',['world','web','earth'],'<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z"/>'),
+      L('external-link','external link','Navigation','Global',['open','out','share'],'<path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 13.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5.5"/>'),
+
+      L('mail','mail','Communication','Messaging',['email','message','envelope'],'<rect x="3" y="5" width="18" height="14" rx="2.2"/><path d="m4 7 8 6 8-6"/>'),
+      L('message','message','Communication','Messaging',['chat','bubble','talk'],'<path d="M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z"/>',true),
+      L('phone','phone','Communication','Messaging',['call','dial','contact'],'<path d="M6.5 3C5 3 3.5 4.3 3.5 6c0 8 6.5 14.5 14.5 14.5 1.7 0 3-1.5 3-3v-2.4l-4-1.5-2 2c-2.5-1.2-4.8-3.5-6-6l2-2L8.9 3z"/>'),
+      L('send','send','Communication','Messaging',['paper plane','submit','deliver'],'<path d="M22 3 11 14"/><path d="M22 3 15 21l-4-7-7-4z"/>'),
+      L('share','share','Communication','Connect',['network','social','distribute'],'<circle cx="6" cy="12" r="2.6"/><circle cx="17.5" cy="6" r="2.6"/><circle cx="17.5" cy="18" r="2.6"/><path d="m8.4 10.9 6.7-3.6"/><path d="m8.4 13.1 6.7 3.6"/>'),
+      L('bell','bell','Communication','Connect',['notify','alert','ring'],'<path d="M12 3a6 6 0 0 0-6 6c0 4-1.4 5.6-2.5 6.6-.5.4-.2 1.4.5 1.4h16c.7 0 1-1 .5-1.4C19.4 14.6 18 13 18 9a6 6 0 0 0-6-6z"/><circle cx="12" cy="20.5" r="1.6"/>',true),
+      L('link','link','Communication','Connect',['chain','url','connect'],'<path d="M9.5 14.5 14.5 9.5"/><path d="M10.8 6.8 13 4.6a4 4 0 0 1 5.8 5.6l-2.2 2.2"/><path d="M13.2 17.2 11 19.4a4 4 0 0 1-5.8-5.6l2.2-2.2"/>'),
+      L('paperclip','paperclip','Communication','Connect',['attach','clip','file'],'<path d="M20 11 11.5 19.4a5 5 0 0 1-7-7.1L13 4a3.4 3.4 0 0 1 4.9 4.8l-8.4 8.4a1.9 1.9 0 0 1-2.7-2.7l7.5-7.5"/>'),
+
+      L('image','image','Media','Capture',['photo','picture','gallery'],'<rect x="3" y="4" width="18" height="16" rx="2.2"/><circle cx="8.5" cy="9" r="1.9"/><path d="m4.5 18 4.5-4.5 3.5 3 3.5-3.5L21 17.5"/>'),
+      L('video','video','Media','Capture',['film','movie','record'],'<rect x="3" y="6" width="13" height="12" rx="2.2"/><path d="m16 10 5-3v10l-5-3z"/>'),
+      L('camera','camera','Media','Capture',['photo','capture','lens'],'<path d="M4 8h3l1.5-2.5h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/>'),
+      L('mic','microphone','Media','Capture',['record','voice','audio'],'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>'),
+      L('music','music','Media','Playback',['note','song','audio'],'<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>'),
+      L('play','play','Media','Playback',['start','video','media'],'<path d="M7 4.5 19.5 12 7 19.5z"/>',true),
+      L('volume','volume','Media','Playback',['sound','speaker','audio'],'<path d="M4 9.5v5h4l5 4v-13l-5 4z"/><path d="M16.5 9a4 4 0 0 1 0 6"/>'),
+      L('headphones','headphones','Media','Playback',['audio','listen','sound'],'<path d="M4 13v-1a8 8 0 0 1 16 0v1"/><rect x="3" y="13" width="4" height="7" rx="1.6"/><rect x="17" y="13" width="4" height="7" rx="1.6"/>'),
+      L('eye','eye','Media','Visibility',['view','visible','show'],'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>'),
+      L('eye-off','eye off','Media','Visibility',['hide','hidden','invisible'],'<path d="M3 3 21 21"/><path d="M10.6 5.2A10 10 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-3 3.8"/><path d="M6.5 6.9A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 4-.8"/><path d="M9.5 9.5a3 3 0 0 0 4.2 4.2"/>'),
+
+      L('file','file','Files','Documents',['document','page','paper'],'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>'),
+      L('folder','folder','Files','Documents',['directory','storage','group'],'<path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
+      L('save','save','Files','Documents',['floppy','store','disk'],'<path d="M5 3h12l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M7 3v5h8V3"/><rect x="8" y="13" width="8" height="6"/>'),
+      L('printer','printer','Files','Documents',['print','document','paper'],'<path d="M7 8V3h10v5"/><rect x="3" y="8" width="18" height="9" rx="2"/><rect x="7" y="14" width="10" height="6"/>'),
+      L('download','download','Files','Transfer',['save','import','arrow'],'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>'),
+      L('upload','upload','Files','Transfer',['export','send','arrow'],'<path d="M12 21V9"/><path d="m7 14 5-5 5 5"/><path d="M5 3h14"/>'),
+      L('copy','copy','Files','Transfer',['duplicate','clone','clipboard'],'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
+      L('trash','trash','Files','Manage',['delete','remove','bin'],'<path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/>'),
+      L('edit','edit','Files','Manage',['pencil','write','modify'],'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m14 5 4 4"/>'),
+
+      L('cart','shopping cart','Commerce','Shopping',['buy','shop','checkout'],'<circle cx="9" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/><path d="M2 3h2.2l2.3 13h12l2-9H6.2"/>'),
+      L('card','credit card','Commerce','Shopping',['payment','pay','bank'],'<rect x="2" y="5" width="20" height="14" rx="2.2"/><path d="M2 10h20"/>'),
+      L('tag','tag','Commerce','Shopping',['label','price','sale'],'<path d="M3 3.5h7l11 11-7 7L3 10z"/><circle cx="7.5" cy="7.5" r="1.6"/>',true),
+      L('truck','truck','Commerce','Logistics',['shipping','delivery','transport'],'<rect x="2" y="6" width="13" height="10" rx="1.5"/><path d="M15 9h4l3 3v4h-7z"/><circle cx="7" cy="18" r="1.9"/><circle cx="18" cy="18" r="1.9"/>'),
+
+      L('cloud','cloud','Weather','Sky',['sky','storage','weather'],'<path d="M7 18a4 4 0 0 1-.5-8 6 6 0 0 1 11.6 1.5A3.5 3.5 0 0 1 17.5 18z"/>'),
+      L('sun','sun','Weather','Sky',['light','day','bright'],'<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5"/><path d="M12 19.5V22"/><path d="M22 12h-2.5"/><path d="M4.5 12H2"/><path d="m18.4 5.6-1.8 1.8"/><path d="m7.4 16.6-1.8 1.8"/><path d="m18.4 18.4-1.8-1.8"/><path d="m7.4 7.4-1.8-1.8"/>'),
+      L('moon','moon','Weather','Sky',['night','dark','sleep'],'<path d="M20 13a8 8 0 1 1-9-9 6 6 0 0 0 9 9z"/>',true),
+      L('droplet','droplet','Weather','Elements',['water','rain','liquid'],'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',true),
+      L('zap','zap','Weather','Elements',['lightning','flash','energy'],'<path d="M13 2.5 4 14h7l-1 7.5 9-11.5h-7z"/>',true),
+
+      L('lock','lock','Security','Access',['secure','private','password'],'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
+      L('unlock','unlock','Security','Access',['open','access','password'],'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.7-1.7"/>'),
+      L('shield','shield','Security','Protection',['protect','secure','guard'],'<path d="M12 3 5 6v5c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z"/>',true),
+
+      L('wifi','wifi','Devices','Connectivity',['network','signal','wireless'],'<path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8 15.5a6 6 0 0 1 8 0"/><path d="M11 18.4a2 2 0 0 1 2 0"/>'),
+      L('calendar','calendar','Devices','Time',['date','schedule','event'],'<rect x="3" y="5" width="18" height="16" rx="2.2"/><path d="M3 9.5h18"/><path d="M8 3v4"/><path d="M16 3v4"/>'),
+      L('clock','clock','Devices','Time',['time','watch','schedule'],'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>'),
+
+      L('heart','heart','Shapes','Symbols',['like','love','favorite'],'<path d="M12 21s-7-4.4-9.2-8.6C1.2 9 2.6 5 6 5c2 0 3.3 1.2 4 2.4C10.7 6.2 12 5 14 5c3.4 0 4.8 4 3.2 7.4C19 16.6 12 21 12 21z"/>',true),
+      L('star','star','Shapes','Symbols',['rating','favorite','bookmark'],'<path d="M12 2.5 14.9 8.6 21.5 9.4 16.6 14 17.9 20.7 12 17.4 6.1 20.7 7.4 14 2.5 9.4 9.1 8.6z"/>',true),
+      L('bookmark','bookmark','Shapes','Symbols',['save','flag','tag'],'<path d="M6 3.5h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.5a1 1 0 0 1 1-1z"/>',true),
+      L('flag','flag','Shapes','Symbols',['mark','report','country'],'<path d="M5 3v18"/><path d="M5 4h13l-2.5 4L18 12H5z"/>',true),
+      L('circle','circle','Shapes','Geometry',['round','dot','shape'],'<circle cx="12" cy="12" r="9"/>',true),
+      L('square','square','Shapes','Geometry',['box','rectangle','shape'],'<rect x="4" y="4" width="16" height="16" rx="2.5"/>',true),
+      L('triangle','triangle','Shapes','Geometry',['warning','shape','arrow'],'<path d="M12 4 22 20H2z"/>',true),
+    ];
+  }
+
+  styleAvail(icon){ return icon.fill ? ['outline','solid','duotone'] : ['outline']; }
+  gridStyleFor(icon){ return (this.state.navStyle==='solid' && icon.fill) ? 'solid' : 'outline'; }
+
+  layersHtml(body, style, sw){
+    if(style==='solid') return body;
+    if(style==='duotone') return '<g fill="currentColor" stroke="none" opacity="0.26">'+body+'</g><g fill="none" stroke="currentColor" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round">'+body+'</g>';
+    return body;
+  }
+  svgProps(style, size, sw){
+    const p = {width:size, height:size, viewBox:'0 0 24 24', style:{display:'block',flex:'0 0 auto'}};
+    if(style==='solid'){ p.fill='currentColor'; p.stroke='none'; }
+    else if(style==='duotone'){ p.fill='none'; p.stroke='none'; }
+    else { p.fill='none'; p.stroke='currentColor'; p.strokeWidth=sw; p.strokeLinecap='round'; p.strokeLinejoin='round'; }
+    return p;
+  }
+  makeEl(icon, style, size, sw, color){
+    const p = this.svgProps(style, size, sw);
+    if(color){ p.style = Object.assign({}, p.style, {color:color}); }
+    p.dangerouslySetInnerHTML = {__html: this.layersHtml(icon.body, style, sw)};
+    p.key = icon.id+style+size+sw+(color||'');
+    return React.createElement('svg', p);
+  }
+  markup(icon, style, size, sw, color){
+    const c = color || 'currentColor';
+    const head = '<svg xmlns="http://www.w3.org/2000/svg" width="'+size+'" height="'+size+'" viewBox="0 0 24 24"';
+    if(style==='solid') return head+' fill="'+c+'">'+icon.body+'</svg>';
+    if(style==='duotone') return head+'><g fill="'+c+'" opacity="0.26">'+icon.body+'</g><g fill="none" stroke="'+c+'" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round">'+icon.body+'</g></svg>';
+    return head+' fill="none" stroke="'+c+'" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round">'+icon.body+'</svg>';
+  }
+  pascal(name){ return name.replace(/[^a-z0-9 ]/gi,'').split(/[ -]+/).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(''); }
+  toJsx(mk, name){
+    let s = mk.replace(/stroke-width/g,'strokeWidth').replace(/stroke-linecap/g,'strokeLinecap').replace(/stroke-linejoin/g,'strokeLinejoin').replace(/fill-rule/g,'fillRule').replace(/clip-rule/g,'clipRule').replace(/xmlns="[^"]*"\s*/,'');
+    s = s.replace('<svg', '<svg {...props}');
+    return 'export const '+this.pascal(name)+'Icon = (props) => (\n  '+s.replace(/></g,'>\n    <').replace('</svg>','\n  </svg>')+'\n);';
+  }
+  defaultColor(){ return this.state.theme==='light' ? '#17171A' : '#EDEDEA'; }
+
+  showToast(msg){ this.setState({toast:msg}); if(this._toastT) clearTimeout(this._toastT); this._toastT=setTimeout(()=>this.setState({toast:''}),1700); }
+  copy(text, label){ const done=()=>this.showToast(label); try{ navigator.clipboard.writeText(text).then(done,()=>this.fallbackCopy(text,done)); }catch(e){ this.fallbackCopy(text,done); } }
+  fallbackCopy(text, done){ try{ const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }catch(e){} done(); }
+  downloadBlob(blob, filename){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(url),1500); }
+
+  cellFor(ic){
+    const st=this.state, gridIcon=st.density;
+    const checked=!!st.sel[ic.id];
+    const box=st.density===24?78:st.density===28?92:106;
+    const onClick = st.selectionMode
+      ? ()=>{ const s=Object.assign({},st.sel); if(s[ic.id]) delete s[ic.id]; else s[ic.id]=true; this.setState({sel:s}); }
+      : ()=>this.openIcon(ic.id);
+    return {
+      id:ic.id, name:ic.name, box:gridIcon,
+      svg:this.makeEl(ic, this.gridStyleFor(ic), gridIcon, 2),
+      onClick,
+      cellStyle:{position:'relative',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'14px 8px',minHeight:box+'px',borderRadius:'12px',border:'1px solid '+(checked?'var(--line-2)':'transparent'),background:(checked||st.selectedId===ic.id)?'var(--bg-3)':'transparent',cursor:'pointer',transition:'background .12s,border-color .12s'},
+      showCheck:st.selectionMode, checkMark:checked?'✓':'',
+      checkStyle:{position:'absolute',top:'8px',left:'8px',height:'18px',width:'18px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'5px',border:'1px solid '+(checked?'transparent':'var(--line-2)'),background:checked?'var(--inv-bg)':'transparent',color:'var(--inv-ink)',fontSize:'11px',fontWeight:700},
+    };
+  }
+
+  renderVals(){
+    const st=this.state, dc=this.defaultColor(), curColor=st.color||dc, ink2='var(--ink-2)';
+    const box=st.density===24?78:st.density===28?92:106;
+    const showCaptions=(this.props.showCaptions!==false);
+    const q=st.search.trim().toLowerCase();
+    const searchMode=q.length>0;
+
+    // density
+    const densBtn=(val,label)=>({label, title:label+'px', onClick:()=>this.setState({density:val}), style:{height:'34px',width:'38px',display:'flex',alignItems:'center',justifyContent:'center',background:st.density===val?'var(--bg-3)':'transparent',color:st.density===val?'var(--ink)':'var(--ink-3)',border:'none',borderRight:val!==32?'1px solid var(--line)':'none',fontFamily:"'Geist Mono',monospace",fontSize:'11px',fontWeight:600,cursor:'pointer'}});
+
+    // ---- TREE ----
+    const exp=st.expanded;
+    const chevSvg=(open)=>this.makeEl({id:'cv'+open,body:'<path d="m9 6 6 6-6 6"/>'},'outline',12,2.4, 'var(--ink-3)');
+    const tree=[];
+    const typeKey='t:'+this.TYPE.id, typeOpen=!!exp[typeKey];
+    tree.push({
+      key:typeKey, label:this.TYPE.name, chev:typeOpen?'▾':'▸', icon:'',
+      rowStyle:{display:'flex',alignItems:'center',gap:'4px',height:'30px',padding:'0 8px 0 6px',borderRadius:'7px',cursor:'pointer',background:'transparent'},
+      chevStyle:{flex:'0 0 auto',width:'16px',textAlign:'center',fontSize:'9px',color:'var(--ink-2)',cursor:'pointer'},
+      iconStyle:{display:'none'},
+      labelStyle:{fontSize:'13.5px',fontWeight:700,color:'var(--ink)',letterSpacing:'.01em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'},
+      onChev:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.toggle(typeKey); },
+      onRow:()=>this.toggle(typeKey),
+    });
+    if(typeOpen){
+      this.STYLES.forEach(sd=>{
+        const sKey='s:'+sd.id, sOpen=!!exp[sKey], sActive=st.navStyle===sd.id && !searchMode;
+        tree.push({
+          key:sKey, label:sd.name, chev:sOpen?'▾':'▸', icon:'',
+          rowStyle:{display:'flex',alignItems:'center',gap:'4px',height:'28px',padding:'0 8px 0 18px',borderRadius:'7px',cursor:'pointer',background:'transparent'},
+          chevStyle:{flex:'0 0 auto',width:'16px',textAlign:'center',fontSize:'9px',color:'var(--ink-3)',cursor:'pointer'},
+          iconStyle:{display:'none'},
+          labelStyle:{fontSize:'12.5px',fontWeight:sActive?600:500,color:sActive?'var(--ink)':'var(--ink-2)',whiteSpace:'nowrap'},
+          onChev:(e)=>{ if(e&&e.stopPropagation)e.stopPropagation(); this.toggle(sKey); },
+          onRow:()=>{ this.setState({navStyle:sd.id, search:''}); this.toggle(sKey, true); },
+        });
+        if(sOpen){
+          const allActive = !searchMode && st.navStyle===sd.id && st.cat==='__all__';
+          tree.push({
+            key:'all:'+sd.id, label:'All', chev:'', icon:'',
+            rowStyle:{display:'flex',alignItems:'center',gap:'4px',height:'28px',padding:'0 8px 0 36px',borderRadius:'7px',cursor:'pointer',background:allActive?'var(--bg-3)':'transparent'},
+            chevStyle:{flex:'0 0 auto',width:'12px'},
+            iconStyle:{flex:'0 0 auto',width:'4px',height:'4px',borderRadius:'50%',background:allActive?'var(--ink)':'transparent',border:'1px solid '+(allActive?'var(--ink)':'var(--line-2)'),marginRight:'4px'},
+            labelStyle:{fontSize:'12.5px',fontWeight:allActive?700:600,color:allActive?'var(--ink)':'var(--ink-2)',whiteSpace:'nowrap'},
+            onChev:()=>{}, onRow:()=>this.setState({navStyle:sd.id, cat:'__all__', search:''}),
+          });
+          this.CATS.forEach(cat=>{
+            const active = !searchMode && st.navStyle===sd.id && st.cat===cat;
+            tree.push({
+              key:'c:'+sd.id+':'+cat, label:cat, chev:'', icon:'',
+              rowStyle:{display:'flex',alignItems:'center',gap:'4px',height:'28px',padding:'0 8px 0 36px',borderRadius:'7px',cursor:'pointer',background:active?'var(--bg-3)':'transparent'},
+              chevStyle:{flex:'0 0 auto',width:'12px'},
+              iconStyle:{flex:'0 0 auto',width:'4px',height:'4px',borderRadius:'50%',background:active?'var(--ink)':'var(--line-2)',marginRight:'4px'},
+              labelStyle:{fontSize:'12.5px',fontWeight:active?600:500,color:active?'var(--ink)':'var(--ink-2)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'},
+              onChev:()=>{}, onRow:()=>this.setState({navStyle:sd.id, cat, search:''}),
+            });
+          });
+        }
+      });
+    }
+
+    const styleName=(this.STYLES.find(s=>s.id===st.navStyle)||this.STYLES[0]).name;
+
+    const vals={
+      rootClass:'app-root'+(st.theme==='light'?' light':''),
+      search:st.search, onSearch:(e)=>this.setState({search:e.target.value}),
+      onClearSearch:()=>this.setState({search:''}),
+      densities:[densBtn(24,'24'),densBtn(28,'28'),densBtn(32,'32')],
+      tree, showCaptions,
+      gridStyle:{display:'grid',gridTemplateColumns:'repeat(auto-fill, minmax('+box+'px, 1fr))',gap:'6px',alignContent:'start'},
+      selectionMode:st.selectionMode,
+      selBtnStyle:{height:'36px',padding:'0 14px',background:st.selectionMode?'var(--inv-bg)':'transparent',color:st.selectionMode?'var(--inv-ink)':'var(--ink-2)',border:'1px solid '+(st.selectionMode?'transparent':'var(--line)'),borderRadius:'9px',fontSize:'13px',fontWeight:600,cursor:'pointer'},
+      onToggleSelMode:()=>this.setState({selectionMode:!st.selectionMode, sel:st.selectionMode?{}:st.sel}),
+      selectedCount:Object.keys(st.sel).length,
+      onSelectAllFiltered:()=>{ const s=Object.assign({},st.sel); (searchMode?this.searchList():this.catList()).forEach(ic=>s[ic.id]=true); this.setState({sel:s}); },
+      onClearSel:()=>this.setState({sel:{}}),
+      onCopyJson:()=>this.copyJson(searchMode),
+      onExportZip:()=>this.exportZip(),
+      onToggleTheme:()=>this.setState({theme:st.theme==='light'?'dark':'light'}),
+      toast:st.toast, toastCheck:this.makeEl({id:'tk',body:'<path d="M5 13l4 4L19 7"/>'},'outline',15,2.4),
+      searchIcon:this.makeEl({id:'si',body:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/>'},'outline',17,2,ink2),
+      searchIconLg:this.makeEl({id:'sl',body:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.4-3.4"/>'},'outline',40,1.5),
+      themeIcon: st.theme==='light'
+        ? this.makeEl({id:'mn',body:'<path d="M20 13a8 8 0 1 1-9-9 6 6 0 0 0 9 9z"/>'},'outline',17,2,ink2)
+        : this.makeEl({id:'sn',body:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5"/><path d="M12 19.5V22"/><path d="M22 12h-2.5"/><path d="M4.5 12H2"/><path d="m18.4 5.6-1.8 1.8"/><path d="m7.4 16.6-1.8 1.8"/><path d="m18.4 18.4-1.8-1.8"/><path d="m7.4 7.4-1.8-1.8"/>'},'outline',17,2,ink2),
+      copyIcon:this.makeEl({id:'cp',body:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'},'outline',15,2,'currentColor'),
+      dlIcon:this.makeEl({id:'dl',body:'<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>'},'outline',15,2,'currentColor'),
+      closeIcon:this.makeEl({id:'cl',body:'<path d="M6 6l12 12"/><path d="M18 6 6 18"/>'},'outline',16,2,ink2),
+      metaGridIcon:this.makeEl({id:'mg',body:'<rect x="3.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.4"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.4"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.4"/>'},'outline',15,1.8),
+      metaAuthorIcon:this.makeEl({id:'ma',body:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'},'outline',15,1.8),
+      metaLicenseIcon:this.makeEl({id:'ml',body:'<circle cx="12" cy="12" r="9"/><path d="M15 9.5a3.5 3.5 0 1 0 0 5"/>'},'outline',15,1.8),
+      userIcon:this.makeEl({id:'ui',body:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'},'outline',15,2,'currentColor'),
+      signOutIcon:this.makeEl({id:'so',body:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>'},'outline',15,1.9,ink2),
+      signedIn:st.signedIn, signedOut:!st.signedIn,
+      onClose:()=>this.setState({selectedId:null}),
+      userEmail:st.authEmail||'you@foundry.co',
+      userInitial:((st.authName||st.authEmail||'F').trim().charAt(0)||'F').toUpperCase(),
+      onOpenAuth:()=>this.setState({authView:'login', authErr:''}),
+      onSignOut:()=>{ this.setState({signedIn:false, authName:'', authEmail:'', authPw:''}); this.showToast('Signed out'); },
+      browseMode:!searchMode, searchMode,
+    };
+
+    // ---- AUTH ----
+    const av=st.authView;
+    vals.authOpen=!!av;
+    if(av){
+      const isReg=av==='register';
+      vals.isRegister=isReg; vals.isLogin=!isReg;
+      vals.authTitle=isReg?'Create your account':'Welcome back';
+      vals.authSub=isReg?'Start curating and exporting the Foundry set.':'Sign in to manage and export your icon library.';
+      vals.authCta=isReg?'Create account':'Sign in';
+      vals.authSwitchText=isReg?'Already have an account?':'New to Foundry?';
+      vals.authSwitchCta=isReg?'Sign in':'Create one';
+      vals.authName=st.authName; vals.authEmail=st.authEmail; vals.authPw=st.authPw; vals.authErr=st.authErr;
+      vals.onAuthName=(e)=>this.setState({authName:e.target.value});
+      vals.onAuthEmail=(e)=>this.setState({authEmail:e.target.value});
+      vals.onAuthPw=(e)=>this.setState({authPw:e.target.value});
+      vals.onAuthClose=()=>this.setState({authView:null, authErr:''});
+      vals.onSwitchAuth=()=>this.setState({authView:isReg?'login':'register', authErr:''});
+      vals.onAuthSubmit=()=>this.submitAuth(isReg);
+      vals.onForgot=()=>this.showToast('Password reset link sent');
+      vals.metaCountHint=this.ICONS.length;
+      vals.catCountHint=this.CATS.length;
+      vals.authDeco=['home','search','heart','star','settings','bell','camera','globe','folder','cart','sun','shield'].map(id=>{ const di=this.ICONS.find(x=>x.id===id)||this.ICONS[0]; return this.makeEl(di,'outline',30,1.8,'currentColor'); });
+      vals.googleIcon=this.makeEl({id:'gg',body:'<path d="M21 12.2c0-.7-.1-1.3-.2-1.9H12v3.8h5.1a4.4 4.4 0 0 1-1.9 2.9v2.4h3.1c1.8-1.7 2.7-4.1 2.7-7.2z"/><path d="M12 21c2.4 0 4.5-.8 6-2.2l-3.1-2.4c-.8.6-2 1-2.9 1a5 5 0 0 1-4.7-3.5H4.1v2.4A9 9 0 0 0 12 21z"/><path d="M7.3 13.9a5.3 5.3 0 0 1 0-3.4V8.1H4.1a9 9 0 0 0 0 8.2z"/><path d="M12 7.6c1.3 0 2.5.5 3.5 1.4l2.6-2.6A9 9 0 0 0 4.1 8.1l3.2 2.4A5 5 0 0 1 12 7.6z"/>'},'solid',18,2,'currentColor');
+    }
+
+    if(searchMode){
+      const results=this.searchList();
+      vals.searchQuery=st.search.trim();
+      vals.resultN=results.length+(results.length===1?' icon':' icons');
+      vals.results=results.map(ic=>this.cellFor(ic));
+      vals.isEmpty=results.length===0;
+      vals.scopeLabel=st.searchAllStyles?'Scope · All styles':'Scope · '+styleName+' only';
+      vals.onToggleScope=()=>this.setState({searchAllStyles:!st.searchAllStyles});
+      vals.scopeStyle={height:'32px',padding:'0 13px',background:st.searchAllStyles?'var(--inv-bg)':'transparent',color:st.searchAllStyles?'var(--inv-ink)':'var(--ink-2)',border:'1px solid '+(st.searchAllStyles?'transparent':'var(--line-2)'),borderRadius:'8px',fontSize:'12px',fontWeight:600,cursor:'pointer',fontFamily:"'Geist Mono',monospace"};
+    } else {
+      const isAll=st.cat==='__all__';
+      const catIcons=this.catList();
+      vals.catName=isAll?'All Icons':st.cat; vals.author=this.TYPE.author; vals.license=this.TYPE.license;
+      vals.metaCount=catIcons.length+' icons';
+      const mkCrumb=(label,onClick,active)=>({label,onClick:onClick||(()=>{}),style:{background:'transparent',border:'none',padding:'0',cursor:onClick?'pointer':'default',fontFamily:"'Geist Mono',monospace",fontSize:'11.5px',letterSpacing:'.04em',textTransform:'uppercase',fontWeight:active?700:500,color:active?'var(--ink)':'var(--ink-3)'},sepStyle:{color:'var(--ink-3)',fontSize:'12px',marginLeft:'-1px'}});
+      const crumbs=[
+        mkCrumb('Icons', null, false),
+        mkCrumb(this.TYPE.name, ()=>this.setState({expanded:Object.assign({},exp,{['t:'+this.TYPE.id]:true})}), false),
+        mkCrumb(styleName, null, false),
+        mkCrumb(isAll?'All':st.cat, null, true),
+      ];
+      crumbs[crumbs.length-1].sepStyle={display:'none'};
+      vals.crumbs=crumbs;
+      if(isAll){
+        vals.sections=this.CATS.map(c=>{ const items=catIcons.filter(ic=>ic.cat===c); return {name:c, count:items.length, items:items.map(ic=>this.cellFor(ic))}; });
+      } else {
+        const subs=this.SUBS[st.cat]||[];
+        vals.sections=subs.map(sub=>{ const items=catIcons.filter(ic=>ic.sub===sub); return {name:sub, count:items.length, items:items.map(ic=>this.cellFor(ic))}; });
+      }
+    }
+
+    // ---- DETAIL PANEL ----
+    const ic = st.selectedId ? this.ICONS.find(x=>x.id===st.selectedId) : null;
+    vals.panelOpen=!!ic;
+    if(ic){
+      const avail=this.styleAvail(ic);
+      const style=avail.indexOf(st.openStyle)>=0?st.openStyle:'outline';
+      const strokeBased=(style!=='solid');
+      const sw=st.stroke;
+      const mk=this.markup(ic, style, st.size, sw, curColor);
+      const variants=avail.map(s=>({label:s,onClick:()=>this.setState({openStyle:s}),style:{flex:1,height:'34px',background:style===s?'var(--inv-bg)':'transparent',color:style===s?'var(--inv-ink)':'var(--ink-2)',border:'1px solid '+(style===s?'transparent':'var(--line)'),borderRadius:'9px',fontSize:'12.5px',fontWeight:600,cursor:'pointer',textTransform:'capitalize'}}));
+      const ramp=['#FFFFFF','#C9C9C4','#8A8A86','#4A4A48','#17171A','#000000'];
+      const swatches=ramp.map(hex=>({hex,onClick:()=>this.setState({color:hex}),style:{height:'26px',width:'26px',borderRadius:'7px',background:hex,border:'1px solid '+(curColor.toUpperCase()===hex?'var(--ink)':'var(--line-2)'),boxShadow:curColor.toUpperCase()===hex?'0 0 0 2px var(--bg), 0 0 0 3px var(--ink)':'none',cursor:'pointer',padding:0}}));
+      const actions=[
+        {label:'JSX',onClick:()=>this.copy(this.toJsx(mk,ic.name),'Copied JSX component')},
+        {label:'Data URI',onClick:()=>this.copy('data:image/svg+xml,'+encodeURIComponent(mk),'Copied data URI')},
+        {label:'Base64',onClick:()=>this.copy('data:image/svg+xml;base64,'+btoa(mk),'Copied Base64')},
+        {label:'PNG',onClick:()=>this.exportPng(ic,style,st.size,sw,curColor)},
+        {label:'Raw SVG',onClick:()=>this.copy(mk,'Copied raw SVG')},
+      ];
+      vals.detail={
+        name:ic.name, cat:ic.cat+' · '+ic.sub, tags:ic.tags,
+        preview:this.makeEl(ic, style, Math.min(st.size,150), sw, curColor),
+        dimLabel:st.size+' × '+st.size+' px',
+        hasVariants:avail.length>1, variants,
+        size:st.size, sizeLabel:st.size+'px', onSize:(e)=>this.setState({size:+e.target.value}),
+        stroke:sw, strokeLabel:strokeBased?(sw.toFixed(2).replace(/0+$/,'').replace(/\.$/,'')+'px'):'n/a',
+        strokeDisabled:!strokeBased, onStroke:(e)=>this.setState({stroke:+e.target.value}),
+        strokeSliderStyle:{width:'100%',accentColor:'var(--ink)',opacity:strokeBased?1:0.35,cursor:strokeBased?'pointer':'not-allowed'},
+        color:curColor, onColor:(e)=>this.setState({color:e.target.value}), swatches,
+        markup:mk,
+        onCopySvg:()=>this.copy(mk,'Copied optimized SVG'),
+        onDownload:()=>this.downloadBlob(new Blob([mk],{type:'image/svg+xml'}), ic.name.replace(/\s+/g,'-')+'.svg'),
+        actions,
+      };
+    }
+    return vals;
+  }
+
+  toggle(key, forceOpen){ const exp=Object.assign({},this.state.expanded); exp[key]=forceOpen?true:!exp[key]; this.setState({expanded:exp}); }
+  submitAuth(isReg){
+    const {authName, authEmail, authPw}=this.state;
+    const emailOk=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(authEmail.trim());
+    if(isReg && !authName.trim()){ this.setState({authErr:'Enter your name.'}); return; }
+    if(!emailOk){ this.setState({authErr:'Enter a valid email address.'}); return; }
+    if(authPw.length<6){ this.setState({authErr:'Password must be at least 6 characters.'}); return; }
+    this.setState({signedIn:true, authView:null, authPw:'', authErr:''});
+    this.showToast(isReg?'Account created — welcome to Foundry':'Signed in as '+authEmail.trim());
+  }  catList(){ return this.state.cat==='__all__' ? this.ICONS.slice() : this.ICONS.filter(ic=>ic.cat===this.state.cat); }
+  searchList(){ const q=this.state.search.trim().toLowerCase(); const terms=q.split(/\s+/); return this.ICONS.filter(ic=>{ const hay=(ic.name+' '+ic.cat+' '+ic.sub+' '+ic.tags.join(' ')).toLowerCase(); return terms.every(t=>hay.indexOf(t)>=0); }); }
+
+  openIcon(id){ const ic=this.ICONS.find(x=>x.id===id); const avail=this.styleAvail(ic); const openStyle=(this.state.navStyle==='solid'&&avail.indexOf('solid')>=0)?'solid':'outline'; this.setState({selectedId:id, openStyle, color:this.state.color||this.defaultColor()}); }
+
+  copyJson(searchMode){ const ids=Object.keys(this.state.sel); const base=ids.length?this.ICONS.filter(i=>ids.indexOf(i.id)>=0):(searchMode?this.searchList():this.catList()); const data=base.map(i=>({id:i.id,typeId:this.TYPE.id,name:i.name,category:i.cat,subcategory:i.sub,tags:i.tags,styles:this.styleAvail(i)})); this.copy(JSON.stringify(data,null,2),'Copied '+data.length+' icons as JSON'); }
+
+  exportPng(ic, style, size, sw, color){ const px=Math.max(size,64); const mk=this.markup(ic,style,24,sw,color); const img=new Image(); img.onload=()=>{ const cv=document.createElement('canvas'); cv.width=px; cv.height=px; cv.getContext('2d').drawImage(img,0,0,px,px); cv.toBlob(b=>{ this.downloadBlob(b, ic.name.replace(/\s+/g,'-')+'-'+px+'.png'); this.showToast('Exported PNG @'+px+'px'); },'image/png'); }; img.onerror=()=>this.showToast('PNG export failed'); img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(mk); }
+
+  exportZip(){ const ids=Object.keys(this.state.sel); const icons=ids.length?this.ICONS.filter(i=>ids.indexOf(i.id)>=0):[]; if(!icons.length){ this.showToast('Select icons first'); return; } if(typeof JSZip==='undefined'){ this.showToast('ZIP library loading…'); return; } const zip=new JSZip(); icons.forEach(i=>{ const stl=this.gridStyleFor(i); zip.file(i.name.replace(/\s+/g,'-')+'.svg', this.markup(i,stl,24,2,'currentColor')); }); zip.generateAsync({type:'blob'}).then(blob=>{ this.downloadBlob(blob,'foundry-icons.zip'); this.showToast('Exported '+icons.length+' icons as ZIP'); }); }
+}
+</script>
+</body>
+</html>

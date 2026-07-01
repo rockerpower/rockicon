@@ -1,0 +1,81 @@
+{
+  "id": "rockicon",
+  "name": "Rockicon",
+  "slug": "rockicon",
+  "authors": [
+    {
+      "name": "Rockicon Studio",
+      "url": "https://github.com/rockerpower/rockicon"
+    }
+  ],
+  "license": "mit",
+  "description": "A precise, monochrome icon system — yours to shape and ship.",
+  "version": "1.0.0",
+  "baseGrid": 24,
+  "defaultTier": "free",
+  "status": "published",
+  "bundles": [
+    {
+      "id": "outline",
+      "name": "Outline",
+      "strokeBased": true,
+      "predefined": true
+    },
+    {
+      "id": "solid",
+      "name": "Solid",
+      "strokeBased": false,
+      "predefined": true
+    }
+  ],
+  "categories": [
+    {
+      "id": "interface",
+      "name": "Interface",
+      "subcategories": [
+        {
+          "id": "core-actions",
+          "name": "Core Actions"
+        },
+        {
+          "id": "controls",
+          "name": "Controls"
+        }
+      ]
+    },
+    {
+      "id": "navigation",
+      "name": "Navigation",
+      "subcategories": [
+        {
+          "id": "wayfinding",
+          "name": "Wayfinding"
+        }
+      ]
+    },
+    {
+      "id": "media",
+      "name": "Media",
+      "subcategories": [
+        {
+          "id": "playback",
+          "name": "Playback"
+        }
+      ]
+    },
+    {
+      "id": "commerce",
+      "name": "Commerce",
+      "subcategories": [
+        {
+          "id": "shopping",
+          "name": "Shopping"
+        }
+      ]
+    }
+  ],
+  "overrides": {
+    "cart": { "tier": "pro" },
+    "card": { "tier": "pro" }
+  }
+}

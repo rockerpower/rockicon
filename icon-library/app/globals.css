@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a0b;
+  --foreground: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.52);
+  --muted-2: rgba(255,255,255,.32);
+  --border: rgba(255,255,255,.085);
+  --border-2: rgba(255,255,255,.15);
+  --surface: #0d0d0f;
+  --surface-2: #1a1a1d;
+  --field: #0e0e10;
+  --accent: #7C6AE8;
+  --accent-fg: #fff;
+}
+
+.light {
+  --background: #f6f6f3;
+  --foreground: #17171a;
+  --muted: rgba(0,0,0,.55);
+  --muted-2: rgba(0,0,0,.34);
+  --border: rgba(0,0,0,.10);
+  --border-2: rgba(0,0,0,.17);
+  --surface: #fbfbf9;
+  --surface-2: #eeeeea;
+  --field: #ffffff;
+  --accent: #5B48D9;
+  --accent-fg: #fff;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, sans-serif;
+  overflow: hidden;
+}
+
+* { box-sizing: border-box; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-track { background: transparent; }
+
+@keyframes panel-in { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes toast-in { from { transform: translateY(10px) translateX(-50%); opacity: 0; } to { transform: translateY(0) translateX(-50%); opacity: 1; } }
+.panel-in { animation: panel-in .22s cubic-bezier(.2,.8,.2,1); }
+.toast-in { animation: toast-in .18s ease; }
