@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Foundry Icons</title>
+<title>Rockicon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -70,6 +70,8 @@
 <div id="root"></div>
 <script>
 const { createElement: h, useState, useEffect, useRef, useCallback } = React;
+
+const IS_PROD = location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
 
 /* ── Icon data ── */
 function buildData() {
@@ -258,7 +260,7 @@ function AuthModal({ authView, authName, authEmail, authPw, authErr, setAuthView
 
   function signInWithGoogle() {
     setSignedIn(true);
-    if (!authEmail) setAuthEmail('you@foundry.co');
+    if (!authEmail) setAuthEmail('you@rockicon.co');
     setAuthView(null); setAuthErr('');
     showToast('Signed in with Google');
   }
@@ -269,7 +271,7 @@ function AuthModal({ authView, authName, authEmail, authPw, authErr, setAuthView
     if (!emailOk) { setAuthErr('Enter a valid email address.'); return; }
     if (authPw.length < 6) { setAuthErr('Password must be at least 6 characters.'); return; }
     setSignedIn(true); setAuthView(null); setAuthPw(''); setAuthErr('');
-    showToast(isReg ? 'Account created — welcome to Foundry' : 'Signed in as ' + authEmail.trim());
+    showToast(isReg ? 'Account created — welcome to Rockicon' : 'Signed in as ' + authEmail.trim());
   }
 
   return h('div', {
@@ -281,14 +283,13 @@ function AuthModal({ authView, authName, authEmail, authPw, authErr, setAuthView
           decoIds.map(id => { const di = ICONS.find(x => x.id === id) || ICONS[0]; return h('span', { key: id, style: { display: 'flex' } }, h(SvgIcon, { body: di.body, size: 30, sw: 1.8, color: 'currentColor' })); })
         ),
         h('div', { style: { position: 'relative', display: 'flex', alignItems: 'baseline', gap: '9px' } },
-          h('span', { style: { fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '26px', letterSpacing: '-.02em' } }, 'Foundry'),
-          h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9px', letterSpacing: '.18em', color: 'var(--ink-3)', textTransform: 'uppercase' } }, 'Icons')
+          h('span', { style: { fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '26px', letterSpacing: '-.02em' } }, 'Rockicon'),
         ),
         h('div', { style: { position: 'relative' } },
           h('div', { style: { fontFamily: "'Geist',sans-serif", fontSize: '26px', fontWeight: 500, lineHeight: 1.25, letterSpacing: '-.01em', maxWidth: '280px' } }, 'A precise, monochrome icon system — yours to shape and ship.'),
           h('div', { style: { marginTop: '16px', fontSize: '13px', lineHeight: 1.6, color: 'var(--ink-2)', maxWidth: '260px' } }, ICONS.length + ' icons across ' + CATS.length + ' categories, two styles, one source of truth.')
         ),
-        h('div', { style: { position: 'relative', fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.04em', color: 'var(--ink-3)' } }, '© Foundry Studio · MIT')
+        h('div', { style: { position: 'relative', fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.04em', color: 'var(--ink-3)' } }, '© Rockicon Studio · MIT')
       ),
       h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', padding: '34px 40px', overflowY: 'auto' } },
         h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
@@ -298,7 +299,7 @@ function AuthModal({ authView, authName, authEmail, authPw, authErr, setAuthView
         ),
         h('div', { style: { marginTop: '6px' } },
           h('h2', { style: { margin: 0, fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '27px', letterSpacing: '-.02em', lineHeight: 1.1 } }, isReg ? 'Create your account' : 'Welcome back'),
-          h('p', { style: { margin: '9px 0 0', fontSize: '14px', lineHeight: 1.5, color: 'var(--ink-2)' } }, isReg ? 'Start curating and exporting the Foundry set.' : 'Sign in to manage and export your icon library.')
+          h('p', { style: { margin: '9px 0 0', fontSize: '14px', lineHeight: 1.5, color: 'var(--ink-2)' } }, isReg ? 'Start curating and exporting the Rockicon set.' : 'Sign in to manage and export your icon library.')
         ),
         h('button', {
           onClick: signInWithGoogle,
@@ -333,7 +334,7 @@ function AuthModal({ authView, authName, authEmail, authPw, authErr, setAuthView
           style: { marginTop: '20px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '12px', fontFamily: "'Geist',sans-serif", fontSize: '14.5px', fontWeight: 600, cursor: 'pointer' }
         }, isReg ? 'Create account' : 'Sign in'),
         h('div', { style: { marginTop: '18px', textAlign: 'center', fontSize: '13px', color: 'var(--ink-2)' } },
-          isReg ? 'Already have an account?' : 'New to Foundry?',
+          isReg ? 'Already have an account?' : 'New to Rockicon?',
           h('button', {
             onClick: () => { setAuthView(isReg ? 'login' : 'register'); setAuthErr(''); },
             style: { background: 'transparent', border: 'none', padding: '0 0 0 4px', color: 'var(--ink)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '3px' }
@@ -352,7 +353,7 @@ function App() {
   const [searchAllStyles, setSearchAllStyles] = useState(false);
   const [navStyle, setNavStyle] = useState('outline');
   const [cat, setCat] = useState(CATS[0]);
-  const [expanded, setExpanded] = useState({ 't:foundry': true, 's:outline': true });
+  const [expanded, setExpanded] = useState({ 't:rockicon': true, 's:outline': true });
   const [selectedId, setSelectedId] = useState(null);
   const [openStyle, setOpenStyle] = useState('outline');
   const [size, setSize] = useState(48);
@@ -434,7 +435,7 @@ function App() {
     if (!emailOk) { setAuthErr('Enter a valid email address.'); return; }
     if (authPw.length < 6) { setAuthErr('Password must be at least 6 characters.'); return; }
     setSignedIn(true); setAuthView(null); setAuthPw(''); setAuthErr('');
-    showToast(isReg ? 'Account created — welcome to Foundry' : 'Signed in as ' + authEmail.trim());
+    showToast(isReg ? 'Account created — welcome to Rockicon' : 'Signed in as ' + authEmail.trim());
   }
 
   function exportZip() {
@@ -443,7 +444,7 @@ function App() {
     if (!icons.length) { showToast('Select icons first'); return; }
     if (typeof JSZip === 'undefined') { showToast('ZIP library loading…'); return; }
     const lockedN = icons.filter(i => PRO.has(i.id)).length;
-    if (lockedN && !entitled) {
+    if (lockedN && !entitled && !IS_PROD) {
       icons = icons.filter(i => !PRO.has(i.id));
       if (!icons.length) { showToast('Upgrade to Pro to export Pro icons'); return; }
     }
@@ -453,15 +454,15 @@ function App() {
       zip.file(i.name.replace(/\s+/g,'-') + '.svg', markupStr(i, stl, 24, 2, 'currentColor'));
     });
     zip.generateAsync({ type: 'blob' }).then(blob => {
-      downloadBlob(blob, 'foundry-icons.zip');
-      showToast('Exported ' + icons.length + ' icons' + (lockedN && !entitled ? ' (Pro icons skipped)' : ''));
+      downloadBlob(blob, 'rockicon-icons.zip');
+      showToast('Exported ' + icons.length + ' icons' + (lockedN && !entitled && !IS_PROD ? ' (Pro icons skipped)' : ''));
     });
   }
 
   function copyJson() {
     const ids = Object.keys(sel);
     const base = ids.length ? ICONS.filter(i => ids.includes(i.id)) : (searchMode ? searchList() : catList());
-    const data = base.map(i => ({ id: i.id, typeId: 'foundry', name: i.name, category: i.cat, subcategory: i.sub, tags: i.tags, styles: styleAvail(i) }));
+    const data = base.map(i => ({ id: i.id, typeId: 'rockicon', name: i.name, category: i.cat, subcategory: i.sub, tags: i.tags, styles: styleAvail(i) }));
     doCopy(JSON.stringify(data, null, 2), 'Copied ' + data.length + ' icons as JSON');
   }
 
@@ -472,7 +473,7 @@ function App() {
     const checked = !!sel[ic.id];
     const gs = gridStyleFor(ic, navStyle);
     const isProIcon = PRO.has(ic.id);
-    const locked = isProIcon && !entitled;
+    const locked = isProIcon && !entitled && !IS_PROD;
     function handleClick() {
       if (selectionMode) toggleSel(ic.id);
       else openIcon(ic.id);
@@ -544,7 +545,7 @@ function App() {
   /* ── Sidebar tree ── */
   function Sidebar() {
     const STYLES = [{ id: 'outline', name: 'Outline' }, { id: 'solid', name: 'Solid' }];
-    const typeKey = 't:foundry';
+    const typeKey = 't:rockicon';
     const typeOpen = !!expanded[typeKey];
 
     const rows = [];
@@ -556,7 +557,7 @@ function App() {
       style: { display: 'flex', alignItems: 'center', gap: '4px', height: '30px', padding: '0 8px 0 6px', borderRadius: '7px', cursor: 'pointer' }
     },
       h('span', { style: { flex: '0 0 auto', width: '16px', textAlign: 'center', fontSize: '9px', color: 'var(--ink-2)' } }, typeOpen ? '▾' : '▸'),
-      h('span', { style: { fontSize: '13.5px', fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, 'Foundry')
+      h('span', { style: { fontSize: '13.5px', fontWeight: 700, color: 'var(--ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, 'Rockicon')
     ));
 
     if (typeOpen) {
@@ -640,7 +641,7 @@ function App() {
     });
     const crumbs = [
       mkCrumb('Icons', null, false),
-      mkCrumb('Foundry', () => setExpanded(prev => ({ ...prev, 't:foundry': true })), false),
+      mkCrumb('Rockicon', () => setExpanded(prev => ({ ...prev, 't:rockicon': true })), false),
       mkCrumb(styleName, null, false),
       mkCrumb(isAll ? 'All' : cat, null, true),
     ];
@@ -662,7 +663,7 @@ function App() {
           h('span', { style: { width: '1px', height: '14px', background: 'var(--line-2)' } }),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
             h(SvgIcon, { body: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>', size: 15, sw: 1.8, color: 'var(--ink-3)' }),
-            h('span', { style: { fontSize: '13px', color: 'var(--ink-2)' } }, 'by ', h('span', { style: { color: 'var(--ink)', fontWeight: 500 } }, 'Foundry Studio'))
+            h('span', { style: { fontSize: '13px', color: 'var(--ink-2)' } }, 'by ', h('span', { style: { color: 'var(--ink)', fontWeight: 500 } }, 'Rockicon Studio'))
           ),
           h('span', { style: { width: '1px', height: '14px', background: 'var(--line-2)' } }),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
@@ -741,7 +742,7 @@ function App() {
     if (!ic) return null;
 
     const isProIcon = PRO.has(ic.id);
-    const locked = isProIcon && !entitled;
+    const locked = isProIcon && !entitled && !IS_PROD;
 
     const avail = styleAvail(ic);
     const style = avail.includes(openStyle) ? openStyle : 'outline';
@@ -889,9 +890,13 @@ function App() {
 
     /* Header */
     h('header', { style: { flexShrink: 0, height: '62px', display: 'flex', alignItems: 'center', gap: '24px', padding: '0 20px', borderBottom: '1px solid var(--line)', background: 'var(--bg)', position: 'relative', zIndex: 20 } },
-      h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '9px', width: '228px', flexShrink: 0 } },
-        h('span', { style: { fontFamily: "'Geist',sans-serif", fontStyle: 'italic', fontWeight: 500, fontSize: '24px', letterSpacing: '-.01em', lineHeight: 1 } }, 'Foundry'),
-        h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9.5px', letterSpacing: '.18em', color: 'var(--ink-3)', textTransform: 'uppercase' } }, 'Icons')
+      h('div', { style: { display: 'flex', alignItems: 'center', width: '228px', flexShrink: 0 } },
+        h('svg', { width: 120, height: 32, viewBox: '0 0 120 32', style: { display: 'block', color: 'var(--ink)' } },
+          h('rect', { x: 0, y: 4, width: 3, height: 24, rx: 1.5, fill: 'currentColor' }),
+          h('path', { d: 'M3 4h10a8 8 0 0 1 0 13H3', stroke: 'currentColor', strokeWidth: 3, fill: 'none', strokeLinecap: 'round' }),
+          h('path', { d: 'M10 17l7 11', stroke: 'currentColor', strokeWidth: 3, strokeLinecap: 'round' }),
+          h('text', { x: 26, y: 22, fontFamily: 'Geist, system-ui, sans-serif', fontSize: 16, fontWeight: 600, letterSpacing: '-0.02em', fill: 'currentColor' }, 'rockicon')
+        )
       ),
       h('div', { style: { flex: 1, display: 'flex', justifyContent: 'center' } },
         h('div', { style: { position: 'relative', width: '100%', maxWidth: '520px' } },
@@ -912,7 +917,7 @@ function App() {
         )
       ),
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 } },
-        h('button', {
+        !IS_PROD && h('button', {
           onClick: () => setRoute('pricing'),
           style: { height: '36px', padding: '0 13px', display: 'flex', alignItems: 'center', background: 'transparent', border: 'none', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }
         }, 'Pricing'),
@@ -925,15 +930,15 @@ function App() {
             ? h(SvgIcon, { body: '<path d="M20 13a8 8 0 1 1-9-9 6 6 0 0 0 9 9z"/>', size: 17, sw: 2, color: 'var(--ink-2)' })
             : h(SvgIcon, { body: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5"/><path d="M12 19.5V22"/><path d="M22 12h-2.5"/><path d="M4.5 12H2"/><path d="m18.4 5.6-1.8 1.8"/><path d="m7.4 16.6-1.8 1.8"/><path d="m18.4 18.4-1.8-1.8"/><path d="m7.4 7.4-1.8-1.8"/>', size: 17, sw: 2, color: 'var(--ink-2)' })
         ),
-        h('span', { style: { width: '1px', height: '22px', background: 'var(--line)', margin: '0 2px' } }),
-        signedIn
+        !IS_PROD && h('span', { style: { width: '1px', height: '22px', background: 'var(--line)', margin: '0 2px' } }),
+        !IS_PROD && (signedIn
           ? h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', height: '36px', padding: '0 6px 0 10px', border: '1px solid var(--line)', borderRadius: '9px' } },
               h('button', {
                 onClick: () => setRoute('account'),
                 style: { display: 'flex', alignItems: 'center', gap: '9px', background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }
               },
                 h('span', { style: { height: '24px', width: '24px', borderRadius: '6px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700 } }, ((authName || authEmail || 'F').trim().charAt(0) || 'F').toUpperCase()),
-                h('span', { style: { fontSize: '12.5px', color: 'var(--ink-2)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, authEmail || 'you@foundry.co')
+                h('span', { style: { fontSize: '12.5px', color: 'var(--ink-2)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, authEmail || 'you@rockicon.co')
               ),
               entitled && h('span', { style: { display: 'inline-flex', alignItems: 'center', padding: '2px 7px', borderRadius: '5px', fontSize: '9.5px', fontWeight: 700, fontFamily: "'Geist Mono',monospace", letterSpacing: '.08em', textTransform: 'uppercase', background: 'var(--pro-bg)', color: 'var(--pro)', border: '1px solid rgba(124,106,232,.25)', lineHeight: 1.4 } }, 'PRO'),
               h('button', {
@@ -948,7 +953,7 @@ function App() {
             },
               h(SvgIcon, { body: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>', size: 15, sw: 2, color: 'currentColor' }),
               'Sign in'
-            )
+            ))
       )
     ),
 
@@ -998,7 +1003,7 @@ function App() {
           h(SvgIcon, { body: '<path d="M15 6l-6 6 6 6"/>', size: 16, sw: 2, color: 'var(--ink-2)' }), 'Back'
         ),
         h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '9px' } },
-          h('span', { style: { fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '20px', letterSpacing: '-.01em' } }, 'Foundry'),
+          h('span', { style: { fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '20px', letterSpacing: '-.01em' } }, 'Rockicon'),
           h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9px', letterSpacing: '.18em', color: 'var(--ink-3)', textTransform: 'uppercase' } }, 'Pricing')
         )
       ),
@@ -1049,7 +1054,7 @@ function App() {
               entitled
                 ? h('div', { style: { width: '100%', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pro-bg)', color: 'var(--pro)', border: '1px solid rgba(124,106,232,.25)', borderRadius: '11px', fontFamily: "'Geist',sans-serif", fontSize: '14px', fontWeight: 600 } }, 'Current plan')
                 : h('button', {
-                    onClick: () => { setEntitled(true); if (!signedIn) { setSignedIn(true); setAuthEmail('you@foundry.co'); } showToast('Welcome to Pro — all features unlocked'); setRoute('browse'); },
+                    onClick: () => { setEntitled(true); if (!signedIn) { setSignedIn(true); setAuthEmail('you@rockicon.co'); } showToast('Welcome to Pro — all features unlocked'); setRoute('browse'); },
                     style: { width: '100%', height: '46px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '11px', fontFamily: "'Geist',sans-serif", fontSize: '14.5px', fontWeight: 600, cursor: 'pointer' }
                   }, 'Upgrade to Pro'
                 ),
@@ -1084,7 +1089,7 @@ function App() {
           h(SvgIcon, { body: '<path d="M15 6l-6 6 6 6"/>', size: 16, sw: 2, color: 'var(--ink-2)' }), 'Back'
         ),
         h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '9px' } },
-          h('span', { style: { fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '20px', letterSpacing: '-.01em' } }, 'Foundry'),
+          h('span', { style: { fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '20px', letterSpacing: '-.01em' } }, 'Rockicon'),
           h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9px', letterSpacing: '.18em', color: 'var(--ink-3)', textTransform: 'uppercase' } }, 'Account')
         )
       ),
@@ -1093,8 +1098,8 @@ function App() {
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '30px' } },
             h('span', { style: { height: '56px', width: '56px', borderRadius: '14px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Geist',sans-serif", fontSize: '24px', fontWeight: 700 } }, ((authName || authEmail || 'F').trim().charAt(0) || 'F').toUpperCase()),
             h('div', null,
-              h('div', { style: { fontFamily: "'Geist',sans-serif", fontSize: '21px', fontWeight: 600, letterSpacing: '-.01em' } }, authName || 'Foundry User'),
-              h('div', { style: { fontSize: '13.5px', color: 'var(--ink-2)', marginTop: '3px' } }, authEmail || 'you@foundry.co')
+              h('div', { style: { fontFamily: "'Geist',sans-serif", fontSize: '21px', fontWeight: 600, letterSpacing: '-.01em' } }, authName || 'Rockicon User'),
+              h('div', { style: { fontSize: '13.5px', color: 'var(--ink-2)', marginTop: '3px' } }, authEmail || 'you@rockicon.co')
             )
           ),
           h('div', { style: { border: '1px solid var(--line)', borderRadius: '16px', padding: '24px', background: 'var(--bg-2)', marginBottom: '16px' } },

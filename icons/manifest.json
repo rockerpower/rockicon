@@ -1,0 +1,940 @@
+[
+  {
+    "id": "home",
+    "name": "home",
+    "cat": "Interface",
+    "sub": "Core Actions",
+    "tags": [
+      "house",
+      "main",
+      "start"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M3 10.5 12 3l9 7.5\"/><path d=\"M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5\"/><path d=\"M9.5 21v-6h5v6\"/>",
+    "fill": false
+  },
+  {
+    "id": "search",
+    "name": "search",
+    "cat": "Interface",
+    "sub": "Core Actions",
+    "tags": [
+      "find",
+      "magnify",
+      "look"
+    ],
+    "tier": "free",
+    "body": "<circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m20 20-3.4-3.4\"/>",
+    "fill": false
+  },
+  {
+    "id": "settings",
+    "name": "settings",
+    "cat": "Interface",
+    "sub": "Core Actions",
+    "tags": [
+      "gear",
+      "cog",
+      "prefs"
+    ],
+    "tier": "pro",
+    "body": "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19 12c0-.5 0-.9-.1-1.3l2-1.5-2-3.4-2.3 1a7 7 0 0 0-2.3-1.3L13.8 2h-3.6l-.5 2.5a7 7 0 0 0-2.3 1.3l-2.3-1-2 3.4 2 1.5C5 11.1 5 11.5 5 12s0 .9.1 1.3l-2 1.5 2 3.4 2.3-1a7 7 0 0 0 2.3 1.3l.5 2.5h3.6l.5-2.5a7 7 0 0 0 2.3-1.3l2.3 1 2-3.4-2-1.5c.1-.4.1-.8.1-1.3z\"/>",
+    "fill": false
+  },
+  {
+    "id": "menu",
+    "name": "menu",
+    "cat": "Interface",
+    "sub": "Core Actions",
+    "tags": [
+      "nav",
+      "bars",
+      "hamburger"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M4 7h16\"/><path d=\"M4 12h16\"/><path d=\"M4 17h16\"/>",
+    "fill": false
+  },
+  {
+    "id": "more",
+    "name": "more horizontal",
+    "cat": "Interface",
+    "sub": "Core Actions",
+    "tags": [
+      "dots",
+      "overflow",
+      "options"
+    ],
+    "tier": "free",
+    "body": "<circle cx=\"6\" cy=\"12\" r=\"1.4\"/><circle cx=\"12\" cy=\"12\" r=\"1.4\"/><circle cx=\"18\" cy=\"12\" r=\"1.4\"/>",
+    "fill": false
+  },
+  {
+    "id": "grid",
+    "name": "grid",
+    "cat": "Interface",
+    "sub": "Core Actions",
+    "tags": [
+      "layout",
+      "tiles",
+      "dashboard"
+    ],
+    "tier": "pro",
+    "body": "<rect x=\"3.5\" y=\"3.5\" width=\"7\" height=\"7\" rx=\"1.4\"/><rect x=\"13.5\" y=\"3.5\" width=\"7\" height=\"7\" rx=\"1.4\"/><rect x=\"13.5\" y=\"13.5\" width=\"7\" height=\"7\" rx=\"1.4\"/><rect x=\"3.5\" y=\"13.5\" width=\"7\" height=\"7\" rx=\"1.4\"/>",
+    "fill": false
+  },
+  {
+    "id": "refresh",
+    "name": "refresh",
+    "cat": "Interface",
+    "sub": "Core Actions",
+    "tags": [
+      "reload",
+      "sync",
+      "update"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M21 12a9 9 0 1 1-2.6-6.3\"/><path d=\"M21 4.5v5h-5\"/>",
+    "fill": false
+  },
+  {
+    "id": "check",
+    "name": "check",
+    "cat": "Interface",
+    "sub": "Controls",
+    "tags": [
+      "done",
+      "tick",
+      "ok"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M5 13l4 4L19 7\"/>",
+    "fill": false
+  },
+  {
+    "id": "close",
+    "name": "close",
+    "cat": "Interface",
+    "sub": "Controls",
+    "tags": [
+      "x",
+      "cancel",
+      "remove"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M6 6l12 12\"/><path d=\"M18 6 6 18\"/>",
+    "fill": false
+  },
+  {
+    "id": "plus",
+    "name": "plus",
+    "cat": "Interface",
+    "sub": "Controls",
+    "tags": [
+      "add",
+      "new",
+      "create"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M12 5v14\"/><path d=\"M5 12h14\"/>",
+    "fill": false
+  },
+  {
+    "id": "minus",
+    "name": "minus",
+    "cat": "Interface",
+    "sub": "Controls",
+    "tags": [
+      "subtract",
+      "remove",
+      "collapse"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M5 12h14\"/>",
+    "fill": false
+  },
+  {
+    "id": "filter",
+    "name": "filter",
+    "cat": "Interface",
+    "sub": "Controls",
+    "tags": [
+      "funnel",
+      "sort",
+      "refine"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M3.5 5h17l-6.5 8v6l-4 2v-8z\"/>",
+    "fill": true
+  },
+  {
+    "id": "arrow-right",
+    "name": "arrow right",
+    "cat": "Navigation",
+    "sub": "Wayfinding",
+    "tags": [
+      "next",
+      "forward",
+      "direction"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M4 12h16\"/><path d=\"m14 6 6 6-6 6\"/>",
+    "fill": false
+  },
+  {
+    "id": "chevron-right",
+    "name": "chevron right",
+    "cat": "Navigation",
+    "sub": "Wayfinding",
+    "tags": [
+      "next",
+      "expand",
+      "caret"
+    ],
+    "tier": "free",
+    "body": "<path d=\"m9 6 6 6-6 6\"/>",
+    "fill": false
+  },
+  {
+    "id": "map-pin",
+    "name": "map pin",
+    "cat": "Navigation",
+    "sub": "Wayfinding",
+    "tags": [
+      "location",
+      "marker",
+      "place"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M12 22s7-6 7-12a7 7 0 0 0-14 0c0 6 7 12 7 12z\"/><circle cx=\"12\" cy=\"10\" r=\"2.5\"/>",
+    "fill": true
+  },
+  {
+    "id": "compass",
+    "name": "compass",
+    "cat": "Navigation",
+    "sub": "Wayfinding",
+    "tags": [
+      "direction",
+      "navigate",
+      "explore"
+    ],
+    "tier": "pro",
+    "body": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"m15.6 8.4-2 5.2-5.2 2 2-5.2z\"/>",
+    "fill": false
+  },
+  {
+    "id": "globe",
+    "name": "globe",
+    "cat": "Navigation",
+    "sub": "Global",
+    "tags": [
+      "world",
+      "web",
+      "earth"
+    ],
+    "tier": "pro",
+    "body": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18\"/><path d=\"M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z\"/>",
+    "fill": false
+  },
+  {
+    "id": "external-link",
+    "name": "external link",
+    "cat": "Navigation",
+    "sub": "Global",
+    "tags": [
+      "open",
+      "out",
+      "share"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M14 4h6v6\"/><path d=\"M20 4 11 13\"/><path d=\"M18 13.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5.5\"/>",
+    "fill": false
+  },
+  {
+    "id": "mail",
+    "name": "mail",
+    "cat": "Communication",
+    "sub": "Messaging",
+    "tags": [
+      "email",
+      "message",
+      "envelope"
+    ],
+    "tier": "free",
+    "body": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2.2\"/><path d=\"m4 7 8 6 8-6\"/>",
+    "fill": false
+  },
+  {
+    "id": "message",
+    "name": "message",
+    "cat": "Communication",
+    "sub": "Messaging",
+    "tags": [
+      "chat",
+      "bubble",
+      "talk"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M21 12a8 8 0 0 1-11.5 7.2L3 21l1.8-5.5A8 8 0 1 1 21 12z\"/>",
+    "fill": true
+  },
+  {
+    "id": "phone",
+    "name": "phone",
+    "cat": "Communication",
+    "sub": "Messaging",
+    "tags": [
+      "call",
+      "dial",
+      "contact"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M6.5 3C5 3 3.5 4.3 3.5 6c0 8 6.5 14.5 14.5 14.5 1.7 0 3-1.5 3-3v-2.4l-4-1.5-2 2c-2.5-1.2-4.8-3.5-6-6l2-2L8.9 3z\"/>",
+    "fill": false
+  },
+  {
+    "id": "send",
+    "name": "send",
+    "cat": "Communication",
+    "sub": "Messaging",
+    "tags": [
+      "paper plane",
+      "submit",
+      "deliver"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M22 3 11 14\"/><path d=\"M22 3 15 21l-4-7-7-4z\"/>",
+    "fill": false
+  },
+  {
+    "id": "share",
+    "name": "share",
+    "cat": "Communication",
+    "sub": "Connect",
+    "tags": [
+      "network",
+      "social",
+      "distribute"
+    ],
+    "tier": "free",
+    "body": "<circle cx=\"6\" cy=\"12\" r=\"2.6\"/><circle cx=\"17.5\" cy=\"6\" r=\"2.6\"/><circle cx=\"17.5\" cy=\"18\" r=\"2.6\"/><path d=\"m8.4 10.9 6.7-3.6\"/><path d=\"m8.4 13.1 6.7 3.6\"/>",
+    "fill": false
+  },
+  {
+    "id": "bell",
+    "name": "bell",
+    "cat": "Communication",
+    "sub": "Connect",
+    "tags": [
+      "notify",
+      "alert",
+      "ring"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M12 3a6 6 0 0 0-6 6c0 4-1.4 5.6-2.5 6.6-.5.4-.2 1.4.5 1.4h16c.7 0 1-1 .5-1.4C19.4 14.6 18 13 18 9a6 6 0 0 0-6-6z\"/><circle cx=\"12\" cy=\"20.5\" r=\"1.6\"/>",
+    "fill": true
+  },
+  {
+    "id": "link",
+    "name": "link",
+    "cat": "Communication",
+    "sub": "Connect",
+    "tags": [
+      "chain",
+      "url",
+      "connect"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M9.5 14.5 14.5 9.5\"/><path d=\"M10.8 6.8 13 4.6a4 4 0 0 1 5.8 5.6l-2.2 2.2\"/><path d=\"M13.2 17.2 11 19.4a4 4 0 0 1-5.8-5.6l2.2-2.2\"/>",
+    "fill": false
+  },
+  {
+    "id": "paperclip",
+    "name": "paperclip",
+    "cat": "Communication",
+    "sub": "Connect",
+    "tags": [
+      "attach",
+      "clip",
+      "file"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M20 11 11.5 19.4a5 5 0 0 1-7-7.1L13 4a3.4 3.4 0 0 1 4.9 4.8l-8.4 8.4a1.9 1.9 0 0 1-2.7-2.7l7.5-7.5\"/>",
+    "fill": false
+  },
+  {
+    "id": "image",
+    "name": "image",
+    "cat": "Media",
+    "sub": "Capture",
+    "tags": [
+      "photo",
+      "picture",
+      "gallery"
+    ],
+    "tier": "free",
+    "body": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2.2\"/><circle cx=\"8.5\" cy=\"9\" r=\"1.9\"/><path d=\"m4.5 18 4.5-4.5 3.5 3 3.5-3.5L21 17.5\"/>",
+    "fill": false
+  },
+  {
+    "id": "video",
+    "name": "video",
+    "cat": "Media",
+    "sub": "Capture",
+    "tags": [
+      "film",
+      "movie",
+      "record"
+    ],
+    "tier": "pro",
+    "body": "<rect x=\"3\" y=\"6\" width=\"13\" height=\"12\" rx=\"2.2\"/><path d=\"m16 10 5-3v10l-5-3z\"/>",
+    "fill": false
+  },
+  {
+    "id": "camera",
+    "name": "camera",
+    "cat": "Media",
+    "sub": "Capture",
+    "tags": [
+      "photo",
+      "capture",
+      "lens"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M4 8h3l1.5-2.5h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z\"/><circle cx=\"12\" cy=\"13\" r=\"3.5\"/>",
+    "fill": false
+  },
+  {
+    "id": "mic",
+    "name": "microphone",
+    "cat": "Media",
+    "sub": "Capture",
+    "tags": [
+      "record",
+      "voice",
+      "audio"
+    ],
+    "tier": "pro",
+    "body": "<rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0\"/><path d=\"M12 18v3\"/>",
+    "fill": false
+  },
+  {
+    "id": "music",
+    "name": "music",
+    "cat": "Media",
+    "sub": "Playback",
+    "tags": [
+      "note",
+      "song",
+      "audio"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M9 18V5l11-2v13\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><circle cx=\"17\" cy=\"16\" r=\"3\"/>",
+    "fill": false
+  },
+  {
+    "id": "play",
+    "name": "play",
+    "cat": "Media",
+    "sub": "Playback",
+    "tags": [
+      "start",
+      "video",
+      "media"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M7 4.5 19.5 12 7 19.5z\"/>",
+    "fill": true
+  },
+  {
+    "id": "volume",
+    "name": "volume",
+    "cat": "Media",
+    "sub": "Playback",
+    "tags": [
+      "sound",
+      "speaker",
+      "audio"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M4 9.5v5h4l5 4v-13l-5 4z\"/><path d=\"M16.5 9a4 4 0 0 1 0 6\"/>",
+    "fill": false
+  },
+  {
+    "id": "headphones",
+    "name": "headphones",
+    "cat": "Media",
+    "sub": "Playback",
+    "tags": [
+      "audio",
+      "listen",
+      "sound"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M4 13v-1a8 8 0 0 1 16 0v1\"/><rect x=\"3\" y=\"13\" width=\"4\" height=\"7\" rx=\"1.6\"/><rect x=\"17\" y=\"13\" width=\"4\" height=\"7\" rx=\"1.6\"/>",
+    "fill": false
+  },
+  {
+    "id": "eye",
+    "name": "eye",
+    "cat": "Media",
+    "sub": "Visibility",
+    "tags": [
+      "view",
+      "visible",
+      "show"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",
+    "fill": false
+  },
+  {
+    "id": "eye-off",
+    "name": "eye off",
+    "cat": "Media",
+    "sub": "Visibility",
+    "tags": [
+      "hide",
+      "hidden",
+      "invisible"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M3 3 21 21\"/><path d=\"M10.6 5.2A10 10 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-3 3.8\"/><path d=\"M6.5 6.9A18 18 0 0 0 2 12s4 7 10 7a10 10 0 0 0 4-.8\"/><path d=\"M9.5 9.5a3 3 0 0 0 4.2 4.2\"/>",
+    "fill": false
+  },
+  {
+    "id": "file",
+    "name": "file",
+    "cat": "Files",
+    "sub": "Documents",
+    "tags": [
+      "document",
+      "page",
+      "paper"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z\"/><path d=\"M14 3v5h5\"/>",
+    "fill": false
+  },
+  {
+    "id": "folder",
+    "name": "folder",
+    "cat": "Files",
+    "sub": "Documents",
+    "tags": [
+      "directory",
+      "storage",
+      "group"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/>",
+    "fill": false
+  },
+  {
+    "id": "save",
+    "name": "save",
+    "cat": "Files",
+    "sub": "Documents",
+    "tags": [
+      "floppy",
+      "store",
+      "disk"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M5 3h12l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z\"/><path d=\"M7 3v5h8V3\"/><rect x=\"8\" y=\"13\" width=\"8\" height=\"6\"/>",
+    "fill": false
+  },
+  {
+    "id": "printer",
+    "name": "printer",
+    "cat": "Files",
+    "sub": "Documents",
+    "tags": [
+      "print",
+      "document",
+      "paper"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M7 8V3h10v5\"/><rect x=\"3\" y=\"8\" width=\"18\" height=\"9\" rx=\"2\"/><rect x=\"7\" y=\"14\" width=\"10\" height=\"6\"/>",
+    "fill": false
+  },
+  {
+    "id": "download",
+    "name": "download",
+    "cat": "Files",
+    "sub": "Transfer",
+    "tags": [
+      "save",
+      "import",
+      "arrow"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M12 3v12\"/><path d=\"m7 10 5 5 5-5\"/><path d=\"M5 21h14\"/>",
+    "fill": false
+  },
+  {
+    "id": "upload",
+    "name": "upload",
+    "cat": "Files",
+    "sub": "Transfer",
+    "tags": [
+      "export",
+      "send",
+      "arrow"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M12 21V9\"/><path d=\"m7 14 5-5 5 5\"/><path d=\"M5 3h14\"/>",
+    "fill": false
+  },
+  {
+    "id": "copy",
+    "name": "copy",
+    "cat": "Files",
+    "sub": "Transfer",
+    "tags": [
+      "duplicate",
+      "clone",
+      "clipboard"
+    ],
+    "tier": "free",
+    "body": "<rect x=\"9\" y=\"9\" width=\"11\" height=\"11\" rx=\"2\"/><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"/>",
+    "fill": false
+  },
+  {
+    "id": "trash",
+    "name": "trash",
+    "cat": "Files",
+    "sub": "Manage",
+    "tags": [
+      "delete",
+      "remove",
+      "bin"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M4 7h16\"/><path d=\"M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2\"/><path d=\"M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13\"/>",
+    "fill": false
+  },
+  {
+    "id": "edit",
+    "name": "edit",
+    "cat": "Files",
+    "sub": "Manage",
+    "tags": [
+      "pencil",
+      "write",
+      "modify"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M4 20h4L19 9l-4-4L4 16z\"/><path d=\"m14 5 4 4\"/>",
+    "fill": false
+  },
+  {
+    "id": "cart",
+    "name": "shopping cart",
+    "cat": "Commerce",
+    "sub": "Shopping",
+    "tags": [
+      "buy",
+      "shop",
+      "checkout"
+    ],
+    "tier": "free",
+    "body": "<circle cx=\"9\" cy=\"20\" r=\"1.6\"/><circle cx=\"18\" cy=\"20\" r=\"1.6\"/><path d=\"M2 3h2.2l2.3 13h12l2-9H6.2\"/>",
+    "fill": false
+  },
+  {
+    "id": "card",
+    "name": "credit card",
+    "cat": "Commerce",
+    "sub": "Shopping",
+    "tags": [
+      "payment",
+      "pay",
+      "bank"
+    ],
+    "tier": "pro",
+    "body": "<rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"2.2\"/><path d=\"M2 10h20\"/>",
+    "fill": false
+  },
+  {
+    "id": "tag",
+    "name": "tag",
+    "cat": "Commerce",
+    "sub": "Shopping",
+    "tags": [
+      "label",
+      "price",
+      "sale"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M3 3.5h7l11 11-7 7L3 10z\"/><circle cx=\"7.5\" cy=\"7.5\" r=\"1.6\"/>",
+    "fill": true
+  },
+  {
+    "id": "truck",
+    "name": "truck",
+    "cat": "Commerce",
+    "sub": "Logistics",
+    "tags": [
+      "shipping",
+      "delivery",
+      "transport"
+    ],
+    "tier": "pro",
+    "body": "<rect x=\"2\" y=\"6\" width=\"13\" height=\"10\" rx=\"1.5\"/><path d=\"M15 9h4l3 3v4h-7z\"/><circle cx=\"7\" cy=\"18\" r=\"1.9\"/><circle cx=\"18\" cy=\"18\" r=\"1.9\"/>",
+    "fill": false
+  },
+  {
+    "id": "cloud",
+    "name": "cloud",
+    "cat": "Weather",
+    "sub": "Sky",
+    "tags": [
+      "sky",
+      "storage",
+      "weather"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M7 18a4 4 0 0 1-.5-8 6 6 0 0 1 11.6 1.5A3.5 3.5 0 0 1 17.5 18z\"/>",
+    "fill": false
+  },
+  {
+    "id": "sun",
+    "name": "sun",
+    "cat": "Weather",
+    "sub": "Sky",
+    "tags": [
+      "light",
+      "day",
+      "bright"
+    ],
+    "tier": "free",
+    "body": "<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2.5\"/><path d=\"M12 19.5V22\"/><path d=\"M22 12h-2.5\"/><path d=\"M4.5 12H2\"/><path d=\"m18.4 5.6-1.8 1.8\"/><path d=\"m7.4 16.6-1.8 1.8\"/><path d=\"m18.4 18.4-1.8-1.8\"/><path d=\"m7.4 7.4-1.8-1.8\"/>",
+    "fill": false
+  },
+  {
+    "id": "moon",
+    "name": "moon",
+    "cat": "Weather",
+    "sub": "Sky",
+    "tags": [
+      "night",
+      "dark",
+      "sleep"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M20 13a8 8 0 1 1-9-9 6 6 0 0 0 9 9z\"/>",
+    "fill": true
+  },
+  {
+    "id": "droplet",
+    "name": "droplet",
+    "cat": "Weather",
+    "sub": "Elements",
+    "tags": [
+      "water",
+      "rain",
+      "liquid"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z\"/>",
+    "fill": true
+  },
+  {
+    "id": "zap",
+    "name": "zap",
+    "cat": "Weather",
+    "sub": "Elements",
+    "tags": [
+      "lightning",
+      "flash",
+      "energy"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M13 2.5 4 14h7l-1 7.5 9-11.5h-7z\"/>",
+    "fill": true
+  },
+  {
+    "id": "lock",
+    "name": "lock",
+    "cat": "Security",
+    "sub": "Access",
+    "tags": [
+      "secure",
+      "private",
+      "password"
+    ],
+    "tier": "free",
+    "body": "<rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\"/><path d=\"M8 11V8a4 4 0 0 1 8 0v3\"/>",
+    "fill": false
+  },
+  {
+    "id": "unlock",
+    "name": "unlock",
+    "cat": "Security",
+    "sub": "Access",
+    "tags": [
+      "open",
+      "access",
+      "password"
+    ],
+    "tier": "pro",
+    "body": "<rect x=\"5\" y=\"11\" width=\"14\" height=\"9\" rx=\"2\"/><path d=\"M8 11V8a4 4 0 0 1 7.7-1.7\"/>",
+    "fill": false
+  },
+  {
+    "id": "shield",
+    "name": "shield",
+    "cat": "Security",
+    "sub": "Protection",
+    "tags": [
+      "protect",
+      "secure",
+      "guard"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M12 3 5 6v5c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z\"/>",
+    "fill": true
+  },
+  {
+    "id": "wifi",
+    "name": "wifi",
+    "cat": "Devices",
+    "sub": "Connectivity",
+    "tags": [
+      "network",
+      "signal",
+      "wireless"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M5 12.5a10 10 0 0 1 14 0\"/><path d=\"M8 15.5a6 6 0 0 1 8 0\"/><path d=\"M11 18.4a2 2 0 0 1 2 0\"/>",
+    "fill": false
+  },
+  {
+    "id": "calendar",
+    "name": "calendar",
+    "cat": "Devices",
+    "sub": "Time",
+    "tags": [
+      "date",
+      "schedule",
+      "event"
+    ],
+    "tier": "pro",
+    "body": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2.2\"/><path d=\"M3 9.5h18\"/><path d=\"M8 3v4\"/><path d=\"M16 3v4\"/>",
+    "fill": false
+  },
+  {
+    "id": "clock",
+    "name": "clock",
+    "cat": "Devices",
+    "sub": "Time",
+    "tags": [
+      "time",
+      "watch",
+      "schedule"
+    ],
+    "tier": "free",
+    "body": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3.5 2\"/>",
+    "fill": false
+  },
+  {
+    "id": "heart",
+    "name": "heart",
+    "cat": "Shapes",
+    "sub": "Symbols",
+    "tags": [
+      "like",
+      "love",
+      "favorite"
+    ],
+    "tier": "free",
+    "body": "<path d=\"M12 21s-7-4.4-9.2-8.6C1.2 9 2.6 5 6 5c2 0 3.3 1.2 4 2.4C10.7 6.2 12 5 14 5c3.4 0 4.8 4 3.2 7.4C19 16.6 12 21 12 21z\"/>",
+    "fill": true
+  },
+  {
+    "id": "star",
+    "name": "star",
+    "cat": "Shapes",
+    "sub": "Symbols",
+    "tags": [
+      "rating",
+      "favorite",
+      "bookmark"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M12 2.5 14.9 8.6 21.5 9.4 16.6 14 17.9 20.7 12 17.4 6.1 20.7 7.4 14 2.5 9.4 9.1 8.6z\"/>",
+    "fill": true
+  },
+  {
+    "id": "bookmark",
+    "name": "bookmark",
+    "cat": "Shapes",
+    "sub": "Symbols",
+    "tags": [
+      "save",
+      "flag",
+      "tag"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M6 3.5h12a1 1 0 0 1 1 1V21l-7-4-7 4V4.5a1 1 0 0 1 1-1z\"/>",
+    "fill": true
+  },
+  {
+    "id": "flag",
+    "name": "flag",
+    "cat": "Shapes",
+    "sub": "Symbols",
+    "tags": [
+      "mark",
+      "report",
+      "country"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M5 3v18\"/><path d=\"M5 4h13l-2.5 4L18 12H5z\"/>",
+    "fill": true
+  },
+  {
+    "id": "circle",
+    "name": "circle",
+    "cat": "Shapes",
+    "sub": "Geometry",
+    "tags": [
+      "round",
+      "dot",
+      "shape"
+    ],
+    "tier": "free",
+    "body": "<circle cx=\"12\" cy=\"12\" r=\"9\"/>",
+    "fill": true
+  },
+  {
+    "id": "square",
+    "name": "square",
+    "cat": "Shapes",
+    "sub": "Geometry",
+    "tags": [
+      "box",
+      "rectangle",
+      "shape"
+    ],
+    "tier": "free",
+    "body": "<rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2.5\"/>",
+    "fill": true
+  },
+  {
+    "id": "triangle",
+    "name": "triangle",
+    "cat": "Shapes",
+    "sub": "Geometry",
+    "tags": [
+      "warning",
+      "shape",
+      "arrow"
+    ],
+    "tier": "pro",
+    "body": "<path d=\"M12 4 22 20H2z\"/>",
+    "fill": true
+  }
+]
