@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rockicon Author</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #0a0a0b; color: rgba(255,255,255,.92); font-family: 'Geist', system-ui, sans-serif; }
+
+  :root {
+    --bg: #0a0a0b; --bg-2: #0d0d0f; --bg-3: #1a1a1d; --field: #0e0e10;
+    --line: rgba(255,255,255,.085); --line-2: rgba(255,255,255,.15);
+    --ink: rgba(255,255,255,.92); --ink-2: rgba(255,255,255,.52); --ink-3: rgba(255,255,255,.32);
+    --inv-bg: #f3f3f0; --inv-ink: #0a0a0b;
+    --pro: #7C6AE8; --pro-2: #A99DF0; --pro-bg: rgba(124,106,232,.12);
+  }
+
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+  *::-webkit-scrollbar-track { background: transparent; }
+
+  button { font-family: 'Geist', system-ui, sans-serif; }
+  input, textarea { font-family: 'Geist', system-ui, sans-serif; }
+
+  @keyframes toastIn { from { transform: translateY(12px) translateX(-50%); opacity: 0; } to { transform: translateY(0) translateX(-50%); opacity: 1; } }
+  .toast-anim { animation: toastIn .22s ease; }
+
+  #loading {
+    position: fixed; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    font-family: 'Geist Mono', monospace; font-size: 12px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+</style>
+</head>
+<body>
+<div id="root"><div id="loading">Loading index.html…</div></div>
+<script>
+const { createElement: h, useState, useRef } = React;
+
+function SvgIcon({ body, style = 'outline', size = 24, sw = 2, color }) {
+  const attrs = style === 'solid'
+    ? { fill: 'currentColor', stroke: 'none' }
+    : { fill: 'none', stroke: 'currentColor', strokeWidth: sw, strokeLinecap: 'round', strokeLinejoin: 'round' };
+  return h('svg', {
+    xmlns: 'http://www.w3.org/2000/svg',
+    width: size, height: size,
+    viewBox: '0 0 24 24',
+    style: { display: 'block', flexShrink: 0, color: color || undefined },
+    ...attrs,
+    dangerouslySetInnerHTML: { __html: body },
+  });
+}
+
+function AuthorApp({ initialConfig, ICONS }) {
+  const [config, setConfig] = useState(initialConfig);
+  const [iconEdits, setIconEdits] = useState({});
+  const [tab, setTab] = useState('meta');
+  const [toast, setToast] = useState('');
+  const toastRef = useRef(null);
+
+  function showToast(msg) {
+    setToast(msg);
+    if (toastRef.current) clearTimeout(toastRef.current);
+    toastRef.current = setTimeout(() => setToast(''), 2200);
+  }
+
+  function setMeta(key, val) { setConfig(c => ({ ...c, meta: { ...c.meta, [key]: val } })); }
+  function setPricing(key, val) { setConfig(c => ({ ...c, pricing: { ...c.pricing, [key]: val } })); }
+  function setWeight(idx, key, val) {
+    setConfig(c => {
+      const w = c.weights.map((x, i) => i === idx ? { ...x, [key]: key === 'sw' ? +val : val } : x);
+      return { ...c, weights: w };
+    });
+  }
+  function addWeight() { setConfig(c => ({ ...c, weights: [...c.weights, { id: 'w-' + Date.now(), label: 'New', sw: 2 }] })); }
+  function removeWeight(idx) { setConfig(c => ({ ...c, weights: c.weights.filter((_, i) => i !== idx) })); }
+
+  function togglePro(id) {
+    setConfig(c => {
+      const ids = c.proIconIds.includes(id) ? c.proIconIds.filter(x => x !== id) : [...c.proIconIds, id];
+      return { ...c, proIconIds: ids };
+    });
+  }
+  function setIconField(id, key, val) { setIconEdits(e => ({ ...e, [id]: { ...(e[id] || {}), [key]: val } })); }
+  function setIconTags(id, val) { setIconEdits(e => ({ ...e, [id]: { ...(e[id] || {}), tags: val.split(',').map(t => t.trim()).filter(Boolean) } })); }
+
+  function setFaq(idx, key, val) {
+    setPricing('faqs', config.pricing.faqs.map((f, i) => i === idx ? { ...f, [key]: val } : f));
+  }
+  function addFaq() { setPricing('faqs', [...config.pricing.faqs, { q: '', a: '' }]); }
+  function removeFaq(idx) { setPricing('faqs', config.pricing.faqs.filter((_, i) => i !== idx)); }
+  function setFeatList(key, raw) { setPricing(key, raw.split('\n').map(s => s.trim()).filter(Boolean)); }
+
+  function exportHtml() {
+    fetch('./index.html').then(r => r.text()).then(html => {
+      const mergedIcons = ICONS.map(ic => ({ ...ic, ...(iconEdits[ic.id] || {}) }));
+      const L = ic => {
+        const tags = JSON.stringify(ic.tags);
+        const body = ic.body.replace(/'/g, "\\'");
+        return `    L('${ic.id}','${ic.name}','${ic.cat}','${ic.sub}',${tags},'${body}'${ic.fill ? ',true' : ''})`;
+      };
+      const newBuildData = `function buildData() {\n  const L = (id,name,cat,sub,tags,body,fill) => ({id,name,cat,sub,tags,body,fill:!!fill});\n  return [\n${mergedIcons.map(L).join(',\n')},\n  ];\n}`;
+      const newConfig = 'const CONFIG = ' + JSON.stringify(config, null, 2) + ';';
+      let out = html
+        .replace(/\/\* ROCKICON_CONFIG_START \*\/[\s\S]*?\/\* ROCKICON_CONFIG_END \*\//, '/* ROCKICON_CONFIG_START */\n' + newConfig + '\n/* ROCKICON_CONFIG_END */')
+        .replace(/\/\* ROCKICON_ICONS_START \*\/[\s\S]*?\/\* ROCKICON_ICONS_END \*\//, '/* ROCKICON_ICONS_START */\n' + newBuildData + '\n/* ROCKICON_ICONS_END */');
+      const blob = new Blob([out], { type: 'text/html' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'index.html';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+      showToast('Downloaded index.html — commit & push to go live');
+    }).catch(() => showToast('Open on a localhost server to export'));
+  }
+
+  /* ── Shared field helper ── */
+  const inp = (label, val, onChange, type) => h('label', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+    h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, label),
+    type === 'textarea'
+      ? h('textarea', { value: val, onInput: e => onChange(e.target.value), rows: 3, style: { padding: '10px 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontSize: '13px', outline: 'none', resize: 'vertical', lineHeight: 1.5 } })
+      : h('input', { value: val, onInput: e => onChange(e.target.value), type: type || 'text', style: { height: '40px', padding: '0 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontSize: '13px', outline: 'none' } })
+  );
+
+  const fieldStyle = { display: 'flex', flexDirection: 'column', gap: '16px' };
+  const sectionHead = txt => h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: '4px', marginTop: '8px' } }, txt);
+  const divider = h('div', { style: { height: '1px', background: 'var(--line)', margin: '8px 0' } });
+
+  /* ── Tab: Meta ── */
+  function TabMeta() {
+    return h('div', { style: fieldStyle },
+      inp('Studio / Author name', config.meta.author, v => setMeta('author', v)),
+      inp('Copyright line', config.meta.copyright, v => setMeta('copyright', v)),
+      inp('License (short)', config.meta.license, v => setMeta('license', v)),
+      inp('License label (shown in grid)', config.meta.licenseLabel, v => setMeta('licenseLabel', v)),
+      inp('Tagline (shown in login modal)', config.meta.tagline, v => setMeta('tagline', v), 'textarea'),
+      h('label', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+        h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, 'Pro accent color'),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+          h('input', { type: 'color', value: config.meta.accentColor, onInput: e => { setMeta('accentColor', e.target.value); document.documentElement.style.setProperty('--pro', e.target.value); }, style: { height: '40px', width: '52px', padding: '3px', border: '1px solid var(--line)', borderRadius: '9px', background: 'var(--field)', cursor: 'pointer' } }),
+          h('input', { value: config.meta.accentColor, onInput: e => setMeta('accentColor', e.target.value), style: { flex: 1, height: '40px', padding: '0 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontFamily: "'Geist Mono',monospace", fontSize: '13px', outline: 'none' } })
+        )
+      )
+    );
+  }
+
+  /* ── Tab: Icons ── */
+  function TabIcons() {
+    const [q, setQ] = useState('');
+    const visible = ICONS.filter(ic => !q || ic.name.includes(q) || ic.id.includes(q) || ic.cat.toLowerCase().includes(q));
+    const isPro = id => config.proIconIds.includes(id);
+    return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+      h('input', { value: q, onInput: e => setQ(e.target.value.toLowerCase()), placeholder: 'Search icons…', style: { height: '38px', padding: '0 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontSize: '13px', outline: 'none' } }),
+      h('div', { style: { display: 'flex', fontFamily: "'Geist Mono',monospace", fontSize: '9.5px', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-3)', padding: '0 6px', gap: '8px' } },
+        h('span', { style: { flex: '0 0 28px' } }),
+        h('span', { style: { flex: '0 0 110px' } }, 'Name'),
+        h('span', { style: { flex: '0 0 100px' } }, 'Category'),
+        h('span', { style: { flex: '0 0 100px' } }, 'Subcategory'),
+        h('span', { style: { flex: 1 } }, 'Tags (comma-sep)'),
+        h('span', { style: { flex: '0 0 50px', textAlign: 'center' } }, 'Pro')
+      ),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+        visible.map(ic => {
+          const ov = iconEdits[ic.id] || {};
+          const name = ov.name !== undefined ? ov.name : ic.name;
+          const cat = ov.cat !== undefined ? ov.cat : ic.cat;
+          const sub = ov.sub !== undefined ? ov.sub : ic.sub;
+          const tags = ov.tags !== undefined ? ov.tags.join(', ') : ic.tags.join(', ');
+          const pro = isPro(ic.id);
+          const cellInp = (val, onChange) => h('input', { value: val, onInput: e => onChange(e.target.value), style: { width: '100%', height: '30px', padding: '0 8px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '7px', color: 'var(--ink)', fontSize: '12px', outline: 'none' } });
+          return h('div', { key: ic.id, style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 6px', borderRadius: '8px', background: 'var(--bg-2)' } },
+            h('div', { style: { flex: '0 0 28px', display: 'flex', justifyContent: 'center', color: 'var(--ink-2)' } },
+              h(SvgIcon, { body: ic.body, size: 18, sw: 1.8 })
+            ),
+            h('div', { style: { flex: '0 0 110px' } }, cellInp(name, v => setIconField(ic.id, 'name', v))),
+            h('div', { style: { flex: '0 0 100px' } }, cellInp(cat, v => setIconField(ic.id, 'cat', v))),
+            h('div', { style: { flex: '0 0 100px' } }, cellInp(sub, v => setIconField(ic.id, 'sub', v))),
+            h('div', { style: { flex: 1 } }, cellInp(tags, v => setIconTags(ic.id, v))),
+            h('div', { style: { flex: '0 0 50px', display: 'flex', justifyContent: 'center' } },
+              h('button', {
+                onClick: () => togglePro(ic.id),
+                style: { height: '26px', padding: '0 9px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontFamily: "'Geist Mono',monospace", fontSize: '10px', fontWeight: 700, letterSpacing: '.06em', background: pro ? 'var(--pro-bg)' : 'var(--bg-3)', color: pro ? 'var(--pro)' : 'var(--ink-3)' }
+              }, pro ? 'PRO' : 'free')
+            )
+          );
+        })
+      )
+    );
+  }
+
+  /* ── Tab: Pricing ── */
+  function TabPricing() {
+    return h('div', { style: fieldStyle },
+      sectionHead('Prices'),
+      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' } },
+        inp('Monthly ($/mo)', config.pricing.monthly, v => setPricing('monthly', +v), 'number'),
+        inp('Yearly ($/mo)', config.pricing.yearly, v => setPricing('yearly', +v), 'number'),
+        inp('Yearly billed ($)', config.pricing.yearlyBilled, v => setPricing('yearlyBilled', +v), 'number')
+      ),
+      divider,
+      sectionHead('Free tier features (one per line)'),
+      h('textarea', { value: config.pricing.freeFeats.join('\n'), onInput: e => setFeatList('freeFeats', e.target.value), rows: 6, style: { padding: '10px 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontSize: '13px', outline: 'none', resize: 'vertical', lineHeight: 1.6 } }),
+      sectionHead('Pro tier features (one per line)'),
+      h('textarea', { value: config.pricing.proFeats.join('\n'), onInput: e => setFeatList('proFeats', e.target.value), rows: 6, style: { padding: '10px 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontSize: '13px', outline: 'none', resize: 'vertical', lineHeight: 1.6 } }),
+      divider,
+      sectionHead('FAQs'),
+      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
+        config.pricing.faqs.map((fq, i) =>
+          h('div', { key: i, style: { display: 'flex', flexDirection: 'column', gap: '7px', padding: '14px', background: 'var(--bg-2)', border: '1px solid var(--line)', borderRadius: '10px' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+              h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', color: 'var(--ink-3)' } }, 'FAQ ' + (i + 1)),
+              h('button', { onClick: () => removeFaq(i), style: { height: '24px', padding: '0 9px', background: 'transparent', border: '1px solid var(--line)', borderRadius: '6px', color: 'var(--ink-3)', fontSize: '11px', cursor: 'pointer' } }, 'Remove')
+            ),
+            h('input', { value: fq.q, onInput: e => setFaq(i, 'q', e.target.value), placeholder: 'Question', style: { height: '36px', padding: '0 10px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '8px', color: 'var(--ink)', fontSize: '13px', outline: 'none' } }),
+            h('textarea', { value: fq.a, onInput: e => setFaq(i, 'a', e.target.value), placeholder: 'Answer', rows: 2, style: { padding: '8px 10px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '8px', color: 'var(--ink)', fontSize: '13px', outline: 'none', resize: 'vertical' } })
+          )
+        ),
+        h('button', { onClick: addFaq, style: { height: '36px', padding: '0 16px', background: 'transparent', border: '1px dashed var(--line-2)', borderRadius: '9px', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, '+ Add FAQ')
+      )
+    );
+  }
+
+  /* ── Tab: Weights ── */
+  function TabWeights() {
+    return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+      h('div', { style: { fontSize: '13px', color: 'var(--ink-2)', lineHeight: 1.5, marginBottom: '4px' } }, 'Stroke weight presets. Label is the nav label, SW is the stroke width.'),
+      config.weights.map((w, i) =>
+        h('div', { key: w.id, style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'var(--bg-2)', border: '1px solid var(--line)', borderRadius: '10px' } },
+          h('div', { style: { display: 'flex', justifyContent: 'center', color: 'var(--ink-2)', flex: '0 0 30px' } },
+            h(SvgIcon, { body: '<path d="M4 12h16"/><path d="m14 6 6 6-6 6"/>', size: 18, sw: w.sw })
+          ),
+          h('label', { style: { display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 } },
+            h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9px', color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '.12em' } }, 'Label'),
+            h('input', { value: w.label, onInput: e => setWeight(i, 'label', e.target.value), style: { height: '34px', padding: '0 10px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '8px', color: 'var(--ink)', fontSize: '13px', outline: 'none' } })
+          ),
+          h('label', { style: { display: 'flex', flexDirection: 'column', gap: '4px', flex: '0 0 90px' } },
+            h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9px', color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '.12em' } }, 'Stroke (sw)'),
+            h('input', { type: 'number', min: 0.5, max: 4, step: 0.25, value: w.sw, onInput: e => setWeight(i, 'sw', e.target.value), style: { height: '34px', padding: '0 10px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '8px', color: 'var(--ink)', fontFamily: "'Geist Mono',monospace", fontSize: '13px', outline: 'none' } })
+          ),
+          config.weights.length > 1 && h('button', { onClick: () => removeWeight(i), style: { height: '34px', width: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--line)', borderRadius: '8px', color: 'var(--ink-3)', cursor: 'pointer', flexShrink: 0 } },
+            h(SvgIcon, { body: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>', size: 14, sw: 2 })
+          )
+        )
+      ),
+      h('button', { onClick: addWeight, style: { height: '36px', padding: '0 16px', background: 'transparent', border: '1px dashed var(--line-2)', borderRadius: '9px', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, '+ Add weight')
+    );
+  }
+
+  const TABS = [
+    { id: 'meta', label: 'Meta' },
+    { id: 'icons', label: 'Icons' },
+    { id: 'pricing', label: 'Pricing' },
+    { id: 'weights', label: 'Weights' },
+  ];
+  const tabContent = { meta: TabMeta, icons: TabIcons, pricing: TabPricing, weights: TabWeights };
+  const ActiveTab = tabContent[tab];
+
+  return h('div', { style: { height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)', color: 'var(--ink)', overflow: 'hidden' } },
+    /* Header */
+    h('div', { style: { flexShrink: 0, height: '62px', display: 'flex', alignItems: 'center', gap: '14px', padding: '0 22px', borderBottom: '1px solid var(--line)' } },
+      h('a', { href: './index.html', style: { display: 'flex', alignItems: 'center', gap: '5px', height: '36px', padding: '0 12px 0 8px', background: 'transparent', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', textDecoration: 'none' } },
+        h(SvgIcon, { body: '<path d="M15 6l-6 6 6 6"/>', size: 16, sw: 2, color: 'var(--ink-2)' }), 'Back to app'
+      ),
+      h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '6px' } },
+        h('span', { style: { fontWeight: 600, fontSize: '20px', letterSpacing: '-.01em' } }, 'Author'),
+        h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.14em', color: 'var(--ink-3)', textTransform: 'uppercase' } }, 'Rockicon')
+      ),
+      h('div', { style: { flex: 1 } }),
+      h('button', {
+        onClick: exportHtml,
+        style: { height: '38px', padding: '0 18px', display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '10px', fontSize: '13.5px', fontWeight: 600, cursor: 'pointer' }
+      },
+        h(SvgIcon, { body: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>', size: 15, sw: 2, color: 'currentColor' }),
+        'Download index.html'
+      )
+    ),
+    /* Body */
+    h('div', { style: { flex: 1, display: 'flex', minHeight: 0 } },
+      h('nav', { style: { flex: '0 0 160px', borderRight: '1px solid var(--line)', padding: '16px 10px', display: 'flex', flexDirection: 'column', gap: '4px' } },
+        TABS.map(t => h('button', {
+          key: t.id,
+          onClick: () => setTab(t.id),
+          style: { height: '36px', padding: '0 14px', textAlign: 'left', background: tab === t.id ? 'var(--bg-3)' : 'transparent', border: tab === t.id ? '1px solid var(--line)' : '1px solid transparent', borderRadius: '8px', color: tab === t.id ? 'var(--ink)' : 'var(--ink-2)', fontSize: '13px', fontWeight: tab === t.id ? 600 : 500, cursor: 'pointer' }
+        }, t.label))
+      ),
+      h('div', { style: { flex: 1, overflowY: 'auto', padding: '28px 32px 60px' } },
+        h(ActiveTab)
+      )
+    ),
+    /* Toast */
+    toast && h('div', {
+      className: 'toast-anim',
+      style: { position: 'fixed', bottom: '26px', left: '50%', zIndex: 90, display: 'flex', alignItems: 'center', gap: '9px', height: '42px', padding: '0 18px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', borderRadius: '11px', fontSize: '13.5px', fontWeight: 600, boxShadow: '0 12px 34px rgba(0,0,0,.4)' }
+    },
+      h(SvgIcon, { body: '<path d="M5 13l4 4L19 7"/>', size: 15, sw: 2.4, color: 'currentColor' }),
+      toast
+    )
+  );
+}
+
+/* ── Bootstrap: load CONFIG and ICONS from index.html ── */
+fetch('./index.html')
+  .then(r => r.text())
+  .then(html => {
+    const cfgMatch = html.match(/\/\* ROCKICON_CONFIG_START \*\/([\s\S]*?)\/\* ROCKICON_CONFIG_END \*\//);
+    const iconsMatch = html.match(/\/\* ROCKICON_ICONS_START \*\/([\s\S]*?)\/\* ROCKICON_ICONS_END \*\//);
+    if (!cfgMatch || !iconsMatch) throw new Error('Markers not found in index.html');
+    const CONFIG = new Function(cfgMatch[1].trim() + '\nreturn CONFIG;')();
+    const ICONS = new Function(iconsMatch[1].trim() + '\nreturn buildData();')();
+    ReactDOM.createRoot(document.getElementById('root')).render(h(AuthorApp, { initialConfig: CONFIG, ICONS }));
+  })
+  .catch(err => {
+    document.getElementById('root').innerHTML =
+      '<div id="loading">Error: ' + err.message + '<br><small>Serve on localhost (not file://)</small></div>';
+  });
+</script>
+</body>
+</html>

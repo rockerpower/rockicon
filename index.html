@@ -275,232 +275,6 @@ function exportPng(icon, style, size, sw, color) {
   img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(mk);
 }
 
-/* ── Pricing Page — sourced from CONFIG ── */
-
-/* ── Author Page (outside App for stable identity) ── */
-function AuthorPage({ config, setConfig, iconEdits, setIconEdits, authorTab, setAuthorTab, setRoute, showToast }) {
-  const inp = (label, val, onChange, type) => h('label', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
-    h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, label),
-    type === 'textarea'
-      ? h('textarea', { value: val, onInput: e => onChange(e.target.value), rows: 3, style: { padding: '10px 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '13px', outline: 'none', resize: 'vertical', lineHeight: 1.5 } })
-      : h('input', { value: val, onInput: e => onChange(e.target.value), type: type || 'text', style: { height: '40px', padding: '0 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '13px', outline: 'none' } })
-  );
-
-  function setMeta(key, val) { setConfig(c => ({ ...c, meta: { ...c.meta, [key]: val } })); }
-  function setPricing(key, val) { setConfig(c => ({ ...c, pricing: { ...c.pricing, [key]: val } })); }
-  function setWeight(idx, key, val) {
-    setConfig(c => {
-      const w = c.weights.map((x, i) => i === idx ? { ...x, [key]: key === 'sw' ? +val : val } : x);
-      return { ...c, weights: w };
-    });
-  }
-  function addWeight() { setConfig(c => ({ ...c, weights: [...c.weights, { id: 'new-' + Date.now(), label: 'New', sw: 2 }] })); }
-  function removeWeight(idx) { setConfig(c => ({ ...c, weights: c.weights.filter((_, i) => i !== idx) })); }
-
-  function togglePro(id) {
-    setConfig(c => {
-      const ids = c.proIconIds.includes(id) ? c.proIconIds.filter(x => x !== id) : [...c.proIconIds, id];
-      return { ...c, proIconIds: ids };
-    });
-  }
-  function setIconField(id, key, val) { setIconEdits(e => ({ ...e, [id]: { ...(e[id] || {}), [key]: val } })); }
-  function setIconTags(id, val) { setIconEdits(e => ({ ...e, [id]: { ...(e[id] || {}), tags: val.split(',').map(t => t.trim()).filter(Boolean) } })); }
-
-  function setFaq(idx, key, val) {
-    setPricing('faqs', config.pricing.faqs.map((f, i) => i === idx ? { ...f, [key]: val } : f));
-  }
-  function addFaq() { setPricing('faqs', [...config.pricing.faqs, { q: '', a: '' }]); }
-  function removeFaq(idx) { setPricing('faqs', config.pricing.faqs.filter((_, i) => i !== idx)); }
-
-  function setFeatList(key, raw) { setPricing(key, raw.split('\n').map(s => s.trim()).filter(Boolean)); }
-
-  function exportHtml() {
-    fetch('./index.html').then(r => r.text()).then(html => {
-      const mergedIcons = ICONS.map(ic => {
-        const ov = iconEdits[ic.id] || {};
-        return { ...ic, ...ov };
-      });
-      const L = ic => {
-        const tags = JSON.stringify(ic.tags);
-        const body = ic.body.replace(/'/g, "\\'");
-        return `    L('${ic.id}','${ic.name}','${ic.cat}','${ic.sub}',${tags},'${body}'${ic.fill ? ',true' : ''})`;
-      };
-      const newBuildData = `function buildData() {\n  const L = (id,name,cat,sub,tags,body,fill) => ({id,name,cat,sub,tags,body,fill:!!fill});\n  return [\n${mergedIcons.map(L).join(',\n')},\n  ];\n}`;
-      const newConfig = 'const CONFIG = ' + JSON.stringify(config, null, 2) + ';';
-      let out = html
-        .replace(/\/\* ROCKICON_CONFIG_START \*\/[\s\S]*?\/\* ROCKICON_CONFIG_END \*\//, '/* ROCKICON_CONFIG_START */\n' + newConfig + '\n/* ROCKICON_CONFIG_END */')
-        .replace(/\/\* ROCKICON_ICONS_START \*\/[\s\S]*?\/\* ROCKICON_ICONS_END \*\//, '/* ROCKICON_ICONS_START */\n' + newBuildData + '\n/* ROCKICON_ICONS_END */');
-      const blob = new Blob([out], { type: 'text/html' });
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'index.html';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      showToast('Downloaded index.html — commit & push to go live');
-    }).catch(() => showToast('Run on localhost to export'));
-  }
-
-  const fieldStyle = { display: 'flex', flexDirection: 'column', gap: '16px' };
-  const sectionHead = txt => h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: '4px', marginTop: '8px' } }, txt);
-  const divider = h('div', { style: { height: '1px', background: 'var(--line)', margin: '8px 0' } });
-
-  const TABS = [
-    { id: 'meta',    label: 'Meta' },
-    { id: 'icons',   label: 'Icons' },
-    { id: 'pricing', label: 'Pricing' },
-    { id: 'weights', label: 'Weights' },
-  ];
-
-  /* ── Tab content ── */
-  function TabMeta() {
-    return h('div', { style: fieldStyle },
-      inp('Studio / Author name', config.meta.author, v => setMeta('author', v)),
-      inp('Copyright line', config.meta.copyright, v => setMeta('copyright', v)),
-      inp('License (short)', config.meta.license, v => setMeta('license', v)),
-      inp('License label (shown in grid)', config.meta.licenseLabel, v => setMeta('licenseLabel', v)),
-      inp('Tagline (shown in login modal)', config.meta.tagline, v => setMeta('tagline', v), 'textarea'),
-      h('label', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
-        h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink-3)' } }, 'Pro accent color'),
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
-          h('input', { type: 'color', value: config.meta.accentColor, onInput: e => { setMeta('accentColor', e.target.value); document.documentElement.style.setProperty('--pro', e.target.value); }, style: { height: '40px', width: '52px', padding: '3px', border: '1px solid var(--line)', borderRadius: '9px', background: 'var(--field)', cursor: 'pointer' } }),
-          h('input', { value: config.meta.accentColor, onInput: e => setMeta('accentColor', e.target.value), style: { flex: 1, height: '40px', padding: '0 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontFamily: "'Geist Mono',monospace", fontSize: '13px', outline: 'none' } })
-        )
-      )
-    );
-  }
-
-  function TabIcons() {
-    const [q, setQ] = useState('');
-    const visible = ICONS.filter(ic => !q || ic.name.includes(q) || ic.id.includes(q) || ic.cat.toLowerCase().includes(q));
-    const isPro = id => config.proIconIds.includes(id);
-    return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
-      h('input', { value: q, onInput: e => setQ(e.target.value.toLowerCase()), placeholder: 'Search icons…', style: { height: '38px', padding: '0 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '13px', outline: 'none' } }),
-      h('div', { style: { display: 'flex', fontFamily: "'Geist Mono',monospace", fontSize: '9.5px', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink-3)', padding: '0 6px', gap: '8px' } },
-        h('span', { style: { flex: '0 0 28px' } }),
-        h('span', { style: { flex: '0 0 110px' } }, 'Name'),
-        h('span', { style: { flex: '0 0 100px' } }, 'Category'),
-        h('span', { style: { flex: '0 0 100px' } }, 'Subcategory'),
-        h('span', { style: { flex: 1 } }, 'Tags (comma-sep)'),
-        h('span', { style: { flex: '0 0 50px', textAlign: 'center' } }, 'Pro')
-      ),
-      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
-        visible.map(ic => {
-          const ov = iconEdits[ic.id] || {};
-          const name = ov.name !== undefined ? ov.name : ic.name;
-          const cat = ov.cat !== undefined ? ov.cat : ic.cat;
-          const sub = ov.sub !== undefined ? ov.sub : ic.sub;
-          const tags = ov.tags !== undefined ? ov.tags.join(', ') : ic.tags.join(', ');
-          const pro = isPro(ic.id);
-          const cellInp = (val, onChange) => h('input', { value: val, onInput: e => onChange(e.target.value), style: { width: '100%', height: '30px', padding: '0 8px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '7px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '12px', outline: 'none' } });
-          return h('div', { key: ic.id, style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 6px', borderRadius: '8px', background: 'var(--bg-2)' } },
-            h('div', { style: { flex: '0 0 28px', display: 'flex', justifyContent: 'center', color: 'var(--ink-2)' } },
-              h(SvgIcon, { body: ic.body, size: 18, sw: 1.8 })
-            ),
-            h('div', { style: { flex: '0 0 110px' } }, cellInp(name, v => setIconField(ic.id, 'name', v))),
-            h('div', { style: { flex: '0 0 100px' } }, cellInp(cat, v => setIconField(ic.id, 'cat', v))),
-            h('div', { style: { flex: '0 0 100px' } }, cellInp(sub, v => setIconField(ic.id, 'sub', v))),
-            h('div', { style: { flex: 1 } }, cellInp(tags, v => setIconTags(ic.id, v))),
-            h('div', { style: { flex: '0 0 50px', display: 'flex', justifyContent: 'center' } },
-              h('button', {
-                onClick: () => togglePro(ic.id),
-                style: { height: '26px', padding: '0 9px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontFamily: "'Geist Mono',monospace", fontSize: '10px', fontWeight: 700, letterSpacing: '.06em', background: pro ? 'var(--pro-bg)' : 'var(--bg-3)', color: pro ? 'var(--pro)' : 'var(--ink-3)' }
-              }, pro ? 'PRO' : 'free')
-            )
-          );
-        })
-      )
-    );
-  }
-
-  function TabPricing() {
-    return h('div', { style: fieldStyle },
-      sectionHead('Prices'),
-      h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' } },
-        inp('Monthly ($/mo)', config.pricing.monthly, v => setPricing('monthly', +v), 'number'),
-        inp('Yearly ($/mo)', config.pricing.yearly, v => setPricing('yearly', +v), 'number'),
-        inp('Yearly billed ($)', config.pricing.yearlyBilled, v => setPricing('yearlyBilled', +v), 'number')
-      ),
-      divider,
-      sectionHead('Free tier features (one per line)'),
-      h('textarea', { value: config.pricing.freeFeats.join('\n'), onInput: e => setFeatList('freeFeats', e.target.value), rows: 6, style: { padding: '10px 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '13px', outline: 'none', resize: 'vertical', lineHeight: 1.6 } }),
-      sectionHead('Pro tier features (one per line)'),
-      h('textarea', { value: config.pricing.proFeats.join('\n'), onInput: e => setFeatList('proFeats', e.target.value), rows: 6, style: { padding: '10px 12px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '13px', outline: 'none', resize: 'vertical', lineHeight: 1.6 } }),
-      divider,
-      sectionHead('FAQs'),
-      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
-        config.pricing.faqs.map((fq, i) =>
-          h('div', { key: i, style: { display: 'flex', flexDirection: 'column', gap: '7px', padding: '14px', background: 'var(--bg-2)', border: '1px solid var(--line)', borderRadius: '10px' } },
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
-              h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', color: 'var(--ink-3)' } }, 'FAQ ' + (i + 1)),
-              h('button', { onClick: () => removeFaq(i), style: { height: '24px', padding: '0 9px', background: 'transparent', border: '1px solid var(--line)', borderRadius: '6px', color: 'var(--ink-3)', fontSize: '11px', cursor: 'pointer' } }, 'Remove')
-            ),
-            h('input', { value: fq.q, onInput: e => setFaq(i, 'q', e.target.value), placeholder: 'Question', style: { height: '36px', padding: '0 10px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '8px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '13px', outline: 'none' } }),
-            h('textarea', { value: fq.a, onInput: e => setFaq(i, 'a', e.target.value), placeholder: 'Answer', rows: 2, style: { padding: '8px 10px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '8px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '13px', outline: 'none', resize: 'vertical' } })
-          )
-        ),
-        h('button', { onClick: addFaq, style: { height: '36px', padding: '0 16px', background: 'transparent', border: '1px dashed var(--line-2)', borderRadius: '9px', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, '+ Add FAQ')
-      )
-    );
-  }
-
-  function TabWeights() {
-    return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
-      h('div', { style: { fontSize: '13px', color: 'var(--ink-2)', lineHeight: 1.5, marginBottom: '4px' } }, 'Stroke weight presets shown in the sidebar under Outline. Label is the nav label, SW is the default stroke width.'),
-      config.weights.map((w, i) =>
-        h('div', { key: w.id, style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', background: 'var(--bg-2)', border: '1px solid var(--line)', borderRadius: '10px' } },
-          h('div', { style: { display: 'flex', justifyContent: 'center', color: 'var(--ink-2)', flex: '0 0 30px' } },
-            h(SvgIcon, { body: '<path d="M4 12h16"/><path d="m14 6 6 6-6 6"/>', size: 18, sw: w.sw })
-          ),
-          h('label', { style: { display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 } },
-            h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9px', color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '.12em' } }, 'Label'),
-            h('input', { value: w.label, onInput: e => setWeight(i, 'label', e.target.value), style: { height: '34px', padding: '0 10px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '8px', color: 'var(--ink)', fontFamily: "'Geist',sans-serif", fontSize: '13px', outline: 'none' } })
-          ),
-          h('label', { style: { display: 'flex', flexDirection: 'column', gap: '4px', flex: '0 0 90px' } },
-            h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '9px', color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: '.12em' } }, 'Stroke (sw)'),
-            h('input', { type: 'number', min: 0.5, max: 4, step: 0.25, value: w.sw, onInput: e => setWeight(i, 'sw', e.target.value), style: { height: '34px', padding: '0 10px', background: 'var(--field)', border: '1px solid var(--line)', borderRadius: '8px', color: 'var(--ink)', fontFamily: "'Geist Mono',monospace", fontSize: '13px', outline: 'none' } })
-          ),
-          config.weights.length > 1 && h('button', { onClick: () => removeWeight(i), style: { height: '34px', width: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--line)', borderRadius: '8px', color: 'var(--ink-3)', cursor: 'pointer', flexShrink: 0 } },
-            h(SvgIcon, { body: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>', size: 14, sw: 2 })
-          )
-        )
-      ),
-      h('button', { onClick: addWeight, style: { height: '36px', padding: '0 16px', background: 'transparent', border: '1px dashed var(--line-2)', borderRadius: '9px', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } }, '+ Add weight')
-    );
-  }
-
-  const tabContent = { meta: TabMeta, icons: TabIcons, pricing: TabPricing, weights: TabWeights };
-  const ActiveTab = tabContent[authorTab];
-
-  return h('div', { style: { position: 'fixed', inset: 0, zIndex: 85, background: 'var(--bg)', display: 'flex', flexDirection: 'column', overflow: 'hidden' } },
-    h('div', { style: { flexShrink: 0, height: '62px', display: 'flex', alignItems: 'center', gap: '14px', padding: '0 22px', borderBottom: '1px solid var(--line)' } },
-      h('button', { onClick: () => setRoute('browse'), style: { display: 'flex', alignItems: 'center', gap: '5px', height: '36px', padding: '0 12px 0 8px', background: 'transparent', border: '1px solid var(--line)', borderRadius: '9px', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' } },
-        h(SvgIcon, { body: '<path d="M15 6l-6 6 6 6"/>', size: 16, sw: 2, color: 'var(--ink-2)' }), 'Back'
-      ),
-      h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '6px' } },
-        h('span', { style: { fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '20px', letterSpacing: '-.01em' } }, 'Author'),
-        h('span', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '10px', letterSpacing: '.14em', color: 'var(--ink-3)', textTransform: 'uppercase' } }, 'local only')
-      ),
-      h('div', { style: { flex: 1 } }),
-      h('button', {
-        onClick: exportHtml,
-        style: { height: '38px', padding: '0 18px', display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--inv-bg)', color: 'var(--inv-ink)', border: 'none', borderRadius: '10px', fontFamily: "'Geist',sans-serif", fontSize: '13.5px', fontWeight: 600, cursor: 'pointer' }
-      },
-        h(SvgIcon, { body: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/>', size: 15, sw: 2, color: 'currentColor' }),
-        'Download index.html'
-      )
-    ),
-    h('div', { style: { flex: 1, display: 'flex', minHeight: 0 } },
-      h('nav', { style: { flex: '0 0 160px', borderRight: '1px solid var(--line)', padding: '16px 10px', display: 'flex', flexDirection: 'column', gap: '4px' } },
-        TABS.map(t => h('button', {
-          key: t.id,
-          onClick: () => setAuthorTab(t.id),
-          style: { height: '36px', padding: '0 14px', textAlign: 'left', background: authorTab === t.id ? 'var(--bg-3)' : 'transparent', border: authorTab === t.id ? '1px solid var(--line)' : '1px solid transparent', borderRadius: '8px', color: authorTab === t.id ? 'var(--ink)' : 'var(--ink-2)', fontSize: '13px', fontWeight: authorTab === t.id ? 600 : 500, cursor: 'pointer' }
-        }, t.label))
-      ),
-      h('div', { style: { flex: 1, overflowY: 'auto', padding: '28px 32px 60px' } },
-        h(ActiveTab)
-      )
-    )
-  );
-}
-
 /* ── Auth modal (defined outside App to keep stable component identity) ── */
 function AuthModal({ authView, authName, authEmail, authPw, authErr, setAuthView, setAuthName, setAuthEmail, setAuthPw, setAuthErr, setSignedIn, showToast }) {
   if (!authView) return null;
@@ -611,12 +385,8 @@ function App() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [sel, setSel] = useState({});
   const [toast, setToast] = useState('');
-  const [config, setConfig] = useState(CONFIG);
-  const [iconEdits, setIconEdits] = useState({});
-  const [authorTab, setAuthorTab] = useState('meta');
-  const proSet = new Set(config.proIconIds);
   const [entitled, setEntitled] = useState(false);
-  const [route, setRoute] = useState('browse'); // 'browse' | 'pricing' | 'account' | 'author'
+  const [route, setRoute] = useState('browse'); // 'browse' | 'pricing' | 'account'
   const [billing, setBilling] = useState('yearly');
   const [authView, setAuthView] = useState(null);
   const [signedIn, setSignedIn] = useState(false);
@@ -696,9 +466,9 @@ function App() {
     let icons = ids.length ? ICONS.filter(i => ids.includes(i.id)) : [];
     if (!icons.length) { showToast('Select icons first'); return; }
     if (typeof JSZip === 'undefined') { showToast('ZIP library loading…'); return; }
-    const lockedN = icons.filter(i => proSet.has(i.id)).length;
+    const lockedN = icons.filter(i => PRO.has(i.id)).length;
     if (lockedN && !entitled && !IS_PROD) {
-      icons = icons.filter(i => !proSet.has(i.id));
+      icons = icons.filter(i => !PRO.has(i.id));
       if (!icons.length) { showToast('Upgrade to Pro to export Pro icons'); return; }
     }
     const zip = new JSZip();
@@ -725,7 +495,7 @@ function App() {
   function CellItem({ ic }) {
     const checked = !!sel[ic.id];
     const gs = gridStyleFor(ic, navStyle);
-    const isProIcon = proSet.has(ic.id);
+    const isProIcon = PRO.has(ic.id);
     const locked = isProIcon && !entitled && !IS_PROD;
     function handleClick() {
       if (selectionMode) toggleSel(ic.id);
@@ -916,12 +686,12 @@ function App() {
           h('span', { style: { width: '1px', height: '14px', background: 'var(--line-2)' } }),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
             h(SvgIcon, { body: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>', size: 15, sw: 1.8, color: 'var(--ink-3)' }),
-            h('span', { style: { fontSize: '13px', color: 'var(--ink-2)' } }, 'by ', h('span', { style: { color: 'var(--ink)', fontWeight: 500 } }, config.meta.author))
+            h('span', { style: { fontSize: '13px', color: 'var(--ink-2)' } }, 'by ', h('span', { style: { color: 'var(--ink)', fontWeight: 500 } }, CONFIG.meta.author))
           ),
           h('span', { style: { width: '1px', height: '14px', background: 'var(--line-2)' } }),
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
             h(SvgIcon, { body: '<circle cx="12" cy="12" r="9"/><path d="M15 9.5a3.5 3.5 0 1 0 0 5"/>', size: 15, sw: 1.8, color: 'var(--ink-3)' }),
-            h('span', { style: { fontSize: '13px', color: 'var(--ink-2)' } }, config.meta.licenseLabel)
+            h('span', { style: { fontSize: '13px', color: 'var(--ink-2)' } }, CONFIG.meta.licenseLabel)
           ),
           h('div', { style: { flex: 1, minWidth: '14px' } }),
           h(DensityBtns),
@@ -994,7 +764,7 @@ function App() {
     const ic = selectedId ? ICONS.find(x => x.id === selectedId) : null;
     if (!ic) return null;
 
-    const isProIcon = proSet.has(ic.id);
+    const isProIcon = PRO.has(ic.id);
     const locked = isProIcon && !entitled && !IS_PROD;
 
     const avail = styleAvail(ic);
@@ -1109,7 +879,7 @@ function App() {
             h('span', { style: { fontFamily: "'Geist',sans-serif", fontSize: '15px', fontWeight: 600 } }, 'Pro icon')
           ),
           h('p', { style: { margin: '0 0 15px', fontSize: '13px', lineHeight: 1.55, color: 'var(--ink-2)' } },
-            'Unlock this and ' + (config.proIconIds.length - 1) + ' other Pro icons — every style, all export formats, and bulk download.'
+            'Unlock this and ' + (CONFIG.proIconIds.length - 1) + ' other Pro icons — every style, all export formats, and bulk download.'
           ),
           h('button', {
             onClick: () => setRoute('pricing'),
@@ -1174,10 +944,6 @@ function App() {
           onClick: () => setRoute('pricing'),
           style: { height: '36px', padding: '0 13px', display: 'flex', alignItems: 'center', background: 'transparent', border: 'none', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }
         }, 'Pricing'),
-        !IS_PROD && h('button', {
-          onClick: () => setRoute('author'),
-          style: { height: '36px', padding: '0 13px', display: 'flex', alignItems: 'center', background: route === 'author' ? 'var(--bg-3)' : 'transparent', border: '1px solid ' + (route === 'author' ? 'var(--line)' : 'transparent'), borderRadius: '9px', color: 'var(--ink-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }
-        }, 'Author'),
         h('button', {
           onClick: () => setTheme(t => t === 'light' ? 'dark' : 'light'),
           title: 'Toggle theme',
@@ -1251,8 +1017,6 @@ function App() {
 
     h(AuthModal, { authView, authName, authEmail, authPw, authErr, setAuthView, setAuthName, setAuthEmail, setAuthPw, setAuthErr, setSignedIn, showToast }),
 
-    route === 'author' && !IS_PROD && h(AuthorPage, { config, setConfig, iconEdits, setIconEdits, authorTab, setAuthorTab, setRoute, showToast }),
-
     /* Full-page Pricing */
     route === 'pricing' && h('div', {
       style: { position: 'fixed', inset: 0, zIndex: 85, background: 'var(--bg)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }
@@ -1272,7 +1036,7 @@ function App() {
             h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '11px', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--ink-3)', marginBottom: '14px' } }, 'Simple, honest pricing'),
             h('h1', { style: { margin: 0, fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '42px', letterSpacing: '-.025em', lineHeight: 1.05 } }, 'Unlock the full catalogue'),
             h('p', { style: { margin: '14px auto 0', maxWidth: '460px', fontSize: '15px', lineHeight: 1.55, color: 'var(--ink-2)' } },
-              'Browse ' + ICONS.length + ' icons free. Go Pro for ' + config.proIconIds.length + ' premium icons, bulk export, and an extended commercial license.'
+              'Browse ' + ICONS.length + ' icons free. Go Pro for ' + CONFIG.proIconIds.length + ' premium icons, bulk export, and an extended commercial license.'
             )
           ),
           h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: '30px' } },
@@ -1295,7 +1059,7 @@ function App() {
               h('button', { onClick: () => setRoute('browse'), style: { width: '100%', height: '46px', background: 'transparent', color: 'var(--ink)', border: '1px solid var(--line-2)', borderRadius: '11px', fontFamily: "'Geist',sans-serif", fontSize: '14px', fontWeight: 600, cursor: 'pointer' } }, 'Browse free icons'),
               h('div', { style: { height: '1px', background: 'var(--line)', margin: '24px 0' } }),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
-                config.pricing.freeFeats.map((t, i) => h('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
+                CONFIG.pricing.freeFeats.map((t, i) => h('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
                   h(SvgIcon, { body: '<path d="M5 13l4 4L19 7"/>', size: 15, sw: 2.2, color: 'var(--ink-3)' }),
                   h('span', { style: { fontSize: '13.5px', lineHeight: 1.4, color: 'var(--ink-2)' } }, t)
                 ))
@@ -1306,10 +1070,10 @@ function App() {
               h('div', { style: { position: 'absolute', top: '22px', right: '24px', fontFamily: "'Geist Mono',monospace", fontSize: '9.5px', fontWeight: 700, letterSpacing: '.12em', background: 'var(--inv-bg)', color: 'var(--inv-ink)', padding: '4px 9px', borderRadius: '6px' } }, 'MOST POPULAR'),
               h('div', { style: { fontFamily: "'Geist Mono',monospace", fontSize: '11px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--ink-2)' } }, 'Pro'),
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: '5px', margin: '14px 0 4px' } },
-                h('span', { style: { fontFamily: "'Geist',sans-serif", fontSize: '44px', fontWeight: 600, letterSpacing: '-.03em' } }, billing === 'yearly' ? '$' + config.pricing.yearly : '$' + config.pricing.monthly),
+                h('span', { style: { fontFamily: "'Geist',sans-serif", fontSize: '44px', fontWeight: 600, letterSpacing: '-.03em' } }, billing === 'yearly' ? '$' + CONFIG.pricing.yearly : '$' + CONFIG.pricing.monthly),
                 h('span', { style: { fontSize: '14px', color: 'var(--ink-2)' } }, '/ month')
               ),
-              h('p', { style: { margin: '0 0 22px', fontSize: '13px', color: 'var(--ink-3)' } }, billing === 'yearly' ? 'Billed $' + config.pricing.yearlyBilled + '/year. Cancel anytime.' : 'Billed monthly. Cancel anytime.'),
+              h('p', { style: { margin: '0 0 22px', fontSize: '13px', color: 'var(--ink-3)' } }, billing === 'yearly' ? 'Billed $' + CONFIG.pricing.yearlyBilled + '/year. Cancel anytime.' : 'Billed monthly. Cancel anytime.'),
               entitled
                 ? h('div', { style: { width: '100%', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--pro-bg)', color: 'var(--pro)', border: '1px solid rgba(124,106,232,.25)', borderRadius: '11px', fontFamily: "'Geist',sans-serif", fontSize: '14px', fontWeight: 600 } }, 'Current plan')
                 : h('button', {
@@ -1319,7 +1083,7 @@ function App() {
                 ),
               h('div', { style: { height: '1px', background: 'var(--line-2)', margin: '24px 0' } }),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
-                config.pricing.proFeats.map((t, i) => h('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
+                CONFIG.pricing.proFeats.map((t, i) => h('div', { key: i, style: { display: 'flex', alignItems: 'flex-start', gap: '10px' } },
                   h(SvgIcon, { body: '<path d="M5 13l4 4L19 7"/>', size: 15, sw: 2.2, color: 'var(--ink)' }),
                   h('span', { style: { fontSize: '13.5px', lineHeight: 1.4, color: 'var(--ink)' } }, t)
                 ))
@@ -1329,7 +1093,7 @@ function App() {
           h('div', { style: { marginTop: '54px' } },
             h('h2', { style: { margin: '0 0 18px', fontFamily: "'Geist',sans-serif", fontWeight: 600, fontSize: '22px', letterSpacing: '-.01em', textAlign: 'center' } }, 'Questions'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' } },
-              config.pricing.faqs.map((fq, i) => h('div', { key: i, style: { border: '1px solid var(--line)', borderRadius: '13px', padding: '18px 20px', background: 'var(--bg-2)' } },
+              CONFIG.pricing.faqs.map((fq, i) => h('div', { key: i, style: { border: '1px solid var(--line)', borderRadius: '13px', padding: '18px 20px', background: 'var(--bg-2)' } },
                 h('div', { style: { fontFamily: "'Geist',sans-serif", fontSize: '14.5px', fontWeight: 600, marginBottom: '7px' } }, fq.q),
                 h('div', { style: { fontSize: '13px', lineHeight: 1.55, color: 'var(--ink-2)' } }, fq.a)
               ))
