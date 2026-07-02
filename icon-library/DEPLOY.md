@@ -18,7 +18,9 @@ Set these in the Vercel project (Settings → Environment Variables):
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
-| `SESSION_SECRET` | yes | Signs the session cookie. Use a long random string. |
+| `AUTH_SECRET` | yes | Signs the Auth.js session (JWT). Use a long random string. |
+| `AUTH_GITHUB_ID` | yes | GitHub OAuth App client ID (login). |
+| `AUTH_GITHUB_SECRET` | yes | GitHub OAuth App client secret. |
 | `UPSTASH_REDIS_REST_URL` | for durable Pro | Upstash Redis REST endpoint (entitlement store). |
 | `UPSTASH_REDIS_REST_TOKEN` | for durable Pro | Upstash Redis REST token. |
 | `STRIPE_SECRET_KEY` | for real payments | Enables Stripe Checkout. Without it, checkout mock-grants Pro. |
@@ -26,7 +28,19 @@ Set these in the Vercel project (Settings → Environment Variables):
 | `STRIPE_WEBHOOK_SECRET` | for real payments | Verifies `/api/stripe/webhook`. |
 
 If the Stripe vars are omitted, the app still works with a **mock checkout**
-(instant Pro grant) — good for a demo deploy.
+(instant Pro grant) — good for a demo deploy. GitHub auth is always required to
+sign in.
+
+### GitHub OAuth App (login)
+
+1. https://github.com/settings/developers → **New OAuth App**.
+2. **Homepage URL**: your deploy URL (e.g. `https://icon-library-eta.vercel.app`).
+3. **Authorization callback URL**: `https://<your-deploy>/api/auth/callback/github`.
+4. Copy the Client ID → `AUTH_GITHUB_ID`; generate a client secret → `AUTH_GITHUB_SECRET`.
+5. For local dev, add a second OAuth App (or callback) at
+   `http://localhost:3001/api/auth/callback/github`.
+
+`AUTH_SECRET` can be generated with `openssl rand -base64 33`.
 
 ### Entitlements store (Upstash Redis)
 

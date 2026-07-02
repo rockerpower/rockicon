@@ -9,12 +9,12 @@ export const dynamic = 'force-dynamic';
 // never see the paths — this is the enforcement point for the security
 // invariant (Pro vectors live only in icons-source, delivered on demand here).
 export async function GET(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ slug: string; name: string }> }
 ) {
   const { slug, name } = await params;
 
-  if (!(await isEntitled(req))) {
+  if (!(await isEntitled())) {
     return NextResponse.json({ error: 'Pro subscription required' }, { status: 402 });
   }
 
