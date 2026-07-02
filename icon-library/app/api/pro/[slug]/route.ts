@@ -11,7 +11,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  if (!isEntitled(req)) {
+  if (!(await isEntitled(req))) {
     return NextResponse.json({ error: 'Pro subscription required' }, { status: 402 });
   }
   return NextResponse.json({ icons: readAllProIcons(slug) }, {

@@ -30,6 +30,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Payment not verified' }, { status: 402 });
   }
 
-  setEntitlement(s.email, 'pro', 'stripe-confirm');
+  await setEntitlement(s.email, 'pro', 'stripe-confirm');
   return NextResponse.json({ ok: true, entitled: true });
 }

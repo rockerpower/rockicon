@@ -52,12 +52,12 @@ export function getSession(req: Request): Session | null {
 }
 
 // Tier is resolved from the store, never from the cookie.
-export function tierFor(req: Request): 'free' | 'pro' {
+export function tierFor(req: Request): Promise<'free' | 'pro'> {
   return getEntitlement(getSession(req)?.email);
 }
 
-export function isEntitled(req: Request): boolean {
-  return tierFor(req) === 'pro';
+export async function isEntitled(req: Request): Promise<boolean> {
+  return (await tierFor(req)) === 'pro';
 }
 
 export function newSession(email: string): Session {

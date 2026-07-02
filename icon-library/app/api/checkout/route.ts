@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 // GET — entitlement status (tier resolved from the store).
 export async function GET(req: Request) {
   const s = getSession(req);
-  return NextResponse.json({ entitled: tierFor(req) === 'pro', signedIn: !!s });
+  return NextResponse.json({ entitled: (await tierFor(req)) === 'pro', signedIn: !!s });
 }
 
 // POST — start checkout. Requires a signed-in session.
@@ -44,13 +44,13 @@ export async function POST(req: Request) {
   }
 
   // Mock grant (dev): mark Pro in the store.
-  setEntitlement(s.email, 'pro', 'mock-checkout');
+  await setEntitlement(s.email, 'pro', 'mock-checkout');
   return NextResponse.json({ mode: 'mock', ok: true, entitled: true });
 }
 
 // DELETE — downgrade to Free in the store (for testing the gated state).
 export async function DELETE(req: Request) {
   const s = getSession(req);
-  if (s) setEntitlement(s.email, 'free', 'mock-cancel');
+  if (s) await setEntitlement(s.email, 'free', 'mock-cancel');
   return NextResponse.json({ ok: true, entitled: false });
 }
