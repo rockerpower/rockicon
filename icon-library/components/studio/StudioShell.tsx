@@ -31,6 +31,9 @@ export function StudioShell({ families }: Props) {
   const [delOpen, setDelOpen] = useState(false);
   const [delText, setDelText] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [newOpen, setNewOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [creating, setCreating] = useState(false);
 
   const flash = useCallback((msg: string) => {
     setToast(msg);
@@ -83,6 +86,17 @@ export function StudioShell({ families }: Props) {
     } catch { /* ignore */ }
   }, [slug]);
 
+  // Re-fetch family.json without resetting the active tab (used after a bulk
+  // import auto-creates taxonomy on the server).
+  const reloadFamily = useCallback(async () => {
+    if (!slug) return;
+    try {
+      const res = await fetch(`/api/studio/family/${slug}`);
+      const data = await res.json();
+      if (res.ok) { setFamily(data.family); setDirty(false); }
+    } catch { /* ignore */ }
+  }, [slug]);
+
   const [building, setBuilding] = useState(false);
   const rebuild = useCallback(async () => {
     setBuilding(true);
@@ -118,6 +132,30 @@ export function StudioShell({ families }: Props) {
     setDeleting(false);
   }, [slug, refreshList, flash]);
 
+  const newSlug = slugify(newName);
+  const createFamily = useCallback(async () => {
+    const s = slugify(newName);
+    if (!s) { flash('Name required'); return; }
+    if (list.some(f => f.slug === s)) { flash(`"${s}" already exists`); return; }
+    setCreating(true);
+    const meta: FamilyMeta = {
+      id: s, name: newName.trim(), slug: s,
+      authors: [{ name: '' }], license: 'mit', defaultTier: 'free', status: 'draft',
+      bundles: PREDEFINED_BUNDLES.filter(b => b.id === 'outline' || b.id === 'solid')
+        .map(b => ({ id: b.id, name: b.name, strokeBased: b.strokeBased, predefined: true })),
+      categories: [],
+    };
+    try {
+      const res = await fetch(`/api/studio/family/${s}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ family: meta }),
+      });
+      const data = await res.json();
+      if (res.ok) { setNewOpen(false); setNewName(''); await refreshList(); await loadFamily(s); flash('Family created (draft)'); }
+      else flash(data.error ?? 'Create failed');
+    } catch { flash('Create failed'); }
+    setCreating(false);
+  }, [newName, list, refreshList, loadFamily, flash]);
+
   const exportJson = useCallback(() => {
     if (!family) return;
     const blob = new Blob([JSON.stringify(family, null, 2) + '\n'], { type: 'application/json' });
@@ -137,7 +175,10 @@ export function StudioShell({ families }: Props) {
           <a href="/" style={{ fontSize: 11, color: 'var(--muted)', textDecoration: 'none' }}>← Browse</a>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: 8 }}>
-          <div style={{ ...LABEL, padding: '4px 8px', marginBottom: 2 }}>Families</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', marginBottom: 2 }}>
+            <span style={LABEL}>Families</span>
+            <button onClick={() => { setNewName(''); setNewOpen(true); }} title="New family" style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: 12, fontWeight: 600, padding: 0 }}>+ New</button>
+          </div>
           {list.map(f => (
             <button
               key={f.slug}
@@ -179,12 +220,30 @@ export function StudioShell({ families }: Props) {
                 {tab === 'meta' && <MetaTab family={family} update={update} onRequestDelete={() => { setDelText(''); setDelOpen(true); }} />}
                 {tab === 'bundles' && <BundlesTab family={family} update={update} />}
                 {tab === 'categories' && <CategoriesTab family={family} update={update} />}
-                {tab === 'icons' && <IconsTab family={family} icons={icons} update={update} slug={slug!} onReload={reloadIcons} flash={flash} />}
+                {tab === 'icons' && <IconsTab family={family} icons={icons} update={update} slug={slug!} onReload={reloadIcons} onReloadFamily={reloadFamily} flash={flash} />}
               </div>
             </div>
           </>
         )}
       </div>
+
+      {/* New family */}
+      {newOpen && (
+        <div onClick={() => !creating && setNewOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.55)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 380, padding: 24, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}>
+            <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 10 }}>New family</div>
+            <label style={LABEL}>Name</label>
+            <input autoFocus value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && newSlug) createFamily(); }} placeholder="My Icons" style={{ ...INPUT, marginBottom: 8 }} />
+            <div style={{ fontSize: 11.5, color: 'var(--muted-2)', marginBottom: 14 }}>
+              Slug: <code style={{ fontFamily: 'monospace', color: 'var(--muted)' }}>{newSlug || '—'}</code> · starts as <strong style={{ color: 'var(--muted)' }}>draft</strong> with outline + solid bundles. Set Status = published in Meta to go live.
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setNewOpen(false)} disabled={creating} style={BTN}>Cancel</button>
+              <button onClick={createFamily} disabled={creating || !newSlug} style={{ ...BTN_PRIMARY, opacity: creating || !newSlug ? .5 : 1 }}>{creating ? 'Creating…' : 'Create family'}</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete-family confirm (type the slug) */}
       {delOpen && family && (
@@ -355,43 +414,78 @@ function CategoriesTab({ family, update }: { family: FamilyMeta; update: (p: Par
 }
 
 // ── SVG upload / ingest ──────────────────────────────────────────────────────
-interface StagedSvg { name: string; svg: string; error?: string }
+// Folder-mode staged items carry their own bundle/category/subcategory (parsed
+// from the folder path); file-mode items fall back to the dropdowns.
+interface StagedSvg { name: string; svg: string; error?: string; bundleId?: string; categoryId?: string; subcategoryId?: string }
 
-function UploadPanel({ family, slug, onReload, flash }: { family: FamilyMeta; slug: string; onReload: () => void; flash: (m: string) => void }) {
+function UploadPanel({ family, slug, onReload, onReloadFamily, flash }: { family: FamilyMeta; slug: string; onReload: () => void; onReloadFamily: () => void; flash: (m: string) => void }) {
   const [open, setOpen] = useState(false);
   const [bundleId, setBundleId] = useState(family.bundles[0]?.id ?? '');
   const [categoryId, setCategoryId] = useState(family.categories[0]?.id ?? '');
   const [subcategoryId, setSubcategoryId] = useState('');
   const [staged, setStaged] = useState<StagedSvg[]>([]);
   const [busy, setBusy] = useState(false);
+  const [showTpl, setShowTpl] = useState(false);
 
   const cat = family.categories.find(c => c.id === categoryId);
   const subs = cat?.subcategories ?? [];
+  const isSafe = (t: string) => /<svg[\s>]/i.test(t) && !/<script|on\w+\s*=/i.test(t);
 
+  // Single-category: assign the dropdown target at submit time.
   const onFiles = async (files: FileList | null) => {
     if (!files) return;
     const next: StagedSvg[] = [];
     for (const file of Array.from(files)) {
+      if (!file.name.toLowerCase().endsWith('.svg')) continue;
       const text = await file.text();
       const name = file.name.replace(/\.svg$/i, '');
-      const ok = /<svg[\s>]/i.test(text) && !/<script|on\w+\s*=/i.test(text);
-      next.push({ name, svg: text, error: ok ? undefined : 'invalid/unsafe' });
+      next.push({ name, svg: text, error: isSafe(text) ? undefined : 'invalid/unsafe' });
     }
     setStaged(prev => [...prev, ...next]);
   };
 
+  // Folder: derive bundle/category/[sub] from <root>/<bundle>/<cat>/[<sub>/]<name>.svg
+  const onFolder = async (files: FileList | null) => {
+    if (!files) return;
+    const next: StagedSvg[] = [];
+    for (const file of Array.from(files)) {
+      if (!file.name.toLowerCase().endsWith('.svg')) continue;
+      const rel = (file as unknown as { webkitRelativePath?: string }).webkitRelativePath || file.name;
+      const parts = rel.split('/').filter(Boolean).slice(1); // drop the picked root folder
+      const name = (parts[parts.length - 1] || file.name).replace(/\.svg$/i, '');
+      let bundleId: string | undefined, categoryId: string | undefined, subcategoryId: string | undefined, error: string | undefined;
+      if (parts.length === 3) { bundleId = slugify(parts[0]); categoryId = slugify(parts[1]); }
+      else if (parts.length === 4) { bundleId = slugify(parts[0]); categoryId = slugify(parts[1]); subcategoryId = slugify(parts[2]); }
+      else error = 'bad path (need bundle/category/name.svg)';
+      const text = await file.text();
+      if (!error && !isSafe(text)) error = 'invalid/unsafe';
+      next.push({ name, svg: text, error, bundleId, categoryId, subcategoryId });
+    }
+    setStaged(prev => [...prev, ...next]);
+  };
+
+  const targetOf = (s: StagedSvg) => ({
+    bundleId: s.bundleId ?? bundleId,
+    categoryId: s.categoryId ?? categoryId,
+    subcategoryId: (s.bundleId ? s.subcategoryId : subcategoryId) || undefined,
+  });
+
   const submit = async () => {
     const valid = staged.filter(s => !s.error);
     if (valid.length === 0) { flash('Nothing to upload'); return; }
+    const folderMode = valid.some(s => s.bundleId); // auto-create taxonomy for folder imports
     setBusy(true);
     try {
-      const items = valid.map(s => ({ bundleId, categoryId, subcategoryId: subcategoryId || undefined, name: s.name, svg: s.svg }));
+      const items = valid.map(s => ({ ...targetOf(s), name: s.name, svg: s.svg }));
       const res = await fetch(`/api/studio/family/${slug}/upload`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items, autoCreateTaxonomy: folderMode }),
       });
       const data = await res.json();
-      if (res.ok && data.ok) { flash(`Uploaded ${data.written.length} icon(s)`); setStaged([]); onReload(); }
-      else flash(data.errors?.[0] ?? data.error ?? 'Upload failed');
+      if (res.ok && data.ok) {
+        flash(`Uploaded ${data.written.length} icon(s)`); setStaged([]); onReload();
+        if (folderMode) onReloadFamily();
+      } else flash(data.errors?.[0] ?? data.error ?? 'Upload failed');
     } catch { flash('Upload failed'); }
     setBusy(false);
   };
@@ -416,19 +510,46 @@ function UploadPanel({ family, slug, onReload, flash }: { family: FamilyMeta; sl
             </div>
           </div>
 
-          <label style={{ ...BTN, alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center' }}>
-            Choose .svg files
-            <input type="file" accept=".svg,image/svg+xml" multiple style={{ display: 'none' }} onChange={e => onFiles(e.target.files)} />
-          </label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <label style={{ ...BTN, display: 'inline-flex', alignItems: 'center' }}>
+              Choose .svg files
+              <input type="file" accept=".svg,image/svg+xml" multiple style={{ display: 'none' }} onChange={e => onFiles(e.target.files)} />
+            </label>
+            <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>to <strong style={{ color: 'var(--muted)' }}>{bundleId}/{categoryId}{subcategoryId ? '/' + subcategoryId : ''}</strong></span>
+            <span style={{ width: 1, height: 20, background: 'var(--border)' }} />
+            <label style={{ ...BTN, display: 'inline-flex', alignItems: 'center' }}>
+              Choose folder (bulk)
+              <input type="file" style={{ display: 'none' }} onChange={e => onFolder(e.target.files)} {...{ webkitdirectory: '', directory: '' } as Record<string, string>} />
+            </label>
+            <button type="button" onClick={() => setShowTpl(t => !t)} style={{ background: 'transparent', border: 'none', color: 'var(--muted-2)', cursor: 'pointer', fontSize: 11, textDecoration: 'underline' }}>folder structure?</button>
+          </div>
+
+          {showTpl && (
+            <pre style={{ margin: 0, padding: '10px 12px', background: 'var(--field)', border: '1px solid var(--border)', borderRadius: 8, fontFamily: 'monospace', fontSize: 10.5, lineHeight: 1.5, color: 'var(--muted)', whiteSpace: 'pre-wrap' }}>{`your-folder/
+  outline/            ← bundle (outline=stroke, solid=fill)
+    interface/        ← category
+      home.svg
+    navigation/
+      wayfinding/     ← optional subcategory
+        compass.svg
+  solid/
+    interface/
+      home.svg        ← same filename = same icon (another style)
+
+Missing bundles/categories are created automatically.`}</pre>
+          )}
 
           {staged.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {staged.map((s, i) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 260, overflowY: 'auto' }}>
+              {staged.map((s, i) => {
+                const t = targetOf(s);
+                return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontFamily: 'monospace', color: s.error ? '#e5645a' : 'var(--muted)' }}>
-                  <span style={{ flex: 1 }}>{slugify(s.name)}.svg → {bundleId}/{categoryId}{subcategoryId ? '/' + subcategoryId : ''}{s.error ? `  (${s.error})` : ''}</span>
+                  <span style={{ flex: 1 }}>{t.bundleId}/{t.categoryId}{t.subcategoryId ? '/' + t.subcategoryId : ''}/{slugify(s.name)}.svg{s.error ? `  (${s.error})` : ''}</span>
                   <button onClick={() => setStaged(prev => prev.filter((_, idx) => idx !== i))} style={{ ...BTN, width: 24, height: 24, padding: 0, fontSize: 11 }}>✕</button>
                 </div>
-              ))}
+                );
+              })}
               <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
                 <button onClick={submit} disabled={busy} style={{ ...BTN_PRIMARY, opacity: busy ? .5 : 1 }}>{busy ? 'Uploading…' : `Upload ${staged.filter(s => !s.error).length} icon(s)`}</button>
                 <button onClick={() => setStaged([])} style={BTN}>Clear</button>
@@ -443,7 +564,7 @@ function UploadPanel({ family, slug, onReload, flash }: { family: FamilyMeta; sl
 }
 
 // ── Icons tab (per-icon overrides: display name, tier, tags) ─────────────────
-function IconsTab({ family, icons, update, slug, onReload, flash }: { family: FamilyMeta; icons: SourceIcon[]; update: (p: Partial<FamilyMeta>) => void; slug: string; onReload: () => void; flash: (m: string) => void }) {
+function IconsTab({ family, icons, update, slug, onReload, onReloadFamily, flash }: { family: FamilyMeta; icons: SourceIcon[]; update: (p: Partial<FamilyMeta>) => void; slug: string; onReload: () => void; onReloadFamily: () => void; flash: (m: string) => void }) {
   const [q, setQ] = useState('');
   const [pendingDel, setPendingDel] = useState<string | null>(null);
   const overrides = family.overrides ?? {};
@@ -485,7 +606,7 @@ function IconsTab({ family, icons, update, slug, onReload, flash }: { family: Fa
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <UploadPanel family={family} slug={slug} onReload={onReload} flash={flash} />
+      <UploadPanel family={family} slug={slug} onReload={onReload} onReloadFamily={onReloadFamily} flash={flash} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <input style={{ ...INPUT, flex: 1, maxWidth: 280 }} placeholder="Filter icons…" value={q} onChange={e => setQ(e.target.value)} />
         <span style={{ fontSize: 12, color: 'var(--muted-2)', fontFamily: 'monospace' }}>{icons.length} icons · {proCount} pro</span>

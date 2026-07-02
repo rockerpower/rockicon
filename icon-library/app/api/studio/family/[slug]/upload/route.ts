@@ -1,12 +1,43 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { isStudioEnabled, readSourceFamily } from '@/lib/studio';
+import { isStudioEnabled, readSourceFamily, writeSourceFamily } from '@/lib/studio';
+import { PREDEFINED_BUNDLES } from '@/taxonomy.config';
+import type { FamilyMeta } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 const SOURCE_DIR = path.join(process.cwd(), 'icons-source');
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+const humanize = (id: string) => id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+// Add any bundles/categories/subcategories referenced by items that don't yet
+// exist in the family. Returns true if the family was mutated (and persisted).
+function ensureTaxonomy(slug: string, family: FamilyMeta, items: UploadItem[]): boolean {
+  let changed = false;
+  for (const item of items) {
+    if (item.bundleId && !family.bundles.some(b => b.id === item.bundleId)) {
+      const preset = PREDEFINED_BUNDLES.find(p => p.id === item.bundleId);
+      family.bundles.push(preset
+        ? { id: preset.id, name: preset.name, strokeBased: preset.strokeBased, predefined: true }
+        : { id: item.bundleId, name: humanize(item.bundleId), strokeBased: false, predefined: false });
+      changed = true;
+    }
+    if (item.categoryId && !family.categories.some(c => c.id === item.categoryId)) {
+      family.categories.push({ id: item.categoryId, name: humanize(item.categoryId), subcategories: [] });
+      changed = true;
+    }
+    if (item.categoryId && item.subcategoryId) {
+      const cat = family.categories.find(c => c.id === item.categoryId);
+      if (cat && !cat.subcategories.some(s => s.id === item.subcategoryId)) {
+        cat.subcategories.push({ id: item.subcategoryId, name: humanize(item.subcategoryId) });
+        changed = true;
+      }
+    }
+  }
+  if (changed) writeSourceFamily(slug, family);
+  return changed;
+}
 
 interface UploadItem {
   bundleId: string;
@@ -36,12 +67,16 @@ export async function POST(
   const family = readSourceFamily(slug);
   if (!family) return NextResponse.json({ error: 'Family not found' }, { status: 404 });
 
-  let body: { items?: UploadItem[] };
+  let body: { items?: UploadItem[]; autoCreateTaxonomy?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const items = body.items;
   if (!Array.isArray(items) || items.length === 0) {
     return NextResponse.json({ error: 'No items' }, { status: 400 });
   }
+
+  // Optionally create bundles/categories/subcategories implied by the items
+  // (used by the folder bulk-import) before validating against the family.
+  if (body.autoCreateTaxonomy) ensureTaxonomy(slug, family, items);
 
   const written: string[] = [];
   const errors: string[] = [];
