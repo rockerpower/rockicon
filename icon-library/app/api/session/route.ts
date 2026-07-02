@@ -11,7 +11,7 @@ function sessionCookieOpts() {
 // GET — current session status (tier resolved from the store).
 export async function GET(req: Request) {
   const s = getSession(req);
-  return NextResponse.json({ session: s ? { email: s.email, tier: tierFor(req) } : null });
+  return NextResponse.json({ session: s ? { email: s.email, tier: await tierFor(req) } : null });
 }
 
 // POST — mock login. In production, replace with a real auth provider
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return NextResponse.json({ error: 'Valid email required' }, { status: 400 });
   }
-  const res = NextResponse.json({ ok: true, session: { email, tier: getEntitlement(email) } });
+  const res = NextResponse.json({ ok: true, session: { email, tier: await getEntitlement(email) } });
   res.cookies.set(SESSION_COOKIE, signSession(newSession(email)), sessionCookieOpts());
   return res;
 }

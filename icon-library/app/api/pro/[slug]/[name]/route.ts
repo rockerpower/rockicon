@@ -14,7 +14,7 @@ export async function GET(
 ) {
   const { slug, name } = await params;
 
-  if (!isEntitled(req)) {
+  if (!(await isEntitled(req))) {
     return NextResponse.json({ error: 'Pro subscription required' }, { status: 402 });
   }
 

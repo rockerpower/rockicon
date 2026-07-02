@@ -19,12 +19,24 @@ Set these in the Vercel project (Settings → Environment Variables):
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `SESSION_SECRET` | yes | Signs the session cookie. Use a long random string. |
+| `UPSTASH_REDIS_REST_URL` | for durable Pro | Upstash Redis REST endpoint (entitlement store). |
+| `UPSTASH_REDIS_REST_TOKEN` | for durable Pro | Upstash Redis REST token. |
 | `STRIPE_SECRET_KEY` | for real payments | Enables Stripe Checkout. Without it, checkout mock-grants Pro. |
 | `STRIPE_PRICE_ID` | for real payments | The recurring price the checkout subscribes to. |
 | `STRIPE_WEBHOOK_SECRET` | for real payments | Verifies `/api/stripe/webhook`. |
 
 If the Stripe vars are omitted, the app still works with a **mock checkout**
 (instant Pro grant) — good for a demo deploy.
+
+### Entitlements store (Upstash Redis)
+
+Pro entitlements are keyed by email. To make them durable on Vercel:
+
+1. In the Vercel project → **Storage** → add **Upstash for Redis** (Marketplace,
+   has a free tier). Vercel auto-injects `UPSTASH_REDIS_REST_URL` and
+   `UPSTASH_REDIS_REST_TOKEN`.
+2. Redeploy. `lib/entitlements-store.ts` uses Redis automatically when both vars
+   are present; otherwise it falls back to a local JSON file / in-memory (dev).
 
 ## 3. Stripe webhook (only if using real payments)
 
@@ -39,11 +51,10 @@ Add an endpoint in the Stripe dashboard pointing to
 - **Studio (`/studio`) is disabled in production** (`NODE_ENV === 'production'`).
   It's a local authoring tool: run `npm run dev` locally to edit families, then
   commit `icons-source/` + `family.json` and redeploy.
-- **Entitlements store** (`lib/entitlements-store.ts`) writes a JSON file. On
-  Vercel's read-only filesystem it falls back to in-memory (per-instance,
-  ephemeral). For durable Pro entitlements, swap it for a database (Vercel KV,
-  Postgres, etc.) — the `getEntitlement` / `setEntitlement` interface stays the
-  same.
+- **Entitlements store** (`lib/entitlements-store.ts`) uses Upstash Redis when
+  its env vars are set (durable). Without them it falls back to a local JSON
+  file, then to in-memory on a read-only FS (ephemeral, per-instance) — fine for
+  dev but connect Upstash for production so Pro grants survive.
 - The **security invariant holds on Vercel**: Pro vectors ship with empty paths
   in the public index and are delivered only from `icons-source/` server-side
   via `/api/pro/*` (force-included in the function bundle via

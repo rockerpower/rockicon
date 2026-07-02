@@ -37,11 +37,11 @@ export async function POST(req: Request) {
   switch (event.type) {
     case 'checkout.session.completed':
     case 'customer.subscription.created':
-      if (email) setEntitlement(email, 'pro', 'stripe-webhook');
+      if (email) await setEntitlement(email, 'pro', 'stripe-webhook');
       break;
     case 'customer.subscription.deleted':
     case 'invoice.payment_failed':
-      if (email) setEntitlement(email, 'free', 'stripe-webhook');
+      if (email) await setEntitlement(email, 'free', 'stripe-webhook');
       break;
   }
 
