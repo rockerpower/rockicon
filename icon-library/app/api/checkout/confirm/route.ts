@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/session';
+import { currentEmail } from '@/lib/session';
 import { setEntitlement } from '@/lib/entitlements-store';
 
 export const dynamic = 'force-dynamic';
@@ -8,8 +8,8 @@ export const dynamic = 'force-dynamic';
 // signed-in user and was paid, then upgrade the session to Pro. Called by the
 // client after redirect to /?checkout=success&session_id=...
 export async function POST(req: Request) {
-  const s = getSession(req);
-  if (!s) return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
+  const email = await currentEmail();
+  if (!email) return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
 
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) return NextResponse.json({ error: 'Stripe not configured' }, { status: 400 });
@@ -25,11 +25,11 @@ export async function POST(req: Request) {
   if (!resp.ok) return NextResponse.json({ error: data.error?.message ?? 'Stripe error' }, { status: 502 });
 
   const paid = data.payment_status === 'paid' || data.status === 'complete';
-  const emailMatches = (data.customer_email ?? data.customer_details?.email ?? '').toLowerCase() === s.email;
+  const emailMatches = (data.customer_email ?? data.customer_details?.email ?? '').toLowerCase() === email.toLowerCase();
   if (!paid || !emailMatches) {
     return NextResponse.json({ error: 'Payment not verified' }, { status: 402 });
   }
 
-  await setEntitlement(s.email, 'pro', 'stripe-confirm');
+  await setEntitlement(email, 'pro', 'stripe-confirm');
   return NextResponse.json({ ok: true, entitled: true });
 }

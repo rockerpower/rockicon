@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getSession, tierFor } from '@/lib/session';
+import { currentEmail, tierFor } from '@/lib/session';
 import { setEntitlement } from '@/lib/entitlements-store';
 
 export const dynamic = 'force-dynamic';
 
 // GET — entitlement status (tier resolved from the store).
-export async function GET(req: Request) {
-  const s = getSession(req);
-  return NextResponse.json({ entitled: (await tierFor(req)) === 'pro', signedIn: !!s });
+export async function GET() {
+  const email = await currentEmail();
+  return NextResponse.json({ entitled: (await tierFor()) === 'pro', signedIn: !!email });
 }
 
 // POST — start checkout. Requires a signed-in session.
@@ -16,8 +16,8 @@ export async function GET(req: Request) {
 //   return via /api/checkout/confirm (or a webhook) after payment.
 // - Otherwise (local dev): grant Pro immediately (mock).
 export async function POST(req: Request) {
-  const s = getSession(req);
-  if (!s) return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
+  const email = await currentEmail();
+  if (!email) return NextResponse.json({ error: 'Sign in required' }, { status: 401 });
 
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   const priceId = process.env.STRIPE_PRICE_ID;
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     params.set('mode', 'subscription');
     params.set('line_items[0][price]', priceId);
     params.set('line_items[0][quantity]', '1');
-    params.set('customer_email', s.email);
+    params.set('customer_email', email);
     params.set('success_url', `${origin}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`);
     params.set('cancel_url', `${origin}/?checkout=cancel`);
 
@@ -44,13 +44,13 @@ export async function POST(req: Request) {
   }
 
   // Mock grant (dev): mark Pro in the store.
-  await setEntitlement(s.email, 'pro', 'mock-checkout');
+  await setEntitlement(email, 'pro', 'mock-checkout');
   return NextResponse.json({ mode: 'mock', ok: true, entitled: true });
 }
 
 // DELETE — downgrade to Free in the store (for testing the gated state).
-export async function DELETE(req: Request) {
-  const s = getSession(req);
-  if (s) await setEntitlement(s.email, 'free', 'mock-cancel');
+export async function DELETE() {
+  const email = await currentEmail();
+  if (email) await setEntitlement(email, 'free', 'mock-cancel');
   return NextResponse.json({ ok: true, entitled: false });
 }
