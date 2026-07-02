@@ -129,6 +129,19 @@ function main() {
 
   console.log(`Building ${families.length} famil${families.length === 1 ? 'y' : 'ies'}…`);
   for (const fam of families) buildFamily(fam);
+
+  // Prune orphaned output: public/icons-data dirs with no source family
+  // (e.g. a family deleted in Studio) must not linger in the deployed catalog.
+  const sourceSlugs = new Set(families);
+  if (fs.existsSync(ICONS_OUT)) {
+    for (const entry of fs.readdirSync(ICONS_OUT, { withFileTypes: true })) {
+      if (entry.isDirectory() && !sourceSlugs.has(entry.name)) {
+        fs.rmSync(path.join(ICONS_OUT, entry.name), { recursive: true, force: true });
+        console.log(`  pruned orphaned output: ${entry.name}`);
+      }
+    }
+  }
+
   console.log('Done.');
 }
 

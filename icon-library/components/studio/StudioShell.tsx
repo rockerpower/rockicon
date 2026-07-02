@@ -19,7 +19,7 @@ const BTN: React.CSSProperties = { height: 34, padding: '0 14px', borderRadius: 
 const BTN_PRIMARY: React.CSSProperties = { ...BTN, background: 'var(--foreground)', color: 'var(--background)', border: 'none' };
 
 export function StudioShell({ families }: Props) {
-  const [list] = useState<FamilySummary[]>(families);
+  const [list, setList] = useState<FamilySummary[]>(families);
   const [slug, setSlug] = useState<string | null>(null);
   const [family, setFamily] = useState<FamilyMeta | null>(null);
   const [icons, setIcons] = useState<SourceIcon[]>([]);
@@ -28,6 +28,9 @@ export function StudioShell({ families }: Props) {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [toast, setToast] = useState('');
+  const [delOpen, setDelOpen] = useState(false);
+  const [delText, setDelText] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   const flash = useCallback((msg: string) => {
     setToast(msg);
@@ -91,6 +94,30 @@ export function StudioShell({ families }: Props) {
     setBuilding(false);
   }, [flash]);
 
+  const refreshList = useCallback(async () => {
+    try {
+      const res = await fetch('/api/studio/families');
+      const data = await res.json();
+      if (res.ok) setList(data.families);
+    } catch { /* ignore */ }
+  }, []);
+
+  const deleteFamily = useCallback(async () => {
+    if (!slug) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/studio/family/${slug}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok) {
+        setDelOpen(false); setDelText('');
+        setSlug(null); setFamily(null); setIcons([]);
+        await refreshList();
+        flash('Family deleted — Rebuild to update the catalog');
+      } else flash(data.error ?? 'Delete failed');
+    } catch { flash('Delete failed'); }
+    setDeleting(false);
+  }, [slug, refreshList, flash]);
+
   const exportJson = useCallback(() => {
     if (!family) return;
     const blob = new Blob([JSON.stringify(family, null, 2) + '\n'], { type: 'application/json' });
@@ -149,7 +176,7 @@ export function StudioShell({ families }: Props) {
 
             <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
               <div style={{ maxWidth: tab === 'icons' ? 980 : 640 }}>
-                {tab === 'meta' && <MetaTab family={family} update={update} />}
+                {tab === 'meta' && <MetaTab family={family} update={update} onRequestDelete={() => { setDelText(''); setDelOpen(true); }} />}
                 {tab === 'bundles' && <BundlesTab family={family} update={update} />}
                 {tab === 'categories' && <CategoriesTab family={family} update={update} />}
                 {tab === 'icons' && <IconsTab family={family} icons={icons} update={update} slug={slug!} onReload={reloadIcons} flash={flash} />}
@@ -158,6 +185,30 @@ export function StudioShell({ families }: Props) {
           </>
         )}
       </div>
+
+      {/* Delete-family confirm (type the slug) */}
+      {delOpen && family && (
+        <div onClick={() => !deleting && setDelOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.55)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 400, padding: 24, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}>
+            <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 8 }}>Delete family</div>
+            <p style={{ margin: '0 0 14px', fontSize: 13, lineHeight: 1.5, color: 'var(--muted)' }}>
+              This permanently removes <strong style={{ color: 'var(--foreground)' }}>{family.name}</strong> and all its icons from <code style={{ fontFamily: 'monospace' }}>icons-source/{family.slug}/</code>. This cannot be undone.
+            </p>
+            <label style={LABEL}>Type <code style={{ fontFamily: 'monospace', color: 'var(--foreground)' }}>{family.slug}</code> to confirm</label>
+            <input autoFocus value={delText} onChange={e => setDelText(e.target.value)} placeholder={family.slug} style={{ ...INPUT, fontFamily: 'monospace', marginBottom: 14 }} />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setDelOpen(false)} disabled={deleting} style={BTN}>Cancel</button>
+              <button
+                onClick={deleteFamily}
+                disabled={deleting || delText !== family.slug}
+                style={{ ...BTN, background: '#c0392b', color: '#fff', border: 'none', opacity: deleting || delText !== family.slug ? .5 : 1 }}
+              >
+                {deleting ? 'Deleting…' : 'Delete family'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && (
         <div className="toast-in" style={{ position: 'fixed', bottom: 24, left: '50%', zIndex: 99, height: 40, display: 'flex', alignItems: 'center', padding: '0 16px', background: 'var(--foreground)', color: 'var(--background)', borderRadius: 10, fontSize: 13, fontWeight: 600 }}>
@@ -169,7 +220,7 @@ export function StudioShell({ families }: Props) {
 }
 
 // ── Meta tab ─────────────────────────────────────────────────────────────────
-function MetaTab({ family, update }: { family: FamilyMeta; update: (p: Partial<FamilyMeta>) => void }) {
+function MetaTab({ family, update, onRequestDelete }: { family: FamilyMeta; update: (p: Partial<FamilyMeta>) => void; onRequestDelete: () => void }) {
   const setAuthor = (i: number, patch: Partial<Credit>) => {
     const authors = family.authors.map((a, idx) => idx === i ? { ...a, ...patch } : a);
     update({ authors });
@@ -215,6 +266,15 @@ function MetaTab({ family, update }: { family: FamilyMeta; update: (p: Partial<F
             </div>
           ))}
           <button onClick={() => update({ authors: [...family.authors, { name: '' }] })} style={{ ...BTN, alignSelf: 'flex-start' }}>+ Add author</button>
+        </div>
+      </div>
+
+      {/* Danger zone */}
+      <div style={{ marginTop: 12, padding: 16, border: '1px solid #5a2a26', borderRadius: 12, background: 'rgba(192,57,43,.06)' }}>
+        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#e5645a', marginBottom: 4 }}>Danger zone</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>Permanently delete this family and all its icons.</span>
+          <button onClick={onRequestDelete} style={{ ...BTN, flexShrink: 0, background: 'transparent', color: '#e5645a', border: '1px solid #5a2a26' }}>Delete family</button>
         </div>
       </div>
     </div>
@@ -385,6 +445,7 @@ function UploadPanel({ family, slug, onReload, flash }: { family: FamilyMeta; sl
 // ── Icons tab (per-icon overrides: display name, tier, tags) ─────────────────
 function IconsTab({ family, icons, update, slug, onReload, flash }: { family: FamilyMeta; icons: SourceIcon[]; update: (p: Partial<FamilyMeta>) => void; slug: string; onReload: () => void; flash: (m: string) => void }) {
   const [q, setQ] = useState('');
+  const [pendingDel, setPendingDel] = useState<string | null>(null);
   const overrides = family.overrides ?? {};
 
   // Write an override for one icon, pruning it back out when it matches defaults.
@@ -397,6 +458,23 @@ function IconsTab({ family, icons, update, slug, onReload, flash }: { family: Fa
     if (Object.keys(merged).length === 0) delete next[name];
     else next[name] = merged;
     update({ overrides: next });
+  };
+
+  // Delete one icon (all its .svg files) + drop its override locally.
+  const deleteIcon = async (name: string) => {
+    try {
+      const res = await fetch(`/api/studio/family/${slug}/icons/${name}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok) {
+        if (overrides[name]) {
+          const next = { ...overrides }; delete next[name];
+          update({ overrides: Object.keys(next).length ? next : undefined });
+        }
+        flash(`Deleted ${name} — Rebuild to update`);
+        onReload();
+      } else flash(data.error ?? 'Delete failed');
+    } catch { flash('Delete failed'); }
+    setPendingDel(null);
   };
 
   const filtered = q.trim()
@@ -417,8 +495,8 @@ function IconsTab({ family, icons, update, slug, onReload, flash }: { family: Fa
 
       <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
         {/* header row */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 2fr 120px', gap: 10, padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--surface-2)', ...LABEL, marginBottom: 0 }}>
-          <span>Icon</span><span>Category</span><span>Bundles</span><span>Tags</span><span>Tier</span>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 2fr 120px 44px', gap: 10, padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--surface-2)', ...LABEL, marginBottom: 0 }}>
+          <span>Icon</span><span>Category</span><span>Bundles</span><span>Tags</span><span>Tier</span><span></span>
         </div>
         {filtered.map(ic => {
           const ov = overrides[ic.name] ?? {};
@@ -426,7 +504,7 @@ function IconsTab({ family, icons, update, slug, onReload, flash }: { family: Fa
           const tags = ov.tags ?? ic.name.split('-');
           const displayName = ov.name ?? ic.name.replace(/-/g, ' ');
           return (
-            <div key={ic.name} style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 2fr 120px', gap: 10, padding: '8px 12px', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
+            <div key={ic.name} style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr 2fr 120px 44px', gap: 10, padding: '8px 12px', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
                 <input style={{ ...INPUT, height: 28, fontSize: 12.5 }} value={displayName} onChange={e => setOverride(ic.name, { name: e.target.value })} />
                 <span style={{ fontFamily: 'monospace', fontSize: 9.5, color: 'var(--muted-2)' }}>{ic.name}.svg</span>
@@ -439,6 +517,11 @@ function IconsTab({ family, icons, update, slug, onReload, flash }: { family: Fa
                   <button key={t} onClick={() => setOverride(ic.name, { tier: t })} style={{ flex: 1, height: 28, borderRadius: 7, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', border: 'none', background: tier === t ? (t === 'pro' ? 'var(--pro, #7C6AE8)' : 'var(--foreground)') : 'var(--surface-2)', color: tier === t ? (t === 'pro' ? '#fff' : 'var(--background)') : 'var(--muted-2)' }}>{t}</button>
                 ))}
               </div>
+              {pendingDel === ic.name ? (
+                <button onClick={() => deleteIcon(ic.name)} onBlur={() => setPendingDel(null)} autoFocus title="Click to confirm delete" style={{ height: 28, borderRadius: 7, fontSize: 10, fontWeight: 700, cursor: 'pointer', border: 'none', background: '#c0392b', color: '#fff' }}>Sure?</button>
+              ) : (
+                <button onClick={() => setPendingDel(ic.name)} title={`Delete ${ic.name}.svg`} style={{ height: 28, borderRadius: 7, cursor: 'pointer', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted-2)' }}>✕</button>
+              )}
             </div>
           );
         })}
