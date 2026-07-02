@@ -17,12 +17,6 @@
         "name": "Outline",
         "strokeBased": true,
         "predefined": true
-      },
-      {
-        "id": "solid",
-        "name": "Solid",
-        "strokeBased": false,
-        "predefined": true
       }
     ],
     "categories": [
