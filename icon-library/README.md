@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Icon Library
 
-## Getting Started
+A Streamline-style icon browser (Next.js App Router) with a Free public catalog and Pro tiers. Live at `rockicon.vercel.app`.
 
-First, run the development server:
+## Develop
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3001
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `npm run build:icons` — normalize `icons-source/` SVGs into `public/icons-data/`
+- `npm run build` — runs `build:icons` then `next build`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Icon source layout
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Icons live in the repo and are normalized at build time. The folder structure **is** the taxonomy:
 
-## Learn More
+```
+icons-source/
+  <family>/              # e.g. rockicon
+    family.json          # family metadata (name, bundles, categories, tiers)
+    <bundle>/            # outline = stroke, solid = fill
+      <category>/        # e.g. interface
+        home.svg
+        settings.svg
+      <category>/
+        <subcategory>/   # optional
+          compass.svg
+```
 
-To learn more about Next.js, take a look at the following resources:
+- **Same filename across bundles = the same icon** (e.g. `outline/interface/home.svg` and `solid/interface/home.svg` are two styles of `home`).
+- Pro icons are marked in `family.json` `overrides` (`{ "cart": { "tier": "pro" } }`); their vectors are stripped from the public index and delivered only to entitled users.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Adding icons via GitHub (no local setup)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Upload `.svg` files into `icon-library/icons-source/<family>/<bundle>/<category>/` (GitHub → Add file → Upload files). Push to `main` → Vercel auto-deploys.
 
-## Deploy on Vercel
+## Studio (`/studio`, dev-only)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+A local authoring UI (disabled in production). Run `npm run dev`, open `http://localhost:3001/studio`:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **+ New family** — create a family (starts as *draft*; set Status = published in Meta to deploy).
+- **Meta / Bundles / Categories** — edit metadata and taxonomy. Meta has a *Danger zone* to delete the family (type-the-slug confirm).
+- **Icons** — per-icon name/tags/tier (Free/Pro) and delete; **Upload icons** panel:
+  - *Choose .svg files* — bulk into one bundle/category.
+  - *Choose folder (bulk)* — pick a folder structured `<bundle>/<category>/[<sub>/]<name>.svg`; missing bundles/categories/subcategories are **created automatically**.
+
+After editing, click **Rebuild**, then commit `icons-source/` + `public/icons-data/` and push → auto-deploy.
+
+## Deploy
+
+See [DEPLOY.md](./DEPLOY.md) for Vercel setup, env vars (`AUTH_*`, `UPSTASH_*`, `STRIPE_*`), and the GitHub OAuth app.

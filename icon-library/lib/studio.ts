@@ -116,3 +116,57 @@ export function writeSourceFamily(slug: string, meta: FamilyMeta): void {
   const metaPath = path.join(dir, 'family.json');
   fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2) + '\n');
 }
+
+const DATA_OUT_DIR = path.join(process.cwd(), 'public', 'icons-data');
+const SLUG_RE = /^[a-z0-9-]+$/;
+
+// Reject empty/traversal slugs and assert the resolved path stays inside base.
+function safeChild(base: string, name: string): string | null {
+  if (!name || !SLUG_RE.test(name)) return null;
+  const resolved = path.resolve(base, name);
+  if (resolved !== path.join(base, name) || !resolved.startsWith(base + path.sep)) return null;
+  return resolved;
+}
+
+// Delete a family: its source folder and any built public output. Returns false
+// if the slug is invalid or the family doesn't exist.
+export function deleteSourceFamily(slug: string): boolean {
+  const srcDir = safeChild(SOURCE_DIR, slug);
+  if (!srcDir || !fs.existsSync(srcDir)) return false;
+  fs.rmSync(srcDir, { recursive: true, force: true });
+  const outDir = safeChild(DATA_OUT_DIR, slug);
+  if (outDir && fs.existsSync(outDir)) fs.rmSync(outDir, { recursive: true, force: true });
+  return true;
+}
+
+// Delete a single icon (all its .svg files across bundles/categories) and strip
+// its overrides entry. Returns the number of files removed (0 = not found).
+export function deleteSourceIcon(slug: string, name: string): number {
+  const srcDir = safeChild(SOURCE_DIR, slug);
+  if (!srcDir) return 0;
+  const meta = readSourceFamily(slug);
+  if (!meta || !name || !SLUG_RE.test(name)) return 0;
+
+  const source = listSourceIcons(slug).find(ic => ic.name === name);
+  if (!source) return 0;
+
+  let removed = 0;
+  for (const bundleId of source.bundles) {
+    const parts = [srcDir, bundleId, source.categoryId];
+    if (source.subcategoryId) parts.push(source.subcategoryId);
+    parts.push(`${name}.svg`);
+    const filePath = path.join(...parts);
+    if (filePath.startsWith(srcDir + path.sep) && fs.existsSync(filePath)) {
+      fs.rmSync(filePath);
+      removed++;
+    }
+  }
+
+  if (meta.overrides?.[name]) {
+    const { [name]: _drop, ...rest } = meta.overrides;
+    meta.overrides = Object.keys(rest).length ? rest : undefined;
+    writeSourceFamily(slug, meta);
+  }
+
+  return removed;
+}
