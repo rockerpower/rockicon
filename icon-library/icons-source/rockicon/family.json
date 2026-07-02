@@ -1,0 +1,34 @@
+{
+  "id": "rockicon",
+  "name": "Rockicon",
+  "slug": "rockicon",
+  "authors": [
+    {
+      "name": ""
+    }
+  ],
+  "license": "mit",
+  "defaultTier": "free",
+  "status": "published",
+  "bundles": [
+    {
+      "id": "outline",
+      "name": "Outline",
+      "strokeBased": true,
+      "predefined": true
+    },
+    {
+      "id": "solid",
+      "name": "Solid",
+      "strokeBased": false,
+      "predefined": true
+    }
+  ],
+  "categories": [
+    {
+      "id": "arrow",
+      "name": "Arrow",
+      "subcategories": []
+    }
+  ]
+}

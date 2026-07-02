@@ -1,0 +1,764 @@
+{
+  "family": {
+    "id": "rockicon",
+    "name": "Rockicon",
+    "slug": "rockicon",
+    "authors": [
+      {
+        "name": ""
+      }
+    ],
+    "license": "mit",
+    "defaultTier": "free",
+    "status": "published",
+    "bundles": [
+      {
+        "id": "outline",
+        "name": "Outline",
+        "strokeBased": true,
+        "predefined": true
+      },
+      {
+        "id": "solid",
+        "name": "Solid",
+        "strokeBased": false,
+        "predefined": true
+      }
+    ],
+    "categories": [
+      {
+        "id": "arrow",
+        "name": "Arrow",
+        "subcategories": []
+      }
+    ]
+  },
+  "icons": [
+    {
+      "id": "rockicon__arrow-circle-2-right",
+      "familyId": "rockicon",
+      "name": "arrow circle 2 right",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "circle",
+        "2",
+        "right"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 22 22",
+          "paths": [
+            {
+              "tag": "circle",
+              "attrs": {
+                "cx": "11",
+                "cy": "11",
+                "r": "10",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "m6 7 4 4-4 4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_2",
+                "d": "m12 7 4 4-4 4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-circle-2-up",
+      "familyId": "rockicon",
+      "name": "arrow circle 2 up",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "circle",
+        "2",
+        "up"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 22 22",
+          "paths": [
+            {
+              "tag": "circle",
+              "attrs": {
+                "cx": "11",
+                "cy": "11",
+                "r": "10",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "m7 10 4-4 4 4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_2",
+                "d": "m7 16 4-4 4 4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-circle-left-2",
+      "familyId": "rockicon",
+      "name": "arrow circle left 2",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "circle",
+        "left",
+        "2"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 22 22",
+          "paths": [
+            {
+              "tag": "circle",
+              "attrs": {
+                "cx": "11",
+                "cy": "11",
+                "r": "10",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "m13 7-4 4 4 4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-circle-left-down",
+      "familyId": "rockicon",
+      "name": "arrow circle left down",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "circle",
+        "left",
+        "down"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 22 22",
+          "paths": [
+            {
+              "tag": "circle",
+              "attrs": {
+                "cx": "11",
+                "cy": "11",
+                "r": "10",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "m7 7 7 7",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_2",
+                "d": "M14 8v6H8",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-circle-left-up",
+      "familyId": "rockicon",
+      "name": "arrow circle left up",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "circle",
+        "left",
+        "up"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 22 22",
+          "paths": [
+            {
+              "tag": "circle",
+              "attrs": {
+                "cx": "11",
+                "cy": "11",
+                "r": "10",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "m8 8 7 7",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_2",
+                "d": "M8 14V8h6",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-circle-right-2",
+      "familyId": "rockicon",
+      "name": "arrow circle right 2",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "circle",
+        "right",
+        "2"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 22 22",
+          "paths": [
+            {
+              "tag": "circle",
+              "attrs": {
+                "cx": "11",
+                "cy": "11",
+                "r": "10",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "m9 7 4 4-4 4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-circle-up-2",
+      "familyId": "rockicon",
+      "name": "arrow circle up 2",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "circle",
+        "up",
+        "2"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 22 22",
+          "paths": [
+            {
+              "tag": "circle",
+              "attrs": {
+                "cx": "11",
+                "cy": "11",
+                "r": "10",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "m7 13 4-4 4 4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-circle-up",
+      "familyId": "rockicon",
+      "name": "arrow circle up",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "circle",
+        "up"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 22 22",
+          "paths": [
+            {
+              "tag": "circle",
+              "attrs": {
+                "cx": "11",
+                "cy": "11",
+                "r": "10",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "M11 6v11",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_2",
+                "d": "m7 10 4-4 4 4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-square-2-down",
+      "familyId": "rockicon",
+      "name": "arrow square 2 down",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "square",
+        "2",
+        "down"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 20 20",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M1 1h18v18H1z",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "m6 5 4 4 4-4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_2",
+                "d": "m6 11 4 4 4-4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-square-caret-right",
+      "familyId": "rockicon",
+      "name": "arrow square caret right",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "square",
+        "caret",
+        "right"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 20 20",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M1 1h18v18H1z",
+                "style": "fill:none;stroke:#000333;stroke-miterlimit:10;stroke-width:2px"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "M9 7v6l3-3z",
+                "data-name": "&lt;Path&gt;",
+                "style": "stroke:#000333;stroke-miterlimit:10;stroke-width:2px;fill:#000333"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-square-down-2",
+      "familyId": "rockicon",
+      "name": "arrow square down 2",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "square",
+        "down",
+        "2"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 20 20",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M1 1h18v18H1z",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "m6 8 4 4 4-4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-square-down-inside-2",
+      "familyId": "rockicon",
+      "name": "arrow square down inside 2",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "square",
+        "down",
+        "inside",
+        "2"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 20 20",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "M17 10h2v9H1v-9h2",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_2",
+                "d": "M10 14V0",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_3",
+                "d": "m6 10 4 4 4-4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-square-left-inside-2",
+      "familyId": "rockicon",
+      "name": "arrow square left inside 2",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "square",
+        "left",
+        "inside",
+        "2"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 20 20",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "M10 17v2H1V1h9v2",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_2",
+                "d": "M6 10h14",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_3",
+                "d": "m10 6-4 4 4 4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-square-up-2",
+      "familyId": "rockicon",
+      "name": "arrow square up 2",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "square",
+        "up",
+        "2"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 20 20",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M1 1h18v18H1z",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "m6 12 4-4 4 4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__arrow-square-up",
+      "familyId": "rockicon",
+      "name": "arrow square up",
+      "categoryId": "arrow",
+      "tags": [
+        "arrow",
+        "square",
+        "up"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 20 20",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M1 1h18v18H1z",
+                "class": "cls-1"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "M10 5v11",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_2",
+                "d": "m6 9 4-4 4 4",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__trend-down-left",
+      "familyId": "rockicon",
+      "name": "trend down left",
+      "categoryId": "arrow",
+      "tags": [
+        "trend",
+        "down",
+        "left"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 11.78 19.62",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_",
+                "d": "M1 11.63v7h7",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "id": "_Path_2",
+                "d": "m1 18.63 8-8-2-5 4-5",
+                "class": "cls-1",
+                "data-name": "&lt;Path&gt;"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    }
+  ]
+}

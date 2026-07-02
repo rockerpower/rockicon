@@ -473,18 +473,18 @@ function UploadPanel({ family, slug, onReload, onReloadFamily, flash }: { family
   const submit = async () => {
     const valid = staged.filter(s => !s.error);
     if (valid.length === 0) { flash('Nothing to upload'); return; }
-    const folderMode = valid.some(s => s.bundleId); // auto-create taxonomy for folder imports
     setBusy(true);
     try {
       const items = valid.map(s => ({ ...targetOf(s), name: s.name, svg: s.svg }));
       const res = await fetch(`/api/studio/family/${slug}/upload`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items, autoCreateTaxonomy: folderMode }),
+        // Always auto-create the target bundle/category if missing — avoids the
+        // "unknown category" footgun for both folder and single-category uploads.
+        body: JSON.stringify({ items, autoCreateTaxonomy: true }),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
-        flash(`Uploaded ${data.written.length} icon(s)`); setStaged([]); onReload();
-        if (folderMode) onReloadFamily();
+        flash(`Uploaded ${data.written.length} icon(s)`); setStaged([]); onReload(); onReloadFamily();
       } else flash(data.errors?.[0] ?? data.error ?? 'Upload failed');
     } catch { flash('Upload failed'); }
     setBusy(false);
