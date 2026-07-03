@@ -8,6 +8,13 @@ import { signIn, signOut } from 'next-auth/react';
 import { useSearch } from '@/hooks/useSearch';
 import type { GridDensity } from '@/taxonomy.config';
 
+// Donation links — fill in your handles (leave '' to hide an option).
+const DONATE = {
+  buyMeACoffee: 'https://www.buymeacoffee.com/YOUR_HANDLE',
+  kofi: 'https://ko-fi.com/YOUR_HANDLE',
+  paypal: 'https://www.paypal.me/YOUR_HANDLE',
+};
+
 interface Props {
   families: FamilyMeta[];
   currentFamily: string;
@@ -27,6 +34,7 @@ export function BrowseShell({
   const [density, setDensity] = useState<GridDensity>(28);
   const [search, setSearch] = useState('');
   const [toast, setToast] = useState('');
+  const [donateOpen, setDonateOpen] = useState(false);
 
   // Auth session + Pro entitlement.
   const [session, setSession] = useState<{ email: string; tier: 'free' | 'pro' } | null>(null);
@@ -208,6 +216,12 @@ export function BrowseShell({
             ))}
           </div>
 
+          {/* Donate */}
+          <button onClick={() => setDonateOpen(true)} title="Support this project" style={{ height: 32, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--foreground)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            Donate
+          </button>
+
           {/* Account */}
           {session ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -350,6 +364,29 @@ export function BrowseShell({
           )}
         </div>
       </div>
+
+      {/* Donate modal */}
+      {donateOpen && (
+        <div onClick={() => setDonateOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.5)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 340, padding: 24, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}>
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Support this project</div>
+            <p style={{ margin: '0 0 16px', fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.5 }}>If these icons help you, consider a small donation. Thank you!</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {([
+                { label: 'Buy Me a Coffee', href: DONATE.buyMeACoffee, bg: '#FFDD00', fg: '#000' },
+                { label: 'Ko-fi', href: DONATE.kofi, bg: '#13C3FF', fg: '#fff' },
+                { label: 'PayPal', href: DONATE.paypal, bg: '#003087', fg: '#fff' },
+              ] as const).filter(o => o.href && !o.href.includes('YOUR_HANDLE')).map(o => (
+                <a key={o.label} href={o.href} target="_blank" rel="noreferrer" style={{ height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: o.bg, color: o.fg, fontSize: 13.5, fontWeight: 700, textDecoration: 'none' }}>{o.label}</a>
+              ))}
+              {[DONATE.buyMeACoffee, DONATE.kofi, DONATE.paypal].every(h => h.includes('YOUR_HANDLE')) && (
+                <div style={{ fontSize: 12, color: 'var(--muted-2)', textAlign: 'center', padding: '8px 0' }}>No donation links configured yet.</div>
+              )}
+            </div>
+            <button onClick={() => setDonateOpen(false)} style={{ marginTop: 14, width: '100%', height: 36, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}>Close</button>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (
