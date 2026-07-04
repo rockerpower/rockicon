@@ -10,9 +10,9 @@ import type { GridDensity } from '@/taxonomy.config';
 
 // Donation links — fill in your handles (leave '' to hide an option).
 const DONATE = {
-  buyMeACoffee: 'https://www.buymeacoffee.com/YOUR_HANDLE',
-  kofi: 'https://ko-fi.com/YOUR_HANDLE',
-  paypal: 'https://www.paypal.me/YOUR_HANDLE',
+  buyMeACoffee: 'https://buymeacoffee.com/wEUfbad',
+  kofi: '',
+  paypal: '',
 };
 
 interface Props {
