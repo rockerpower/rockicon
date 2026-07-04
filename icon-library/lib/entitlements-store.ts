@@ -13,8 +13,9 @@ import path from 'path';
 
 type Tier = 'free' | 'pro';
 
-const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
-const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+// Vercel's Upstash integration injects KV_REST_API_* names; support both.
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
 const useRedis = !!(UPSTASH_URL && UPSTASH_TOKEN);
 
 const keyFor = (email: string) => `ent:${email.toLowerCase()}`;
