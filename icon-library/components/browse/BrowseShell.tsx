@@ -368,22 +368,28 @@ export function BrowseShell({
       {/* Donate modal */}
       {donateOpen && (
         <div onClick={() => setDonateOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.5)' }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 340, padding: 24, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}>
-            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>Support this project</div>
-            <p style={{ margin: '0 0 16px', fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.5 }}>If these icons help you, consider a small donation. Thank you!</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {([
-                { label: 'Buy Me a Coffee', href: DONATE.buyMeACoffee, bg: '#FFDD00', fg: '#000' },
-                { label: 'Ko-fi', href: DONATE.kofi, bg: '#13C3FF', fg: '#fff' },
-                { label: 'PayPal', href: DONATE.paypal, bg: '#003087', fg: '#fff' },
-              ] as const).filter(o => o.href && !o.href.includes('YOUR_HANDLE')).map(o => (
-                <a key={o.label} href={o.href} target="_blank" rel="noreferrer" style={{ height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 10, background: o.bg, color: o.fg, fontSize: 13.5, fontWeight: 700, textDecoration: 'none' }}>{o.label}</a>
-              ))}
-              {[DONATE.buyMeACoffee, DONATE.kofi, DONATE.paypal].every(h => h.includes('YOUR_HANDLE')) && (
-                <div style={{ fontSize: 12, color: 'var(--muted-2)', textAlign: 'center', padding: '8px 0' }}>No donation links configured yet.</div>
-              )}
+          <div onClick={e => e.stopPropagation()} style={{ position: 'relative', width: 320 }}>
+            <button onClick={() => setDonateOpen(false)} aria-label="Close" style={{ position: 'absolute', top: -14, right: -14, height: 30, width: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--muted)', cursor: 'pointer' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div style={{ padding: 22, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}>
+              <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>Support this project</div>
+              <p style={{ margin: '0 0 16px', fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.5 }}>If these icons help you, consider a small donation.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {([
+                  { label: 'Buy Me a Coffee', href: DONATE.buyMeACoffee, icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg> },
+                  { label: 'Ko-fi', href: DONATE.kofi, icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> },
+                  { label: 'PayPal', href: DONATE.paypal, icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> },
+                ] as const).filter(o => o.href && !o.href.includes('YOUR_HANDLE')).map(o => (
+                  <a key={o.label} href={o.href} target="_blank" rel="noreferrer" style={{ height: 40, display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', borderRadius: 10, background: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--foreground)', fontSize: 13, fontWeight: 600, textDecoration: 'none' }} className="hover:bg-[var(--field)]">
+                    {o.icon}{o.label}
+                  </a>
+                ))}
+                {[DONATE.buyMeACoffee, DONATE.kofi, DONATE.paypal].every(h => !h || h.includes('YOUR_HANDLE')) && (
+                  <div style={{ fontSize: 12, color: 'var(--muted-2)', textAlign: 'center', padding: '8px 0' }}>No donation links configured yet.</div>
+                )}
+              </div>
             </div>
-            <button onClick={() => setDonateOpen(false)} style={{ marginTop: 14, width: '100%', height: 36, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 10, fontSize: 13, cursor: 'pointer' }}>Close</button>
           </div>
         </div>
       )}
