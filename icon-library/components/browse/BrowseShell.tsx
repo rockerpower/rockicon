@@ -35,6 +35,7 @@ export function BrowseShell({
   const [search, setSearch] = useState('');
   const [toast, setToast] = useState('');
   const [donateOpen, setDonateOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
 
   // Auth session + Pro entitlement.
   const [session, setSession] = useState<{ email: string; tier: 'free' | 'pro' } | null>(null);
@@ -216,18 +217,34 @@ export function BrowseShell({
             ))}
           </div>
 
-          {/* Donate */}
-          <button onClick={() => setDonateOpen(true)} title="Support this project" style={{ height: 32, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6, background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--foreground)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
+          {/* Donate (primary) */}
+          <button onClick={() => setDonateOpen(true)} title="Support this project" style={{ height: 32, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 6, background: 'var(--foreground)', border: 'none', borderRadius: 8, color: 'var(--background)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4Z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
             Donate
           </button>
 
           {/* Account */}
           {session ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {entitled && <span style={{ height: 22, display: 'inline-flex', alignItems: 'center', padding: '0 8px', borderRadius: 6, background: 'var(--pro, #7C6AE8)', color: '#fff', fontSize: 10, fontWeight: 700, letterSpacing: '.06em' }}>PRO</span>}
-              <span title={session.email} style={{ fontSize: 12.5, color: 'var(--muted)', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.email}</span>
-              <button onClick={logout} style={{ height: 32, padding: '0 10px', background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--muted)', fontSize: 12, cursor: 'pointer' }}>Sign out</button>
+            <div style={{ position: 'relative' }}>
+              <button onClick={() => setAccountOpen(o => !o)} title={session.email} style={{ position: 'relative', height: 32, width: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '50%', color: 'var(--foreground)', fontSize: 13, fontWeight: 700, textTransform: 'uppercase', cursor: 'pointer' }}>
+                {session.email.charAt(0)}
+                {entitled && <span style={{ position: 'absolute', bottom: -2, right: -2, width: 12, height: 12, borderRadius: '50%', background: 'var(--pro, #7C6AE8)', border: '2px solid var(--background)' }} />}
+              </button>
+              {accountOpen && (
+                <>
+                  <div onClick={() => setAccountOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 90 }} />
+                  <div style={{ position: 'absolute', top: 40, right: 0, zIndex: 91, width: 220, padding: 6, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,.4)' }}>
+                    <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--border)', marginBottom: 4 }}>
+                      <div style={{ fontSize: 12.5, color: 'var(--foreground)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{session.email}</div>
+                      <div style={{ fontSize: 10.5, color: 'var(--muted-2)', marginTop: 2, textTransform: 'uppercase', letterSpacing: '.06em' }}>{entitled ? 'Pro' : 'Free'} plan</div>
+                    </div>
+                    <button onClick={() => { setAccountOpen(false); logout(); }} style={{ width: '100%', textAlign: 'left', height: 34, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', borderRadius: 8, color: 'var(--muted)', fontSize: 13, cursor: 'pointer' }} className="hover:bg-[var(--surface-2)]">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                      Sign out
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <button onClick={login} style={{ height: 32, padding: '0 14px', display: 'flex', alignItems: 'center', gap: 7, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--foreground)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
