@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-import type { FamilyMeta } from '@/types';
+import type { FamilyMeta, PathNode } from '@/types';
+import { normalizeSvg } from './svg-normalize';
 
 const SOURCE_DIR = path.join(process.cwd(), 'icons-source');
 
@@ -67,6 +68,9 @@ export interface SourceIcon {
   categoryId: string;
   subcategoryId?: string;
   bundles: string[];       // bundle ids this icon exists in
+  viewBox: string;         // preview (from first bundle)
+  paths: PathNode[];
+  strokeBased: boolean;
 }
 
 // Scan icons-source/<slug>/<bundle>/<cat>/[<sub>/]<name>.svg and collapse
@@ -88,22 +92,24 @@ export function listSourceIcons(slug: string): SourceIcon[] {
           const subId = sub.name;
           const subDir = path.join(catDir, subId);
           for (const f of fs.readdirSync(subDir)) {
-            if (f.endsWith('.svg')) collect(f, catId, subId, bundle.id);
+            if (f.endsWith('.svg')) collect(f, subDir, catId, subId, bundle.id, bundle.strokeBased);
           }
         } else if (sub.name.endsWith('.svg')) {
-          collect(sub.name, catId, undefined, bundle.id);
+          collect(sub.name, catDir, catId, undefined, bundle.id, bundle.strokeBased);
         }
       }
     }
   }
 
-  function collect(file: string, catId: string, subId: string | undefined, bundleId: string) {
+  function collect(file: string, dir: string, catId: string, subId: string | undefined, bundleId: string, strokeBased: boolean) {
     const name = file.replace(/\.svg$/, '');
     const existing = map.get(name);
     if (existing) {
       if (!existing.bundles.includes(bundleId)) existing.bundles.push(bundleId);
     } else {
-      map.set(name, { name, categoryId: catId, subcategoryId: subId, bundles: [bundleId] });
+      let viewBox = '0 0 24 24', paths: PathNode[] = [];
+      try { ({ viewBox, paths } = normalizeSvg(fs.readFileSync(path.join(dir, file), 'utf8'))); } catch { /* keep defaults */ }
+      map.set(name, { name, categoryId: catId, subcategoryId: subId, bundles: [bundleId], viewBox, paths, strokeBased });
     }
   }
 
