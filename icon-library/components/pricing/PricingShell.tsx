@@ -94,7 +94,7 @@ export function PricingShell() {
       </div>
 
       {msg && <div style={{ marginTop: 20, fontSize: 13, color: 'var(--muted)' }}>{msg}</div>}
-      <p style={{ marginTop: 28, fontSize: 11.5, color: 'var(--muted-2)' }}>Prices in USD. Cancel anytime.</p>
+      <p style={{ marginTop: 28, fontSize: 11.5, color: 'var(--muted-2)' }}>Prices in USD. Cancel anytime. See the <a href="/license" style={{ color: 'var(--muted)', textDecoration: 'underline' }}>license</a>.</p>
     </div>
   );
 }

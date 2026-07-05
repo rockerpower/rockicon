@@ -83,8 +83,28 @@ export function downloadPng(markup: string, name: string, scale = 4) {
   img.src = svgUrl;
 }
 
+// Trigger a text-file download (svg/jsx/vue).
+export function downloadText(content: string, filename: string) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
 export function toPascalCase(name: string): string {
   return name.replace(/[^a-z0-9 ]/gi, '').split(/[\s-]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+}
+
+export function toVue(markup: string, name: string): string {
+  const inner = markup
+    .replace(/xmlns="[^"]*"\s*/g, '')
+    .replace(/^<svg/, '<svg v-bind="$attrs"');
+  return `<!-- ${toPascalCase(name)}Icon.vue -->\n<template>\n  ${inner}\n</template>\n\n<script setup lang="ts">\ndefineOptions({ name: '${toPascalCase(name)}Icon', inheritAttrs: false });\n</script>`;
 }
 
 export function toJsx(markup: string, name: string): string {

@@ -2,13 +2,15 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { IconMeta, IconVariant } from '@/types';
 import { SvgIcon } from '@/components/icons/SvgIcon';
-import { buildSvgMarkup, copyText, downloadSvg, downloadPng, toJsx } from '@/lib/svg-render';
+import { buildSvgMarkup, copyText, downloadPng, downloadText } from '@/lib/svg-render';
+import { canAccessFormat, FORMAT_LABELS, FREE_ATTRIBUTION, type ExportFormat, type Tier } from '@/lib/licensing';
 
 interface Props {
   icon: IconMeta;
   familySlug: string;
   activeBundleId: string;
   signedIn: boolean;
+  userTier: Tier;
   unlockedVariants: IconVariant[] | null;   // delivered by parent when entitled
   onRequestLogin: () => void;
   onUnlocked: () => void;
@@ -18,7 +20,7 @@ interface Props {
 
 const COLOR_RAMP = ['#FFFFFF', '#C9C9C4', '#8A8A86', '#4A4A48', '#17171A', '#000000'];
 
-export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, unlockedVariants, onRequestLogin, onUnlocked, onClose, onToast }: Props) {
+export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTier, unlockedVariants, onRequestLogin, onUnlocked, onClose, onToast }: Props) {
   const [size, setSize] = useState(48);
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [color, setColor] = useState('#FFFFFF');
@@ -207,22 +209,31 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, unlock
           </div>
         </div>
 
-        {/* Actions: Copy + Download, each with a menu of formats */}
+        {/* Actions: Copy + Download, format-gated */}
         {(() => {
-          const run = (fn: () => void) => { fn(); setMenu(null); };
-          const copyItems = [
-            { label: 'SVG', fn: () => copy(markup, 'Copied SVG') },
-            { label: 'JSX', fn: () => copy(toJsx(markup, icon.name), 'Copied JSX') },
-            { label: 'Data URI', fn: () => copy('data:image/svg+xml,' + encodeURIComponent(markup), 'Copied data URI') },
-            { label: 'Base64', fn: () => copy('data:image/svg+xml;base64,' + btoa(markup), 'Copied Base64') },
-          ];
-          const downloadItems = [
-            { label: 'SVG (.svg)', fn: () => { downloadSvg(markup, icon.name); onToast('Downloaded SVG'); } },
-            { label: 'PNG (.png)', fn: () => { downloadPng(markup, icon.name); onToast('Downloaded PNG'); } },
-          ];
-          const items = menu === 'copy' ? copyItems : menu === 'download' ? downloadItems : [];
+          const iconKey = icon.id.split('__').pop() ?? icon.name.replace(/\s+/g, '-');
+          const goPricing = () => { window.location.assign('/pricing'); };
+
+          const doExport = async (format: ExportFormat, action: 'copy' | 'download') => {
+            setMenu(null);
+            // Free SVG copy is instant, client-side.
+            if (action === 'copy' && format === 'svg') { copy(markup, 'Copied SVG'); return; }
+            // Everything else routes through the server (gating + rate limit + attribution).
+            try {
+              const res = await fetch(`/api/export/${familySlug}/${iconKey}?bundle=${variant.bundleId}&format=${format}`);
+              const data = await res.json().catch(() => ({}));
+              if (res.status === 402 || res.status === 429) { onToast(data.error ?? 'Upgrade required'); goPricing(); return; }
+              if (!res.ok) { onToast(data.error ?? 'Export failed'); return; }
+              if (action === 'copy') { copyText(data.content); onToast(`Copied ${FORMAT_LABELS[format]}`); }
+              else if (format === 'png') { downloadPng(data.content, icon.name); onToast('Downloaded PNG'); }
+              else { downloadText(data.content, data.filename); onToast(`Downloaded ${data.filename}`); }
+            } catch { onToast('Export failed'); }
+          };
+
+          const action = menu === 'copy' ? 'copy' as const : 'download' as const;
+          const formats: ExportFormat[] = menu === 'download' ? ['svg', 'png', 'jsx', 'vue'] : ['svg', 'jsx', 'vue'];
           return (
-            <div style={{ position: 'relative', marginBottom: 22 }}>
+            <div style={{ position: 'relative', marginBottom: 14 }}>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button onClick={() => setMenu(m => m === 'copy' ? null : 'copy')} style={{ flex: 1, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'var(--foreground)', color: 'var(--background)', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
                   Copy <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -235,15 +246,31 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, unlock
                 <>
                   <div onClick={() => setMenu(null)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
                   <div style={{ position: 'absolute', top: 46, left: menu === 'download' ? '50%' : 0, right: menu === 'copy' ? '50%' : 0, zIndex: 41, padding: 6, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,.4)' }}>
-                    {items.map(it => (
-                      <button key={it.label} onClick={() => run(it.fn)} style={{ width: '100%', textAlign: 'left', height: 34, padding: '0 10px', background: 'transparent', border: 'none', borderRadius: 8, color: 'var(--foreground)', fontSize: 13, cursor: 'pointer' }} className="hover:bg-[var(--surface-2)]">{it.label}</button>
-                    ))}
+                    {formats.map(fmt => {
+                      const locked = !canAccessFormat(userTier, fmt);
+                      return (
+                        <button key={fmt} onClick={() => locked ? goPricing() : doExport(fmt, action)}
+                          title={locked ? 'Upgrade to Pro' : undefined}
+                          style={{ width: '100%', textAlign: 'left', height: 34, padding: '0 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'transparent', border: 'none', borderRadius: 8, color: locked ? 'var(--muted-2)' : 'var(--foreground)', fontSize: 13, cursor: 'pointer' }}
+                          className="hover:bg-[var(--surface-2)]">
+                          <span>{FORMAT_LABELS[fmt]}</span>
+                          {locked && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--pro, #7C6AE8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>}
+                        </button>
+                      );
+                    })}
                   </div>
                 </>
               )}
             </div>
           );
         })()}
+
+        {/* License note (Free tier) */}
+        {userTier === 'free' && (
+          <div style={{ fontSize: 10.5, color: 'var(--muted-2)', lineHeight: 1.5, marginBottom: 20 }}>
+            {FREE_ATTRIBUTION.replace(' — see /license.', '.')} <a href="/license" style={{ color: 'var(--muted)', textDecoration: 'underline' }}>License</a>
+          </div>
+        )}
 
         {/* Tags */}
         {icon.tags.length > 0 && (

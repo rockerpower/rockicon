@@ -417,6 +417,7 @@ export function BrowseShell({
               familySlug={currentFamily}
               activeBundleId={currentBundle}
               signedIn={!!session}
+              userTier={session?.tier ?? 'free'}
               unlockedVariants={proVectors[selectedIcon.id] ?? null}
               onRequestLogin={login}
               onUnlocked={handleUnlocked}
