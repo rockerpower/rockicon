@@ -616,7 +616,7 @@ function IconsTab({ family, icons, update, slug, onReload, onReloadFamily, flash
 
       <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
         {/* header row */}
-        <div style={{ display: 'grid', gridTemplateColumns: '34px 1.4fr 1fr 1fr 2fr 120px 44px', gap: 10, padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--surface-2)', ...LABEL, marginBottom: 0 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '40px 1.4fr 1fr 1fr 2fr 120px 44px', gap: 10, padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--surface-2)', ...LABEL, marginBottom: 0 }}>
           <span></span><span>Icon</span><span>Category</span><span>Bundles</span><span>Tags</span><span>Tier</span><span></span>
         </div>
         {filtered.map(ic => {
@@ -625,9 +625,9 @@ function IconsTab({ family, icons, update, slug, onReload, onReloadFamily, flash
           const tags = ov.tags ?? ic.name.split('-');
           const displayName = ov.name ?? ic.name.replace(/-/g, ' ');
           return (
-            <div key={ic.name} style={{ display: 'grid', gridTemplateColumns: '34px 1.4fr 1fr 1fr 2fr 120px 44px', gap: 10, padding: '8px 12px', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 28, color: 'var(--foreground)' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox={ic.viewBox}
+            <div key={ic.name} style={{ display: 'grid', gridTemplateColumns: '40px 1.4fr 1fr 1fr 2fr 120px 44px', gap: 10, padding: '8px 12px', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
+              <div style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--field)', border: '1px solid var(--border)', borderRadius: 7, color: 'var(--foreground)' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox={ic.viewBox}
                   fill={ic.strokeBased ? 'none' : 'currentColor'} stroke={ic.strokeBased ? 'currentColor' : 'none'}
                   strokeWidth={ic.strokeBased ? 2 : undefined} strokeLinecap="round" strokeLinejoin="round"
                   dangerouslySetInnerHTML={{ __html: ic.paths.map(p => `<${p.tag} ${Object.entries(p.attrs).map(([k, v]) => `${k}="${v}"`).join(' ')}/>`).join('') }} />
