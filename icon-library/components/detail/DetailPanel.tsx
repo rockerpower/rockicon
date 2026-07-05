@@ -22,6 +22,7 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, unlock
   const [size, setSize] = useState(48);
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [color, setColor] = useState('#FFFFFF');
+  const [menu, setMenu] = useState<'copy' | 'download' | null>(null);
 
   const isPro = icon.tier === 'pro';
   // Parent delivers Pro vectors when entitled; keep a local copy so an unlock
@@ -206,44 +207,43 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, unlock
           </div>
         </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-          <button
-            onClick={() => copy(markup, 'Copied SVG')}
-            style={{ flex: 1, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'var(--foreground)', color: 'var(--background)', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
-          >
-            Copy SVG
-          </button>
-          <button
-            onClick={() => downloadSvg(markup, icon.name)}
-            style={{ flexShrink: 0, height: 40, padding: '0 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'transparent', color: 'var(--foreground)', border: '1px solid var(--border-2)', borderRadius: 10, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
-          >
-            .svg
-          </button>
-          <button
-            onClick={() => { downloadPng(markup, icon.name); onToast('Downloaded PNG'); }}
-            style={{ flexShrink: 0, height: 40, padding: '0 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'transparent', color: 'var(--foreground)', border: '1px solid var(--border-2)', borderRadius: 10, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}
-          >
-            .png
-          </button>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 22 }}>
-          {[
+        {/* Actions: Copy + Download, each with a menu of formats */}
+        {(() => {
+          const run = (fn: () => void) => { fn(); setMenu(null); };
+          const copyItems = [
+            { label: 'SVG', fn: () => copy(markup, 'Copied SVG') },
             { label: 'JSX', fn: () => copy(toJsx(markup, icon.name), 'Copied JSX') },
             { label: 'Data URI', fn: () => copy('data:image/svg+xml,' + encodeURIComponent(markup), 'Copied data URI') },
             { label: 'Base64', fn: () => copy('data:image/svg+xml;base64,' + btoa(markup), 'Copied Base64') },
-            { label: 'Raw SVG', fn: () => copy(markup, 'Copied raw SVG') },
-          ].map(a => (
-            <button
-              key={a.label}
-              onClick={a.fn}
-              style={{ height: 36, background: 'var(--surface-2)', color: 'var(--foreground)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'monospace' }}
-            >
-              {a.label}
-            </button>
-          ))}
-        </div>
+          ];
+          const downloadItems = [
+            { label: 'SVG (.svg)', fn: () => { downloadSvg(markup, icon.name); onToast('Downloaded SVG'); } },
+            { label: 'PNG (.png)', fn: () => { downloadPng(markup, icon.name); onToast('Downloaded PNG'); } },
+          ];
+          const items = menu === 'copy' ? copyItems : menu === 'download' ? downloadItems : [];
+          return (
+            <div style={{ position: 'relative', marginBottom: 22 }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setMenu(m => m === 'copy' ? null : 'copy')} style={{ flex: 1, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'var(--foreground)', color: 'var(--background)', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
+                  Copy <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                <button onClick={() => setMenu(m => m === 'download' ? null : 'download')} style={{ flex: 1, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'transparent', color: 'var(--foreground)', border: '1px solid var(--border-2)', borderRadius: 10, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
+                  Download <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+              </div>
+              {menu && (
+                <>
+                  <div onClick={() => setMenu(null)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+                  <div style={{ position: 'absolute', top: 46, left: menu === 'download' ? '50%' : 0, right: menu === 'copy' ? '50%' : 0, zIndex: 41, padding: 6, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,.4)' }}>
+                    {items.map(it => (
+                      <button key={it.label} onClick={() => run(it.fn)} style={{ width: '100%', textAlign: 'left', height: 34, padding: '0 10px', background: 'transparent', border: 'none', borderRadius: 8, color: 'var(--foreground)', fontSize: 13, cursor: 'pointer' }} className="hover:bg-[var(--surface-2)]">{it.label}</button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Tags */}
         {icon.tags.length > 0 && (
