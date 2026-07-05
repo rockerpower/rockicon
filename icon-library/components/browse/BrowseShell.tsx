@@ -5,6 +5,8 @@ import { NavTree } from '@/components/nav/NavTree';
 import { IconGrid } from '@/components/browse/IconGrid';
 import { DetailPanel } from '@/components/detail/DetailPanel';
 import { signIn, signOut } from 'next-auth/react';
+import JSZip from 'jszip';
+import { buildSvgMarkup } from '@/lib/svg-render';
 import { useSearch } from '@/hooks/useSearch';
 import type { GridDensity } from '@/taxonomy.config';
 
@@ -78,6 +80,35 @@ export function BrowseShell({
   }, []);
 
   const handleSelect = (id: string) => setSelectedId(prev => prev === id ? null : id);
+
+  // Bulk select + zip download
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const toggleSel = (id: string) => setSelected(prev => {
+    const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n;
+  });
+  const clearSel = () => setSelected(new Set());
+  const exitSelect = () => { setSelectMode(false); clearSel(); };
+
+  const downloadZip = useCallback(async () => {
+    if (selected.size === 0) return;
+    const zip = new JSZip();
+    for (const id of selected) {
+      const ic = allIcons.find(i => i.id === id);
+      if (!ic || ic.tier === 'pro') continue; // skip locked (no vectors client-side)
+      const v = (proVectors[id] ?? ic.variants).find(x => x.bundleId === currentBundle) ?? ic.variants[0];
+      if (!v || v.paths.length === 0) continue;
+      zip.file(`${ic.name.replace(/\s+/g, '-')}.svg`, buildSvgMarkup(v, { size: 24, color: '#000000', strokeWidth: 2 }));
+    }
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${currentFamily}-icons.zip`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    showToast(`Downloaded ${selected.size} icons`);
+    exitSelect();
+  }, [selected, allIcons, proVectors, currentBundle, currentFamily, showToast]);
   const handleClose = () => setSelectedId(null);
 
   // Fetch entitled Pro vectors for this family and patch the grid.
@@ -217,6 +248,10 @@ export function BrowseShell({
             ))}
           </div>
 
+          <button onClick={() => selectMode ? exitSelect() : setSelectMode(true)} style={{ height: 32, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6, background: selectMode ? 'var(--surface-2)' : 'transparent', border: '1px solid var(--border)', borderRadius: 8, color: selectMode ? 'var(--foreground)' : 'var(--muted)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
+            {selectMode ? 'Cancel' : 'Select'}
+          </button>
+
           <div style={{ flex: 1 }} />
 
           <a href="/pricing" style={{ height: 32, padding: '0 12px', display: 'flex', alignItems: 'center', background: 'transparent', borderRadius: 8, color: 'var(--muted)', fontSize: 12.5, fontWeight: 600, textDecoration: 'none' }}>Pricing</a>
@@ -326,14 +361,20 @@ export function BrowseShell({
                           if (!variant) return null;
                           const active = ic.id === selectedId;
                           const locked = isLocked(ic);
+                          const checked = selected.has(ic.id);
                           return (
                             <button
                               key={ic.id}
-                              onClick={() => handleSelect(ic.id)}
+                              onClick={() => selectMode ? (!locked && toggleSel(ic.id)) : handleSelect(ic.id)}
                               title={locked ? `${ic.name} · Pro` : ic.name}
-                              style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '14px 8px', minHeight: density === 24 ? 78 : density === 28 ? 92 : 106, borderRadius: 12, cursor: 'pointer', border: `1px solid ${active ? 'var(--border-2)' : 'transparent'}`, background: active ? 'var(--surface-2)' : 'transparent', color: 'var(--foreground)', transition: 'background .1s, border-color .1s' }}
+                              style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '14px 8px', minHeight: density === 24 ? 78 : density === 28 ? 92 : 106, borderRadius: 12, cursor: locked && selectMode ? 'not-allowed' : 'pointer', border: `1px solid ${checked ? 'var(--foreground)' : active ? 'var(--border-2)' : 'transparent'}`, background: checked || active ? 'var(--surface-2)' : 'transparent', color: 'var(--foreground)', transition: 'background .1s, border-color .1s' }}
                               className="hover:bg-[var(--surface-2)]"
                             >
+                              {selectMode && !locked && (
+                                <span style={{ position: 'absolute', top: 8, left: 8, width: 15, height: 15, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', background: checked ? 'var(--foreground)' : 'transparent', border: `1.5px solid ${checked ? 'var(--foreground)' : 'var(--border-2)'}` }}>
+                                  {checked && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--background)" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                </span>
+                              )}
                               {locked && (
                                 <span title="Pro" style={{ position: 'absolute', top: 8, right: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', width: 14, height: 14, borderRadius: 4, background: 'var(--pro, #7C6AE8)', color: '#fff', fontSize: 8 }}>
                                   <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -412,6 +453,18 @@ export function BrowseShell({
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Bulk action bar */}
+      {selectMode && selected.size > 0 && (
+        <div className="toast-in" style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 95, display: 'flex', alignItems: 'center', gap: 12, height: 48, padding: '0 8px 0 18px', background: 'var(--background)', border: '1px solid var(--border-2)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,.4)' }}>
+          <span style={{ fontSize: 13, fontWeight: 600 }}>{selected.size} selected</span>
+          <button onClick={clearSel} style={{ height: 32, padding: '0 10px', background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 12.5, cursor: 'pointer' }}>Clear</button>
+          <button onClick={downloadZip} style={{ height: 34, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 7, background: 'var(--foreground)', color: 'var(--background)', border: 'none', borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download ZIP
+          </button>
         </div>
       )}
 
