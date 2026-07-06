@@ -25,13 +25,21 @@
         "name": "Arrow",
         "subcategories": []
       }
-    ]
+    ],
+    "overrides": {
+      "arrow-circle-2-right": {
+        "name": "arrow circle right"
+      },
+      "arrow-circle-2-up": {
+        "name": "arrow circle up"
+      }
+    }
   },
   "icons": [
     {
       "id": "rockicon__arrow-circle-2-right",
       "familyId": "rockicon",
-      "name": "arrow circle 2 right",
+      "name": "arrow circle right",
       "categoryId": "arrow",
       "tags": [
         "arrow",
@@ -81,7 +89,7 @@
     {
       "id": "rockicon__arrow-circle-2-up",
       "familyId": "rockicon",
-      "name": "arrow circle 2 up",
+      "name": "arrow circle up",
       "categoryId": "arrow",
       "tags": [
         "arrow",
