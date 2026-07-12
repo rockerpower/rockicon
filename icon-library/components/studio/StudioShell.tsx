@@ -585,6 +585,24 @@ function IconsTab({ family, icons, update, slug, onReload, onReloadFamily, flash
     update({ overrides: next });
   };
 
+  // Move an icon to a different category/subcategory — relocates its .svg
+  // files on disk across every bundle it exists in (category membership is
+  // derived from folder placement, not stored per-icon).
+  const moveIcon = async (name: string, categoryId: string, subcategoryId?: string) => {
+    try {
+      const res = await fetch(`/api/studio/family/${slug}/icons/${name}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categoryId, subcategoryId }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        flash(`Moved ${name} → ${categoryId}${subcategoryId ? '/' + subcategoryId : ''} — Rebuild to update`);
+        onReload();
+      } else flash(data.error ?? 'Move failed');
+    } catch { flash('Move failed'); }
+  };
+
   // Delete one icon (all its .svg files) + drop its override locally.
   const deleteIcon = async (name: string) => {
     try {
@@ -640,7 +658,32 @@ function IconsTab({ family, icons, update, slug, onReload, onReloadFamily, flash
                 <input style={{ ...INPUT, height: 28, fontSize: 12.5 }} value={displayName} onChange={e => setOverride(ic.name, { name: e.target.value })} />
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, color: 'var(--muted-2)' }}>{ic.name}.svg</span>
               </div>
-              <span style={{ fontSize: 11.5, color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>{ic.categoryId}{ic.subcategoryId ? ` / ${ic.subcategoryId}` : ''}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <select
+                  value={ic.categoryId}
+                  onChange={e => moveIcon(ic.name, e.target.value, undefined)}
+                  style={{ ...INPUT, height: 26, fontSize: 10.5, padding: '0 4px' }}
+                  title="Move to category"
+                >
+                  {family.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  {!family.categories.some(c => c.id === ic.categoryId) && <option value={ic.categoryId}>{ic.categoryId}</option>}
+                </select>
+                {(() => {
+                  const cat = family.categories.find(c => c.id === ic.categoryId);
+                  if (!cat || cat.subcategories.length === 0) return null;
+                  return (
+                    <select
+                      value={ic.subcategoryId ?? ''}
+                      onChange={e => moveIcon(ic.name, ic.categoryId, e.target.value || undefined)}
+                      style={{ ...INPUT, height: 26, fontSize: 10.5, padding: '0 4px' }}
+                      title="Move to subcategory"
+                    >
+                      <option value="">— none —</option>
+                      {cat.subcategories.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  );
+                })()}
+              </div>
               <span style={{ fontSize: 10.5, color: 'var(--muted-2)', fontFamily: 'var(--font-mono)' }}>{ic.bundles.join(', ')}</span>
               <input style={{ ...INPUT, height: 28, fontSize: 11.5, fontFamily: 'var(--font-mono)' }} value={tags.join(', ')} onChange={e => setOverride(ic.name, { tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })} />
               <div style={{ display: 'flex', gap: 4 }}>

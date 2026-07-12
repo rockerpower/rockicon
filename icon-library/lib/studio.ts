@@ -176,3 +176,48 @@ export function deleteSourceIcon(slug: string, name: string): number {
 
   return removed;
 }
+
+// Move a single icon (all its .svg files across bundles) to a different
+// category/subcategory — i.e. relocate the files on disk, since category
+// membership is derived from folder placement. Returns the number of files
+// moved (0 = icon not found, target category/subcategory doesn't exist, or
+// already in that location).
+export function moveSourceIcon(
+  slug: string, name: string, targetCategoryId: string, targetSubcategoryId?: string
+): number {
+  const srcDir = safeChild(SOURCE_DIR, slug);
+  if (!srcDir || !name || !SLUG_RE.test(name)) return 0;
+  if (!SLUG_RE.test(targetCategoryId)) return 0;
+  if (targetSubcategoryId && !SLUG_RE.test(targetSubcategoryId)) return 0;
+
+  const meta = readSourceFamily(slug);
+  if (!meta) return 0;
+  const targetCat = meta.categories.find(c => c.id === targetCategoryId);
+  if (!targetCat) return 0;
+  if (targetSubcategoryId && !targetCat.subcategories.some(s => s.id === targetSubcategoryId)) return 0;
+
+  const source = listSourceIcons(slug).find(ic => ic.name === name);
+  if (!source) return 0;
+  if (source.categoryId === targetCategoryId && source.subcategoryId === targetSubcategoryId) return 0;
+
+  let moved = 0;
+  for (const bundleId of source.bundles) {
+    const fromParts = [srcDir, bundleId, source.categoryId];
+    if (source.subcategoryId) fromParts.push(source.subcategoryId);
+    fromParts.push(`${name}.svg`);
+    const from = path.join(...fromParts);
+
+    const toDir = targetSubcategoryId
+      ? path.join(srcDir, bundleId, targetCategoryId, targetSubcategoryId)
+      : path.join(srcDir, bundleId, targetCategoryId);
+    const to = path.join(toDir, `${name}.svg`);
+
+    if (from.startsWith(srcDir + path.sep) && fs.existsSync(from)) {
+      fs.mkdirSync(toDir, { recursive: true });
+      fs.renameSync(from, to);
+      moved++;
+    }
+  }
+
+  return moved;
+}
