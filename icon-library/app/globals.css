@@ -1,38 +1,47 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0b;
-  --foreground: rgba(255,255,255,.92);
-  --muted: rgba(255,255,255,.52);
-  --muted-2: rgba(255,255,255,.32);
-  --border: rgba(255,255,255,.085);
-  --border-2: rgba(255,255,255,.15);
-  --surface: #0d0d0f;
-  --surface-2: #1a1a1d;
-  --field: #0e0e10;
-  --accent: #7C6AE8;
+  --background: #ffffff;
+  --foreground: #141414;
+  --muted: #9a9a9a;
+  --muted-2: #b8b8b8;
+  --border: #e4e4e4;
+  --border-2: #e4e4e4;
+  --hairline: #f0f0f0;
+  --surface: #fafafa;
+  --surface-2: #f6f6f5;
+  --field: #ffffff;
+  --cell-hover: #eef1ff;
+  --accent: #2545ff;
   --accent-fg: #fff;
+  --accent-soft: rgba(37,69,255,.04);
+  --radius: 4px;
+  --font-sans: 'Geist', sans-serif;
+  --font-mono: 'Geist Mono', monospace;
 }
 
-.light {
-  --background: #f6f6f3;
-  --foreground: #17171a;
-  --muted: rgba(0,0,0,.55);
-  --muted-2: rgba(0,0,0,.34);
-  --border: rgba(0,0,0,.10);
-  --border-2: rgba(0,0,0,.17);
-  --surface: #fbfbf9;
-  --surface-2: #eeeeea;
-  --field: #ffffff;
-  --accent: #5B48D9;
+.dark {
+  --background: #0e0f12;
+  --foreground: #f2f3f5;
+  --muted: #8b8f98;
+  --muted-2: #5a5f68;
+  --border: #2a2d35;
+  --border-2: #2a2d35;
+  --hairline: #1b1d24;
+  --surface: #15171d;
+  --surface-2: #1b1e26;
+  --field: #1b1e26;
+  --cell-hover: #1c2740;
+  --accent: #5d78ff;
   --accent-fg: #fff;
+  --accent-soft: rgba(93,120,255,.08);
 }
 
 html, body { height: 100%; }
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: system-ui, sans-serif;
+  font-family: var(--font-sans);
   overflow: hidden;
 }
 

@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 import type { IconMeta, IconVariant } from '@/types';
 import { SvgIcon } from '@/components/icons/SvgIcon';
 import { buildSvgMarkup, copyText, downloadPng, downloadText } from '@/lib/svg-render';
-import { canAccessFormat, FORMAT_LABELS, FREE_ATTRIBUTION, type ExportFormat, type Tier } from '@/lib/licensing';
+import { canAccessFormat, FORMAT_LABELS, FREE_ATTRIBUTION, FREE_FIXED_SIZE, FREE_FIXED_STROKE, FREE_COLORS, type ExportFormat, type Tier } from '@/lib/licensing';
 
 interface Props {
   icon: IconMeta;
@@ -21,10 +21,12 @@ interface Props {
 const COLOR_RAMP = ['#FFFFFF', '#C9C9C4', '#8A8A86', '#4A4A48', '#17171A', '#000000'];
 
 export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTier, unlockedVariants, onRequestLogin, onUnlocked, onClose, onToast }: Props) {
-  const [size, setSize] = useState(48);
-  const [strokeWidth, setStrokeWidth] = useState(2);
-  const [color, setColor] = useState('#FFFFFF');
+  const isFreeTier = userTier === 'free';
+  const [size, setSize] = useState(isFreeTier ? FREE_FIXED_SIZE : 48);
+  const [strokeWidth, setStrokeWidth] = useState(isFreeTier ? FREE_FIXED_STROKE : 2);
+  const [color, setColor] = useState(isFreeTier ? FREE_COLORS[0] : '#FFFFFF');
   const [menu, setMenu] = useState<'copy' | 'download' | null>(null);
+  const goPricing = () => { window.location.assign('/pricing'); };
 
   const isPro = icon.tier === 'pro';
   // Parent delivers Pro vectors when entitled; keep a local copy so an unlock
@@ -95,58 +97,58 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTi
           <div style={{ fontSize: 22, fontWeight: 500, letterSpacing: '-.01em', lineHeight: 1.1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {icon.name}
           </div>
-          <div style={{ fontSize: 10, fontFamily: 'monospace', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted-2)', marginTop: 4 }}>
+          <div style={{ fontSize: 10, fontFamily: 'var(--font-mono)', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted-2)', marginTop: 4 }}>
             {icon.categoryId}
           </div>
         </div>
         <button
           onClick={onClose}
-          style={{ flexShrink: 0, height: 32, width: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--muted)', cursor: 'pointer', marginLeft: 10 }}
+          style={{ flexShrink: 0, height: 40, width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: '0.5px solid #C7C7C7', borderRadius: 'var(--radius)', color: 'var(--muted)', cursor: 'pointer', marginLeft: 10 }}
         >
-          ✕
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" style={{ opacity: .7 }}><line x1="6" y1="6" x2="18" y2="18" /><line x1="18" y1="6" x2="6" y2="18" /></svg>
         </button>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 24px' }}>
         {locked ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', paddingTop: 12 }}>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 192, width: '100%', border: '1px solid var(--border)', borderRadius: 12, background: 'var(--field)', marginBottom: 18, overflow: 'hidden' }}>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 192, width: '100%', border: '1px solid var(--border)', background: 'var(--surface)', marginBottom: 18, overflow: 'hidden' }}>
               <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px)', backgroundSize: '22px 22px', opacity: .5, pointerEvents: 'none' }} />
               <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--pro, #7C6AE8)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
             </div>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, height: 22, padding: '0 9px', borderRadius: 6, background: 'var(--pro, #7C6AE8)', color: '#fff', fontSize: 10.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 12 }}>Pro icon</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, height: 22, padding: '0 9px', borderRadius: 'var(--radius)', background: 'var(--pro, #7C6AE8)', color: '#fff', fontSize: 10.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 12 }}>Pro icon</span>
             <p style={{ margin: '0 0 18px', fontSize: 13, lineHeight: 1.5, color: 'var(--muted)' }}>
               This icon is part of the Pro set. Unlock the full vector, all styles, and every export format with a Pro plan.
             </p>
             <button
               onClick={unlockPro}
               disabled={unlocking}
-              style={{ width: '100%', height: 42, background: 'var(--pro, #7C6AE8)', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', marginBottom: 18, opacity: unlocking ? .6 : 1 }}
+              style={{ width: '100%', height: 42, background: 'var(--pro, #7C6AE8)', color: '#fff', border: 'none', borderRadius: 'var(--radius)', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', marginBottom: 18, opacity: unlocking ? .6 : 1 }}
             >
               {unlocking ? 'Unlocking…' : signedIn ? 'Unlock Pro — $9/mo' : 'Sign in to unlock'}
             </button>
             {icon.tags.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, justifyContent: 'center' }}>
                 {icon.tags.map(t => (
-                  <span key={t} style={{ height: 24, display: 'inline-flex', alignItems: 'center', padding: '0 9px', background: 'var(--field)', border: '1px solid var(--border)', borderRadius: 6, fontFamily: 'monospace', fontSize: 10.5, color: 'var(--muted)' }}>{t}</span>
+                  <span key={t} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '7px 14px', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>{t}</span>
                 ))}
               </div>
             )}
           </div>
         ) : (<>
         {/* Preview */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 192, border: '1px solid var(--border)', borderRadius: 12, background: 'var(--field)', marginBottom: 18, overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px)', backgroundSize: '22px 22px', opacity: .5, pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 250, border: '1px solid var(--border)', background: 'var(--surface)', marginBottom: 18, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'repeating-linear-gradient(0deg,rgba(128,128,128,.11) 0 1px,transparent 1px 24px),repeating-linear-gradient(90deg,rgba(128,128,128,.11) 0 1px,transparent 1px 24px)', pointerEvents: 'none' }} />
           <div style={{ position: 'relative', color }}>
             <SvgIcon variant={variant} size={Math.min(size, 140)} strokeWidth={strokeWidth} color={color} />
           </div>
-          <span style={{ position: 'absolute', left: 10, bottom: 8, fontFamily: 'monospace', fontSize: 9, color: 'var(--muted-2)' }}>{size}×{size}px</span>
+          <span style={{ position: 'absolute', left: 20, bottom: 16, fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted-2)' }}>{size}×{size}px</span>
         </div>
 
         {/* Bundle switcher (only bundles this icon exists in) */}
         {availBundles.length > 1 && (
           <div style={{ marginBottom: 18 }}>
-            <div style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 8 }}>Style</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 8 }}>Style</div>
             <div style={{ display: 'flex', gap: 6 }}>
               {availBundles.map(bid => (
                 <button
@@ -155,8 +157,8 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTi
                   style={{
                     flex: 1, height: 34, background: bid === bundleId ? 'var(--foreground)' : 'transparent',
                     color: bid === bundleId ? 'var(--background)' : 'var(--muted)',
-                    border: `1px solid ${bid === bundleId ? 'transparent' : 'var(--border)'}`,
-                    borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
+                    border: `0.5px solid ${bid === bundleId ? 'transparent' : '#C7C7C7'}`,
+                    borderRadius: 'var(--radius)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
                   }}
                 >
                   {bid}
@@ -171,48 +173,60 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTi
           {/* Size */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
-              <span style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)' }}>Size</span>
-              <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--muted)' }}>{size}px</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)' }}>Size</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                {size}px {isFreeTier && <ProLock />}
+              </span>
             </div>
-            <input type="range" min={16} max={96} value={size} onChange={e => setSize(+e.target.value)} style={{ width: '100%', accentColor: 'var(--foreground)' }} />
+            <input type="range" min={16} max={96} value={size} onChange={e => setSize(+e.target.value)} disabled={isFreeTier} style={{ width: '100%', accentColor: 'var(--accent)', opacity: isFreeTier ? .35 : 1 }} />
+            {isFreeTier && <UpgradeHint onClick={goPricing} text="Free tier is fixed at 24px — upgrade for live sizing" />}
           </div>
 
           {/* Stroke width */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
-              <span style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)' }}>Stroke width</span>
-              <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--muted)' }}>{strokeBased ? strokeWidth : 'n/a'}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)' }}>Stroke width</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                {strokeBased ? strokeWidth : 'n/a'} {isFreeTier && strokeBased && <ProLock />}
+              </span>
             </div>
-            <input type="range" min={0.5} max={3} step={0.25} value={strokeWidth} onChange={e => setStrokeWidth(+e.target.value)} disabled={!strokeBased} style={{ width: '100%', accentColor: 'var(--foreground)', opacity: strokeBased ? 1 : .35 }} />
+            <input type="range" min={0.5} max={3} step={0.25} value={strokeWidth} onChange={e => setStrokeWidth(+e.target.value)} disabled={!strokeBased || isFreeTier} style={{ width: '100%', accentColor: 'var(--accent)', opacity: strokeBased && !isFreeTier ? 1 : .35 }} />
+            {isFreeTier && strokeBased && <UpgradeHint onClick={goPricing} text="Free tier is fixed at 2px — upgrade for live stroke control" />}
           </div>
 
           {/* Color */}
           <div>
-            <div style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 8 }}>Color</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+              Color {isFreeTier && <ProLock />}
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ display: 'flex', gap: 5 }}>
-                {COLOR_RAMP.map(hex => (
-                  <button
-                    key={hex}
-                    onClick={() => setColor(hex)}
-                    title={hex}
-                    style={{ height: 24, width: 24, borderRadius: 6, background: hex, border: `1px solid ${color.toUpperCase() === hex ? 'var(--foreground)' : 'var(--border-2)'}`, boxShadow: color.toUpperCase() === hex ? '0 0 0 2px var(--background), 0 0 0 3px var(--foreground)' : 'none', cursor: 'pointer', padding: 0 }}
-                  />
-                ))}
+                {COLOR_RAMP.map(hex => {
+                  const allowed = !isFreeTier || FREE_COLORS.includes(hex);
+                  return (
+                    <button
+                      key={hex}
+                      onClick={() => allowed ? setColor(hex) : goPricing()}
+                      title={allowed ? hex : `${hex} — Pro only`}
+                      style={{ height: 32, width: 32, borderRadius: 'var(--radius)', background: hex, boxShadow: 'inset 0 0 0 1px var(--border)', border: `2px solid ${color.toUpperCase() === hex ? 'var(--accent)' : 'transparent'}`, cursor: 'pointer', padding: 0, opacity: allowed ? 1 : .3 }}
+                    />
+                  );
+                })}
               </div>
               <input
                 value={color}
                 onChange={e => setColor(e.target.value)}
-                style={{ flex: 1, height: 32, padding: '0 10px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--field)', color: 'var(--foreground)', fontFamily: 'monospace', fontSize: 12, outline: 'none' }}
+                disabled={isFreeTier}
+                style={{ flex: 1, height: 32, padding: '0 10px', border: '1px solid var(--border)', borderRadius: 'var(--radius)', background: 'var(--surface-2)', color: 'var(--foreground)', fontFamily: 'var(--font-mono)', fontSize: 12, outline: 'none', opacity: isFreeTier ? .5 : 1 }}
               />
             </div>
+            {isFreeTier && <UpgradeHint onClick={goPricing} text="Free tier: black or white only — upgrade for any color" />}
           </div>
         </div>
 
         {/* Actions: Copy + Download, format-gated */}
         {(() => {
           const iconKey = icon.id.split('__').pop() ?? icon.name.replace(/\s+/g, '-');
-          const goPricing = () => { window.location.assign('/pricing'); };
 
           const doExport = async (format: ExportFormat, action: 'copy' | 'download') => {
             setMenu(null);
@@ -220,7 +234,8 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTi
             if (action === 'copy' && format === 'svg') { copy(markup, 'Copied SVG'); return; }
             // Everything else routes through the server (gating + rate limit + attribution).
             try {
-              const res = await fetch(`/api/export/${familySlug}/${iconKey}?bundle=${variant.bundleId}&format=${format}`);
+              const params = new URLSearchParams({ bundle: variant.bundleId, format, size: String(size), color, strokeWidth: String(strokeWidth) });
+              const res = await fetch(`/api/export/${familySlug}/${iconKey}?${params}`);
               const data = await res.json().catch(() => ({}));
               if (res.status === 402 || res.status === 429) { onToast(data.error ?? 'Upgrade required'); goPricing(); return; }
               if (!res.ok) { onToast(data.error ?? 'Export failed'); return; }
@@ -233,34 +248,55 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTi
           const action = menu === 'copy' ? 'copy' as const : 'download' as const;
           const formats: ExportFormat[] = menu === 'download' ? ['svg', 'png', 'jsx', 'vue'] : ['svg', 'jsx', 'vue'];
           return (
-            <div style={{ position: 'relative', marginBottom: 14 }}>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => setMenu(m => m === 'copy' ? null : 'copy')} style={{ flex: 1, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'var(--foreground)', color: 'var(--background)', border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
-                  Copy <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <button onClick={() => setMenu(m => m === 'copy' ? null : 'copy')} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'var(--foreground)', color: 'var(--background)', border: 'none', padding: '12px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', borderRadius: 'var(--radius)' }}>
+                  Copy <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
-                <button onClick={() => setMenu(m => m === 'download' ? null : 'download')} style={{ flex: 1, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, background: 'transparent', color: 'var(--foreground)', border: '1px solid var(--border-2)', borderRadius: 10, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
-                  Download <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
+                {menu === 'copy' && (
+                  <>
+                    <div onClick={() => setMenu(null)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+                    <div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 41, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 5, boxShadow: '0 14px 34px -14px rgba(0,0,0,.3)' }}>
+                      {formats.map(fmt => {
+                        const locked = !canAccessFormat(userTier, fmt);
+                        return (
+                          <button key={fmt} onClick={() => locked ? goPricing() : doExport(fmt, action)}
+                            title={locked ? 'Upgrade to Pro' : undefined}
+                            style={{ width: '100%', textAlign: 'left', height: 34, padding: '0 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'transparent', border: 'none', borderRadius: 'var(--radius)', color: locked ? 'var(--muted-2)' : 'var(--foreground)', fontSize: 13, cursor: 'pointer' }}
+                            className="hover:bg-[var(--surface-2)]">
+                            <span>{FORMAT_LABELS[fmt]}</span>
+                            {locked && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--pro, #7C6AE8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </div>
-              {menu && (
-                <>
-                  <div onClick={() => setMenu(null)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
-                  <div style={{ position: 'absolute', top: 46, left: menu === 'download' ? '50%' : 0, right: menu === 'copy' ? '50%' : 0, zIndex: 41, padding: 6, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,.4)' }}>
-                    {formats.map(fmt => {
-                      const locked = !canAccessFormat(userTier, fmt);
-                      return (
-                        <button key={fmt} onClick={() => locked ? goPricing() : doExport(fmt, action)}
-                          title={locked ? 'Upgrade to Pro' : undefined}
-                          style={{ width: '100%', textAlign: 'left', height: 34, padding: '0 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'transparent', border: 'none', borderRadius: 8, color: locked ? 'var(--muted-2)' : 'var(--foreground)', fontSize: 13, cursor: 'pointer' }}
-                          className="hover:bg-[var(--surface-2)]">
-                          <span>{FORMAT_LABELS[fmt]}</span>
-                          {locked && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--pro, #7C6AE8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
+              <div style={{ flex: 1, position: 'relative' }}>
+                <button onClick={() => setMenu(m => m === 'download' ? null : 'download')} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'transparent', color: 'var(--foreground)', padding: '12px 0', fontSize: 14, fontWeight: 600, cursor: 'pointer', border: '0.5px solid #C7C7C7', borderRadius: 'var(--radius)' }}>
+                  Download <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                {menu === 'download' && (
+                  <>
+                    <div onClick={() => setMenu(null)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+                    <div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 41, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 5, boxShadow: '0 14px 34px -14px rgba(0,0,0,.3)' }}>
+                      {formats.map(fmt => {
+                        const locked = !canAccessFormat(userTier, fmt);
+                        return (
+                          <button key={fmt} onClick={() => locked ? goPricing() : doExport(fmt, action)}
+                            title={locked ? 'Upgrade to Pro' : undefined}
+                            style={{ width: '100%', textAlign: 'left', height: 34, padding: '0 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'transparent', border: 'none', borderRadius: 'var(--radius)', color: locked ? 'var(--muted-2)' : 'var(--foreground)', fontSize: 13, cursor: 'pointer' }}
+                            className="hover:bg-[var(--surface-2)]">
+                            <span>{FORMAT_LABELS[fmt]}</span>
+                            {locked && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--pro, #7C6AE8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           );
         })()}
@@ -275,22 +311,42 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTi
         {/* Tags */}
         {icon.tags.length > 0 && (
           <>
-            <div style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 8 }}>Tags</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 8 }}>Tags</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 18 }}>
               {icon.tags.map(t => (
-                <span key={t} style={{ height: 24, display: 'inline-flex', alignItems: 'center', padding: '0 9px', background: 'var(--field)', border: '1px solid var(--border)', borderRadius: 6, fontFamily: 'monospace', fontSize: 10.5, color: 'var(--muted)' }}>{t}</span>
+                <span key={t} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '7px 14px', fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted)' }}>{t}</span>
               ))}
             </div>
           </>
         )}
 
-        {/* Markup */}
-        <div style={{ fontFamily: 'monospace', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 8 }}>Markup</div>
-        <pre style={{ margin: 0, padding: '12px 14px', background: 'var(--field)', border: '1px solid var(--border)', borderRadius: 10, fontFamily: 'monospace', fontSize: 10.5, lineHeight: 1.6, color: 'var(--muted)', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-          {markup}
-        </pre>
+        {/* Markup — Pro only */}
+        {isFreeTier ? (
+          <button onClick={goPricing} style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--muted-2)', fontSize: 11.5, cursor: 'pointer' }}>
+            Markup — Pro feature <ProLock />
+          </button>
+        ) : (<>
+          <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 8 }}>Markup</div>
+          <div onClick={() => copy(markup, 'Copied SVG')} style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 16, fontFamily: 'var(--font-mono)', fontSize: 11.5, lineHeight: 1.7, color: 'var(--accent)', whiteSpace: 'pre-wrap', wordBreak: 'break-all', cursor: 'copy' }}>
+            {markup}
+          </div>
+        </>)}
         </>)}
       </div>
     </aside>
+  );
+}
+
+function ProLock() {
+  return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--pro, #7C6AE8)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+  );
+}
+
+function UpgradeHint({ onClick, text }: { onClick: () => void; text: string }) {
+  return (
+    <button onClick={onClick} style={{ marginTop: 6, background: 'transparent', border: 'none', padding: 0, color: 'var(--muted-2)', fontSize: 10.5, textAlign: 'left', cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: 2 }}>
+      {text}
+    </button>
   );
 }

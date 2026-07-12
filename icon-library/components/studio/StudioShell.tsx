@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import type { FamilyMeta, BundleDef, CategoryNode, SubcategoryNode, Credit, IconOverride } from '@/types';
 import type { FamilySummary, SourceIcon } from '@/lib/studio';
 import { PREDEFINED_BUNDLES, DEFAULT_LICENSES } from '@/taxonomy.config';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 interface Props {
   families: FamilySummary[];
@@ -13,9 +14,9 @@ type Tab = 'meta' | 'bundles' | 'categories' | 'icons';
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 
 // ── small styled primitives ─────────────────────────────────────────────────
-const LABEL: React.CSSProperties = { fontFamily: 'monospace', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 6, display: 'block' };
-const INPUT: React.CSSProperties = { width: '100%', height: 34, padding: '0 10px', background: 'var(--field)', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--foreground)', fontSize: 13, outline: 'none' };
-const BTN: React.CSSProperties = { height: 34, padding: '0 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', border: '1px solid var(--border)', background: 'var(--surface-2)', color: 'var(--foreground)' };
+const LABEL: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 6, display: 'block' };
+const INPUT: React.CSSProperties = { width: '100%', height: 34, padding: '0 10px', background: 'var(--field)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--foreground)', fontSize: 13, outline: 'none' };
+const BTN: React.CSSProperties = { height: 34, padding: '0 14px', borderRadius: 'var(--radius)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', border: '1px solid var(--border)', background: 'var(--surface-2)', color: 'var(--foreground)' };
 const BTN_PRIMARY: React.CSSProperties = { ...BTN, background: 'var(--foreground)', color: 'var(--background)', border: 'none' };
 
 export function StudioShell({ families }: Props) {
@@ -172,7 +173,10 @@ export function StudioShell({ families }: Props) {
       <aside style={{ flex: '0 0 240px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
         <div style={{ height: 56, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', borderBottom: '1px solid var(--border)' }}>
           <span style={{ fontWeight: 700, fontSize: 15 }}>Studio</span>
-          <a href="/" style={{ fontSize: 11, color: 'var(--muted)', textDecoration: 'none' }}>← Browse</a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ThemeToggle />
+            <a href="/" style={{ fontSize: 11, color: 'var(--muted)', textDecoration: 'none' }}>← Browse</a>
+          </div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: 8 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px', marginBottom: 2 }}>
@@ -183,10 +187,10 @@ export function StudioShell({ families }: Props) {
             <button
               key={f.slug}
               onClick={() => loadFamily(f.slug)}
-              style={{ width: '100%', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 2, padding: '8px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: slug === f.slug ? 'var(--surface-2)' : 'transparent', color: 'var(--foreground)', marginBottom: 2 }}
+              style={{ width: '100%', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 2, padding: '8px 10px', borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer', background: slug === f.slug ? 'var(--surface-2)' : 'transparent', color: 'var(--foreground)', marginBottom: 2 }}
             >
               <span style={{ fontSize: 13, fontWeight: 600 }}>{f.name}</span>
-              <span style={{ fontSize: 10.5, color: 'var(--muted-2)', fontFamily: 'monospace' }}>{f.slug} · {f.iconCount} svg · {f.status}</span>
+              <span style={{ fontSize: 10.5, color: 'var(--muted-2)', fontFamily: 'var(--font-mono)' }}>{f.slug} · {f.iconCount} svg · {f.status}</span>
             </button>
           ))}
           {list.length === 0 && <div style={{ padding: 10, fontSize: 12, color: 'var(--muted-2)' }}>No families in icons-source/</div>}
@@ -205,11 +209,11 @@ export function StudioShell({ families }: Props) {
             <header style={{ height: 56, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 16, padding: '0 20px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', gap: 4 }}>
                 {(['meta', 'bundles', 'categories', 'icons'] as Tab[]).map(t => (
-                  <button key={t} onClick={() => setTab(t)} style={{ height: 32, padding: '0 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 600, textTransform: 'capitalize', cursor: 'pointer', border: 'none', background: tab === t ? 'var(--surface-2)' : 'transparent', color: tab === t ? 'var(--foreground)' : 'var(--muted)' }}>{t}</button>
+                  <button key={t} onClick={() => setTab(t)} style={{ height: 32, padding: '0 14px', borderRadius: 'var(--radius)', fontSize: 12.5, fontWeight: 600, textTransform: 'capitalize', cursor: 'pointer', border: 'none', background: tab === t ? 'var(--surface-2)' : 'transparent', color: tab === t ? 'var(--foreground)' : 'var(--muted)' }}>{t}</button>
                 ))}
               </div>
               <div style={{ flex: 1 }} />
-              {dirty && <span style={{ fontSize: 11, color: 'var(--muted-2)', fontFamily: 'monospace' }}>unsaved</span>}
+              {dirty && <span style={{ fontSize: 11, color: 'var(--muted-2)', fontFamily: 'var(--font-mono)' }}>unsaved</span>}
               <button onClick={rebuild} disabled={building} style={{ ...BTN, opacity: building ? .5 : 1 }}>{building ? 'Building…' : 'Rebuild'}</button>
               <button onClick={exportJson} style={BTN}>Export JSON</button>
               <button onClick={save} disabled={saving || !dirty} style={{ ...BTN_PRIMARY, opacity: saving || !dirty ? .5 : 1 }}>{saving ? 'Saving…' : 'Save'}</button>
@@ -230,12 +234,12 @@ export function StudioShell({ families }: Props) {
       {/* New family */}
       {newOpen && (
         <div onClick={() => !creating && setNewOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.55)' }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 380, padding: 24, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 380, padding: 24, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}>
             <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 10 }}>New family</div>
             <label style={LABEL}>Name</label>
             <input autoFocus value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && newSlug) createFamily(); }} placeholder="My Icons" style={{ ...INPUT, marginBottom: 8 }} />
             <div style={{ fontSize: 11.5, color: 'var(--muted-2)', marginBottom: 14 }}>
-              Slug: <code style={{ fontFamily: 'monospace', color: 'var(--muted)' }}>{newSlug || '—'}</code> · starts as <strong style={{ color: 'var(--muted)' }}>draft</strong> with outline + solid bundles. Set Status = published in Meta to go live.
+              Slug: <code style={{ fontFamily: 'var(--font-mono)', color: 'var(--muted)' }}>{newSlug || '—'}</code> · starts as <strong style={{ color: 'var(--muted)' }}>draft</strong> with outline + solid bundles. Set Status = published in Meta to go live.
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button onClick={() => setNewOpen(false)} disabled={creating} style={BTN}>Cancel</button>
@@ -248,13 +252,13 @@ export function StudioShell({ families }: Props) {
       {/* Delete-family confirm (type the slug) */}
       {delOpen && family && (
         <div onClick={() => !deleting && setDelOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,.55)' }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 400, padding: 24, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: 400, padding: 24, background: 'var(--background)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', boxShadow: '0 20px 60px rgba(0,0,0,.5)' }}>
             <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 8 }}>Delete family</div>
             <p style={{ margin: '0 0 14px', fontSize: 13, lineHeight: 1.5, color: 'var(--muted)' }}>
-              This permanently removes <strong style={{ color: 'var(--foreground)' }}>{family.name}</strong> and all its icons from <code style={{ fontFamily: 'monospace' }}>icons-source/{family.slug}/</code>. This cannot be undone.
+              This permanently removes <strong style={{ color: 'var(--foreground)' }}>{family.name}</strong> and all its icons from <code style={{ fontFamily: 'var(--font-mono)' }}>icons-source/{family.slug}/</code>. This cannot be undone.
             </p>
-            <label style={LABEL}>Type <code style={{ fontFamily: 'monospace', color: 'var(--foreground)' }}>{family.slug}</code> to confirm</label>
-            <input autoFocus value={delText} onChange={e => setDelText(e.target.value)} placeholder={family.slug} style={{ ...INPUT, fontFamily: 'monospace', marginBottom: 14 }} />
+            <label style={LABEL}>Type <code style={{ fontFamily: 'var(--font-mono)', color: 'var(--foreground)' }}>{family.slug}</code> to confirm</label>
+            <input autoFocus value={delText} onChange={e => setDelText(e.target.value)} placeholder={family.slug} style={{ ...INPUT, fontFamily: 'var(--font-mono)', marginBottom: 14 }} />
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button onClick={() => setDelOpen(false)} disabled={deleting} style={BTN}>Cancel</button>
               <button
@@ -270,7 +274,7 @@ export function StudioShell({ families }: Props) {
       )}
 
       {toast && (
-        <div className="toast-in" style={{ position: 'fixed', bottom: 24, left: '50%', zIndex: 99, height: 40, display: 'flex', alignItems: 'center', padding: '0 16px', background: 'var(--foreground)', color: 'var(--background)', borderRadius: 10, fontSize: 13, fontWeight: 600 }}>
+        <div className="toast-in" style={{ position: 'fixed', bottom: 24, left: '50%', zIndex: 99, height: 40, display: 'flex', alignItems: 'center', padding: '0 16px', background: 'var(--foreground)', color: 'var(--background)', borderRadius: 'var(--radius)', fontSize: 13, fontWeight: 600 }}>
           {toast}
         </div>
       )}
@@ -287,7 +291,7 @@ function MetaTab({ family, update, onRequestDelete }: { family: FamilyMeta; upda
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       <Row><label style={LABEL}>Name</label><input style={INPUT} value={family.name} onChange={e => update({ name: e.target.value })} /></Row>
-      <Row><label style={LABEL}>Slug (folder name — matches icons-source/)</label><input style={{ ...INPUT, fontFamily: 'monospace' }} value={family.slug} onChange={e => update({ slug: slugify(e.target.value) })} /></Row>
+      <Row><label style={LABEL}>Slug (folder name — matches icons-source/)</label><input style={{ ...INPUT, fontFamily: 'var(--font-mono)' }} value={family.slug} onChange={e => update({ slug: slugify(e.target.value) })} /></Row>
       <Row><label style={LABEL}>Description</label><textarea style={{ ...INPUT, height: 64, padding: 10, resize: 'vertical' }} value={family.description ?? ''} onChange={e => update({ description: e.target.value })} /></Row>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
@@ -302,8 +306,8 @@ function MetaTab({ family, update, onRequestDelete }: { family: FamilyMeta; upda
             <option value="free">Free</option><option value="pro">Pro</option>
           </select>
         </Row>
-        <Row><label style={LABEL}>Version</label><input style={{ ...INPUT, fontFamily: 'monospace' }} value={family.version ?? ''} onChange={e => update({ version: e.target.value })} /></Row>
-        <Row><label style={LABEL}>Base grid</label><input type="number" style={{ ...INPUT, fontFamily: 'monospace' }} value={family.baseGrid ?? 24} onChange={e => update({ baseGrid: +e.target.value })} /></Row>
+        <Row><label style={LABEL}>Version</label><input style={{ ...INPUT, fontFamily: 'var(--font-mono)' }} value={family.version ?? ''} onChange={e => update({ version: e.target.value })} /></Row>
+        <Row><label style={LABEL}>Base grid</label><input type="number" style={{ ...INPUT, fontFamily: 'var(--font-mono)' }} value={family.baseGrid ?? 24} onChange={e => update({ baseGrid: +e.target.value })} /></Row>
       </div>
 
       <Row><label style={LABEL}>Status</label>
@@ -329,7 +333,7 @@ function MetaTab({ family, update, onRequestDelete }: { family: FamilyMeta; upda
       </div>
 
       {/* Danger zone */}
-      <div style={{ marginTop: 12, padding: 16, border: '1px solid #5a2a26', borderRadius: 12, background: 'rgba(192,57,43,.06)' }}>
+      <div style={{ marginTop: 12, padding: 16, border: '1px solid #5a2a26', borderRadius: 'var(--radius)', background: 'rgba(192,57,43,.06)' }}>
         <div style={{ fontSize: 12.5, fontWeight: 700, color: '#e5645a', marginBottom: 4 }}>Danger zone</div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <span style={{ fontSize: 12.5, color: 'var(--muted)' }}>Permanently delete this family and all its icons.</span>
@@ -354,8 +358,8 @@ function BundlesTab({ family, update }: { family: FamilyMeta; update: (p: Partia
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {family.bundles.map((b, i) => (
-          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: 8, alignItems: 'center', padding: 10, border: '1px solid var(--border)', borderRadius: 10 }}>
-            <div><label style={LABEL}>ID (folder)</label><input style={{ ...INPUT, fontFamily: 'monospace' }} value={b.id} onChange={e => setBundle(i, { id: slugify(e.target.value) })} /></div>
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: 8, alignItems: 'center', padding: 10, border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+            <div><label style={LABEL}>ID (folder)</label><input style={{ ...INPUT, fontFamily: 'var(--font-mono)' }} value={b.id} onChange={e => setBundle(i, { id: slugify(e.target.value) })} /></div>
             <div><label style={LABEL}>Name</label><input style={INPUT} value={b.name} onChange={e => setBundle(i, { name: e.target.value })} /></div>
             <div><label style={LABEL}>Render</label>
               <button onClick={() => setBundle(i, { strokeBased: !b.strokeBased })} style={{ ...BTN, width: 90 }}>{b.strokeBased ? 'stroke' : 'fill'}</button>
@@ -389,9 +393,9 @@ function CategoriesTab({ family, update }: { family: FamilyMeta; update: (p: Par
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {family.categories.map((cat, ci) => (
-        <div key={ci} style={{ border: '1px solid var(--border)', borderRadius: 12, padding: 12 }}>
+        <div key={ci} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 12 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8, alignItems: 'end', marginBottom: 10 }}>
-            <div><label style={LABEL}>Category ID (folder)</label><input style={{ ...INPUT, fontFamily: 'monospace' }} value={cat.id} onChange={e => setCat(ci, { id: slugify(e.target.value) })} /></div>
+            <div><label style={LABEL}>Category ID (folder)</label><input style={{ ...INPUT, fontFamily: 'var(--font-mono)' }} value={cat.id} onChange={e => setCat(ci, { id: slugify(e.target.value) })} /></div>
             <div><label style={LABEL}>Name</label><input style={INPUT} value={cat.name} onChange={e => setCat(ci, { name: e.target.value })} /></div>
             <button onClick={() => update({ categories: family.categories.filter((_, idx) => idx !== ci) })} style={{ ...BTN, width: 34, padding: 0 }}>✕</button>
           </div>
@@ -399,7 +403,7 @@ function CategoriesTab({ family, update }: { family: FamilyMeta; update: (p: Par
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 12, borderLeft: '2px solid var(--border)' }}>
             {cat.subcategories.map((sub, si) => (
               <div key={si} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: 8 }}>
-                <input style={{ ...INPUT, fontFamily: 'monospace', height: 30 }} value={sub.id} onChange={e => setSub(ci, si, { id: slugify(e.target.value) })} />
+                <input style={{ ...INPUT, fontFamily: 'var(--font-mono)', height: 30 }} value={sub.id} onChange={e => setSub(ci, si, { id: slugify(e.target.value) })} />
                 <input style={{ ...INPUT, height: 30 }} value={sub.name} onChange={e => setSub(ci, si, { name: e.target.value })} />
                 <button onClick={() => setCat(ci, { subcategories: cat.subcategories.filter((_, idx) => idx !== si) })} style={{ ...BTN, width: 30, height: 30, padding: 0 }}>✕</button>
               </div>
@@ -491,7 +495,7 @@ function UploadPanel({ family, slug, onReload, onReloadFamily, flash }: { family
   };
 
   return (
-    <div style={{ border: '1px solid var(--border)', borderRadius: 10 }}>
+    <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
       <button onClick={() => setOpen(o => !o)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'transparent', border: 'none', color: 'var(--foreground)', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
         <span>Upload icons {staged.length > 0 && <span style={{ color: 'var(--muted-2)', fontWeight: 400 }}>· {staged.length} staged</span>}</span>
         <span style={{ color: 'var(--muted-2)' }}>{open ? '▾' : '▸'}</span>
@@ -525,7 +529,7 @@ function UploadPanel({ family, slug, onReload, onReloadFamily, flash }: { family
           </div>
 
           {showTpl && (
-            <pre style={{ margin: 0, padding: '10px 12px', background: 'var(--field)', border: '1px solid var(--border)', borderRadius: 8, fontFamily: 'monospace', fontSize: 10.5, lineHeight: 1.5, color: 'var(--muted)', whiteSpace: 'pre-wrap' }}>{`your-folder/
+            <pre style={{ margin: 0, padding: '10px 12px', background: 'var(--field)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontFamily: 'var(--font-mono)', fontSize: 10.5, lineHeight: 1.5, color: 'var(--muted)', whiteSpace: 'pre-wrap' }}>{`your-folder/
   outline/            ← bundle (outline=stroke, solid=fill)
     interface/        ← category
       home.svg
@@ -544,7 +548,7 @@ Missing bundles/categories are created automatically.`}</pre>
               {staged.map((s, i) => {
                 const t = targetOf(s);
                 return (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontFamily: 'monospace', color: s.error ? '#e5645a' : 'var(--muted)' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontFamily: 'var(--font-mono)', color: s.error ? '#e5645a' : 'var(--muted)' }}>
                   <span style={{ flex: 1 }}>{t.bundleId}/{t.categoryId}{t.subcategoryId ? '/' + t.subcategoryId : ''}/{slugify(s.name)}.svg{s.error ? `  (${s.error})` : ''}</span>
                   <button onClick={() => setStaged(prev => prev.filter((_, idx) => idx !== i))} style={{ ...BTN, width: 24, height: 24, padding: 0, fontSize: 11 }}>✕</button>
                 </div>
@@ -609,12 +613,12 @@ function IconsTab({ family, icons, update, slug, onReload, onReloadFamily, flash
       <UploadPanel family={family} slug={slug} onReload={onReload} onReloadFamily={onReloadFamily} flash={flash} />
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <input style={{ ...INPUT, flex: 1, maxWidth: 280 }} placeholder="Filter icons…" value={q} onChange={e => setQ(e.target.value)} />
-        <span style={{ fontSize: 12, color: 'var(--muted-2)', fontFamily: 'monospace' }}>{icons.length} icons · {proCount} pro</span>
+        <span style={{ fontSize: 12, color: 'var(--muted-2)', fontFamily: 'var(--font-mono)' }}>{icons.length} icons · {proCount} pro</span>
       </div>
 
       {icons.length === 0 && <div style={{ padding: 20, fontSize: 13, color: 'var(--muted-2)' }}>No SVGs found in icons-source/{family.slug}/</div>}
 
-      <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
         {/* header row */}
         <div style={{ display: 'grid', gridTemplateColumns: '40px 1.4fr 1fr 1fr 2fr 120px 44px', gap: 10, padding: '8px 12px', borderBottom: '1px solid var(--border)', background: 'var(--surface-2)', ...LABEL, marginBottom: 0 }}>
           <span></span><span>Icon</span><span>Category</span><span>Bundles</span><span>Tags</span><span>Tier</span><span></span>
@@ -626,7 +630,7 @@ function IconsTab({ family, icons, update, slug, onReload, onReloadFamily, flash
           const displayName = ov.name ?? ic.name.replace(/-/g, ' ');
           return (
             <div key={ic.name} style={{ display: 'grid', gridTemplateColumns: '40px 1.4fr 1fr 1fr 2fr 120px 44px', gap: 10, padding: '8px 12px', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
-              <div style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--field)', border: '1px solid var(--border)', borderRadius: 7, color: 'var(--foreground)' }}>
+              <div style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--field)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--foreground)' }}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox={ic.viewBox}
                   fill={ic.strokeBased ? 'none' : 'currentColor'} stroke={ic.strokeBased ? 'currentColor' : 'none'}
                   strokeWidth={ic.strokeBased ? 2 : undefined} strokeLinecap="round" strokeLinejoin="round"
@@ -634,20 +638,20 @@ function IconsTab({ family, icons, update, slug, onReload, onReloadFamily, flash
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
                 <input style={{ ...INPUT, height: 28, fontSize: 12.5 }} value={displayName} onChange={e => setOverride(ic.name, { name: e.target.value })} />
-                <span style={{ fontFamily: 'monospace', fontSize: 9.5, color: 'var(--muted-2)' }}>{ic.name}.svg</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, color: 'var(--muted-2)' }}>{ic.name}.svg</span>
               </div>
-              <span style={{ fontSize: 11.5, color: 'var(--muted)', fontFamily: 'monospace' }}>{ic.categoryId}{ic.subcategoryId ? ` / ${ic.subcategoryId}` : ''}</span>
-              <span style={{ fontSize: 10.5, color: 'var(--muted-2)', fontFamily: 'monospace' }}>{ic.bundles.join(', ')}</span>
-              <input style={{ ...INPUT, height: 28, fontSize: 11.5, fontFamily: 'monospace' }} value={tags.join(', ')} onChange={e => setOverride(ic.name, { tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })} />
+              <span style={{ fontSize: 11.5, color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>{ic.categoryId}{ic.subcategoryId ? ` / ${ic.subcategoryId}` : ''}</span>
+              <span style={{ fontSize: 10.5, color: 'var(--muted-2)', fontFamily: 'var(--font-mono)' }}>{ic.bundles.join(', ')}</span>
+              <input style={{ ...INPUT, height: 28, fontSize: 11.5, fontFamily: 'var(--font-mono)' }} value={tags.join(', ')} onChange={e => setOverride(ic.name, { tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })} />
               <div style={{ display: 'flex', gap: 4 }}>
                 {(['free', 'pro'] as const).map(t => (
-                  <button key={t} onClick={() => setOverride(ic.name, { tier: t })} style={{ flex: 1, height: 28, borderRadius: 7, fontSize: 11, fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', border: 'none', background: tier === t ? (t === 'pro' ? 'var(--pro, #7C6AE8)' : 'var(--foreground)') : 'var(--surface-2)', color: tier === t ? (t === 'pro' ? '#fff' : 'var(--background)') : 'var(--muted-2)' }}>{t}</button>
+                  <button key={t} onClick={() => setOverride(ic.name, { tier: t })} style={{ flex: 1, height: 28, borderRadius: 'var(--radius)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', cursor: 'pointer', border: 'none', background: tier === t ? (t === 'pro' ? 'var(--pro, #7C6AE8)' : 'var(--foreground)') : 'var(--surface-2)', color: tier === t ? (t === 'pro' ? '#fff' : 'var(--background)') : 'var(--muted-2)' }}>{t}</button>
                 ))}
               </div>
               {pendingDel === ic.name ? (
-                <button onClick={() => deleteIcon(ic.name)} onBlur={() => setPendingDel(null)} autoFocus title="Click to confirm delete" style={{ height: 28, borderRadius: 7, fontSize: 10, fontWeight: 700, cursor: 'pointer', border: 'none', background: '#c0392b', color: '#fff' }}>Sure?</button>
+                <button onClick={() => deleteIcon(ic.name)} onBlur={() => setPendingDel(null)} autoFocus title="Click to confirm delete" style={{ height: 28, borderRadius: 'var(--radius)', fontSize: 10, fontWeight: 700, cursor: 'pointer', border: 'none', background: '#c0392b', color: '#fff' }}>Sure?</button>
               ) : (
-                <button onClick={() => setPendingDel(ic.name)} title={`Delete ${ic.name}.svg`} style={{ height: 28, borderRadius: 7, cursor: 'pointer', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted-2)' }}>✕</button>
+                <button onClick={() => setPendingDel(ic.name)} title={`Delete ${ic.name}.svg`} style={{ height: 28, borderRadius: 'var(--radius)', cursor: 'pointer', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted-2)' }}>✕</button>
               )}
             </div>
           );

@@ -26,6 +26,17 @@ export const FORMAT_LABELS: Record<ExportFormat, string> = {
 // Free tier daily download cap (Pro = unlimited).
 export const FREE_DAILY_LIMIT = 5;
 
+// Free tier export customization is locked to these values — live size /
+// stroke / color control and the raw markup view are Pro features.
+export const FREE_FIXED_SIZE = 24;
+export const FREE_FIXED_STROKE = 2;
+export const FREE_COLORS = ['#000000', '#FFFFFF'];
+
+export function clampColorForTier(userTier: Tier, color: string): string {
+  if (userTier === 'pro') return color;
+  return FREE_COLORS.includes(color.toUpperCase()) ? color : FREE_COLORS[0];
+}
+
 export function isFreeFormat(format: ExportFormat): boolean {
   return FORMAT_ACCESS[format] === 'free';
 }
