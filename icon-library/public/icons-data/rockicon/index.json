@@ -24,152 +24,63 @@
         "id": "arrow",
         "name": "Arrow",
         "subcategories": []
-      }
-    ],
-    "overrides": {
-      "arrow-circle-2-right": {
-        "name": "arrow circle right"
       },
-      "arrow-circle-2-up": {
-        "name": "arrow circle up"
+      {
+        "id": "shopping",
+        "name": "Shopping",
+        "subcategories": [
+          {
+            "id": "cart",
+            "name": "Cart"
+          }
+        ]
       }
-    }
+    ]
   },
   "icons": [
     {
-      "id": "rockicon__arrow-circle-2-right",
+      "id": "rockicon__barcode",
       "familyId": "rockicon",
-      "name": "arrow circle right",
+      "name": "barcode",
       "categoryId": "arrow",
       "tags": [
-        "arrow",
-        "circle",
-        "2",
-        "right"
+        "barcode"
       ],
       "tier": "free",
       "status": "published",
       "variants": [
         {
           "bundleId": "outline",
-          "viewBox": "0 0 22 22",
+          "viewBox": "0 0 24 24",
           "paths": [
             {
               "tag": "circle",
               "attrs": {
-                "cx": "11",
-                "cy": "11",
-                "r": "10",
-                "class": "cls-1"
+                "cx": "16",
+                "cy": "17",
+                "r": "1"
               }
             },
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_",
-                "d": "m6 7 4 4-4 4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            },
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_2",
-                "d": "m12 7 4 4-4 4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            }
-          ],
-          "strokeBased": true
-        }
-      ]
-    },
-    {
-      "id": "rockicon__arrow-circle-2-up",
-      "familyId": "rockicon",
-      "name": "arrow circle up",
-      "categoryId": "arrow",
-      "tags": [
-        "arrow",
-        "circle",
-        "2",
-        "up"
-      ],
-      "tier": "free",
-      "status": "published",
-      "variants": [
-        {
-          "bundleId": "outline",
-          "viewBox": "0 0 22 22",
-          "paths": [
             {
               "tag": "circle",
               "attrs": {
-                "cx": "11",
-                "cy": "11",
-                "r": "10",
-                "class": "cls-1"
+                "cx": "12",
+                "cy": "17",
+                "r": "1"
               }
             },
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_",
-                "d": "m7 10 4-4 4 4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            },
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_2",
-                "d": "m7 16 4-4 4 4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            }
-          ],
-          "strokeBased": true
-        }
-      ]
-    },
-    {
-      "id": "rockicon__arrow-circle-left-2",
-      "familyId": "rockicon",
-      "name": "arrow circle left 2",
-      "categoryId": "arrow",
-      "tags": [
-        "arrow",
-        "circle",
-        "left",
-        "2"
-      ],
-      "tier": "free",
-      "status": "published",
-      "variants": [
-        {
-          "bundleId": "outline",
-          "viewBox": "0 0 22 22",
-          "paths": [
             {
               "tag": "circle",
               "attrs": {
-                "cx": "11",
-                "cy": "11",
-                "r": "10",
-                "class": "cls-1"
+                "cx": "8",
+                "cy": "17",
+                "r": "1"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_",
-                "d": "m13 7-4 4 4 4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M20 7v10M16 7v6M12 7v6M8 7v6M4 7v10"
               }
             }
           ],
@@ -178,48 +89,143 @@
       ]
     },
     {
-      "id": "rockicon__arrow-circle-left-down",
+      "id": "rockicon__scan-barcode-01",
       "familyId": "rockicon",
-      "name": "arrow circle left down",
+      "name": "scan barcode 01",
       "categoryId": "arrow",
       "tags": [
-        "arrow",
-        "circle",
-        "left",
-        "down"
+        "scan",
+        "barcode",
+        "01"
       ],
       "tier": "free",
       "status": "published",
       "variants": [
         {
           "bundleId": "outline",
-          "viewBox": "0 0 22 22",
+          "viewBox": "0 0 24 24",
           "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M12 14v1M16 8v7M12 8v2M8 8v7M18 5h2v13h-2M6 5H4v13h2"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__scan-barcode-02",
+      "familyId": "rockicon",
+      "name": "scan barcode 02",
+      "categoryId": "arrow",
+      "tags": [
+        "scan",
+        "barcode",
+        "02"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 24 24",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M20 16v2h-2M4 16v2h2M12 14v1M16 8v7M12 8v2M8 8v7M18 5h2v2M6 5H4v2"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__cart-01",
+      "familyId": "rockicon",
+      "name": "cart 01",
+      "categoryId": "shopping",
+      "subcategoryId": "cart",
+      "tags": [
+        "cart",
+        "01"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 24 24",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M17.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M8.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M7 18h12M8 7h11l-1 7H8L7 4H5"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__cart-add-01",
+      "familyId": "rockicon",
+      "name": "cart add 01",
+      "categoryId": "shopping",
+      "subcategoryId": "cart",
+      "tags": [
+        "cart",
+        "add",
+        "01"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 24 24",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M16.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M7.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M6 18h12"
+              }
+            },
             {
               "tag": "circle",
               "attrs": {
-                "cx": "11",
-                "cy": "11",
-                "r": "10",
-                "class": "cls-1"
+                "cx": "17",
+                "cy": "6",
+                "r": "4"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_",
-                "d": "m7 7 7 7",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M17 4v4m-2-2h4"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_2",
-                "d": "M14 8v6H8",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M4 4h2l1 10h10l.14-1M7 7h3"
               }
             }
           ],
@@ -228,48 +234,53 @@
       ]
     },
     {
-      "id": "rockicon__arrow-circle-left-up",
+      "id": "rockicon__cart-apply-01",
       "familyId": "rockicon",
-      "name": "arrow circle left up",
-      "categoryId": "arrow",
+      "name": "cart apply 01",
+      "categoryId": "shopping",
+      "subcategoryId": "cart",
       "tags": [
-        "arrow",
-        "circle",
-        "left",
-        "up"
+        "cart",
+        "apply",
+        "01"
       ],
       "tier": "free",
       "status": "published",
       "variants": [
         {
           "bundleId": "outline",
-          "viewBox": "0 0 22 22",
+          "viewBox": "0 0 24 24",
           "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M16.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M7.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M18 18H6"
+              }
+            },
             {
               "tag": "circle",
               "attrs": {
-                "cx": "11",
-                "cy": "11",
-                "r": "10",
-                "class": "cls-1"
+                "cx": "17",
+                "cy": "6",
+                "r": "4"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_",
-                "d": "m8 8 7 7",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "m15 6.2 1.5 1.5L19 4.8"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_2",
-                "d": "M8 14V8h6",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M4 4h2l1 10h10l.14-1M7 7h3"
               }
             }
           ],
@@ -278,39 +289,88 @@
       ]
     },
     {
-      "id": "rockicon__arrow-circle-right-2",
+      "id": "rockicon__cart-broken-01",
       "familyId": "rockicon",
-      "name": "arrow circle right 2",
-      "categoryId": "arrow",
+      "name": "cart broken 01",
+      "categoryId": "shopping",
+      "subcategoryId": "cart",
       "tags": [
-        "arrow",
-        "circle",
-        "right",
-        "2"
+        "cart",
+        "broken",
+        "01"
       ],
       "tier": "free",
       "status": "published",
       "variants": [
         {
           "bundleId": "outline",
-          "viewBox": "0 0 22 22",
+          "viewBox": "0 0 24 24",
           "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M17.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M8.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M6 18h14M5 4h2l1 10h10l1-7h-5l-2 1.5 2 1-2 2M8 7h1.5"
+              }
+            }
+          ],
+          "strokeBased": true
+        }
+      ]
+    },
+    {
+      "id": "rockicon__cart-error-01",
+      "familyId": "rockicon",
+      "name": "cart error 01",
+      "categoryId": "shopping",
+      "subcategoryId": "cart",
+      "tags": [
+        "cart",
+        "error",
+        "01"
+      ],
+      "tier": "free",
+      "status": "published",
+      "variants": [
+        {
+          "bundleId": "outline",
+          "viewBox": "0 0 24 24",
+          "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M16.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M7.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M18 18H6"
+              }
+            },
             {
               "tag": "circle",
               "attrs": {
-                "cx": "11",
-                "cy": "11",
-                "r": "10",
-                "class": "cls-1"
+                "cx": "17",
+                "cy": "6",
+                "r": "4"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_",
-                "d": "m9 7 4 4-4 4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "m15.5 4.5 3 3m0-3-3 3"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M4 4h2l1 10h10l.14-1M7 7h3"
               }
             }
           ],
@@ -319,39 +379,53 @@
       ]
     },
     {
-      "id": "rockicon__arrow-circle-up-2",
+      "id": "rockicon__cart-favourite-01",
       "familyId": "rockicon",
-      "name": "arrow circle up 2",
-      "categoryId": "arrow",
+      "name": "cart favourite 01",
+      "categoryId": "shopping",
+      "subcategoryId": "cart",
       "tags": [
-        "arrow",
-        "circle",
-        "up",
-        "2"
+        "cart",
+        "favourite",
+        "01"
       ],
       "tier": "free",
       "status": "published",
       "variants": [
         {
           "bundleId": "outline",
-          "viewBox": "0 0 22 22",
+          "viewBox": "0 0 24 24",
           "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M16.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M7.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M18 18H6"
+              }
+            },
             {
               "tag": "circle",
               "attrs": {
-                "cx": "11",
-                "cy": "11",
-                "r": "10",
-                "class": "cls-1"
+                "cx": "17",
+                "cy": "6",
+                "r": "4"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_",
-                "d": "m7 13 4-4 4 4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M17 8.3S14.6 6.7 14.6 5c0-.9.7-1.6 1.6-1.6.3 0 .6.2.8.5.2-.3.5-.5.8-.5.9 0 1.6.7 1.6 1.6 0 1.7-2.4 3.3-2.4 3.3"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M4 4h2l1 10h10l.14-1M7 7h3"
               }
             }
           ],
@@ -360,47 +434,53 @@
       ]
     },
     {
-      "id": "rockicon__arrow-circle-up",
+      "id": "rockicon__cart-load-01",
       "familyId": "rockicon",
-      "name": "arrow circle up",
-      "categoryId": "arrow",
+      "name": "cart load 01",
+      "categoryId": "shopping",
+      "subcategoryId": "cart",
       "tags": [
-        "arrow",
-        "circle",
-        "up"
+        "cart",
+        "load",
+        "01"
       ],
       "tier": "free",
       "status": "published",
       "variants": [
         {
           "bundleId": "outline",
-          "viewBox": "0 0 22 22",
+          "viewBox": "0 0 24 24",
           "paths": [
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M16.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M7.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M18 18H6"
+              }
+            },
             {
               "tag": "circle",
               "attrs": {
-                "cx": "11",
-                "cy": "11",
-                "r": "10",
-                "class": "cls-1"
+                "cx": "17",
+                "cy": "6",
+                "r": "4"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_",
-                "d": "M11 6v11",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M17 3.8v4.4m-2-2 2 2 2-2"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_2",
-                "d": "m7 10 4-4 4 4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M4 4h2l1 10h10l.14-1M7 7h3"
               }
             }
           ],
@@ -409,46 +489,53 @@
       ]
     },
     {
-      "id": "rockicon__arrow-square-2-down",
+      "id": "rockicon__cart-remove-01",
       "familyId": "rockicon",
-      "name": "arrow square 2 down",
-      "categoryId": "arrow",
+      "name": "cart remove 01",
+      "categoryId": "shopping",
+      "subcategoryId": "cart",
       "tags": [
-        "arrow",
-        "square",
-        "2",
-        "down"
+        "cart",
+        "remove",
+        "01"
       ],
       "tier": "free",
       "status": "published",
       "variants": [
         {
           "bundleId": "outline",
-          "viewBox": "0 0 20 20",
+          "viewBox": "0 0 24 24",
           "paths": [
             {
               "tag": "path",
               "attrs": {
-                "d": "M1 1h18v18H1z",
-                "class": "cls-1"
+                "d": "M16.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M7.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_",
-                "d": "m6 5 4 4 4-4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M6 18h12"
+              }
+            },
+            {
+              "tag": "circle",
+              "attrs": {
+                "cx": "17",
+                "cy": "6",
+                "r": "4"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_2",
-                "d": "m6 11 4 4 4-4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M15 6h4"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M4 4h2l1 10h10l.14-1M7 7h3"
               }
             }
           ],
@@ -457,37 +544,53 @@
       ]
     },
     {
-      "id": "rockicon__arrow-square-caret-right",
+      "id": "rockicon__cart-unload-01",
       "familyId": "rockicon",
-      "name": "arrow square caret right",
-      "categoryId": "arrow",
+      "name": "cart unload 01",
+      "categoryId": "shopping",
+      "subcategoryId": "cart",
       "tags": [
-        "arrow",
-        "square",
-        "caret",
-        "right"
+        "cart",
+        "unload",
+        "01"
       ],
       "tier": "free",
       "status": "published",
       "variants": [
         {
           "bundleId": "outline",
-          "viewBox": "0 0 20 20",
+          "viewBox": "0 0 24 24",
           "paths": [
             {
               "tag": "path",
               "attrs": {
-                "d": "M1 1h18v18H1z",
-                "style": "fill:none;stroke:#000333;stroke-miterlimit:10;stroke-width:2px"
+                "d": "M16.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M7.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_",
-                "d": "M9 7v6l3-3z",
-                "data-name": "&lt;Path&gt;",
-                "style": "stroke:#000333;stroke-miterlimit:10;stroke-width:2px;fill:#000333"
+                "d": "M18 18H6"
+              }
+            },
+            {
+              "tag": "circle",
+              "attrs": {
+                "cx": "17",
+                "cy": "6",
+                "r": "4"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M17 8.2V3.8m-2 2 2-2 2 2"
+              }
+            },
+            {
+              "tag": "path",
+              "attrs": {
+                "d": "M4 4h2l1 10h10l.14-1M7 7h3"
               }
             }
           ],
@@ -496,265 +599,53 @@
       ]
     },
     {
-      "id": "rockicon__arrow-square-down-2",
+      "id": "rockicon__cart-waiting-01",
       "familyId": "rockicon",
-      "name": "arrow square down 2",
-      "categoryId": "arrow",
+      "name": "cart waiting 01",
+      "categoryId": "shopping",
+      "subcategoryId": "cart",
       "tags": [
-        "arrow",
-        "square",
-        "down",
-        "2"
+        "cart",
+        "waiting",
+        "01"
       ],
       "tier": "free",
       "status": "published",
       "variants": [
         {
           "bundleId": "outline",
-          "viewBox": "0 0 20 20",
+          "viewBox": "0 0 24 24",
           "paths": [
             {
               "tag": "path",
               "attrs": {
-                "d": "M1 1h18v18H1z",
-                "class": "cls-1"
+                "d": "M16.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M7.5 21a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_",
-                "d": "m6 8 4 4 4-4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M18 18H6"
               }
-            }
-          ],
-          "strokeBased": true
-        }
-      ]
-    },
-    {
-      "id": "rockicon__arrow-square-down-inside-2",
-      "familyId": "rockicon",
-      "name": "arrow square down inside 2",
-      "categoryId": "arrow",
-      "tags": [
-        "arrow",
-        "square",
-        "down",
-        "inside",
-        "2"
-      ],
-      "tier": "free",
-      "status": "published",
-      "variants": [
-        {
-          "bundleId": "outline",
-          "viewBox": "0 0 20 20",
-          "paths": [
+            },
             {
-              "tag": "path",
+              "tag": "circle",
               "attrs": {
-                "id": "_Path_",
-                "d": "M17 10h2v9H1v-9h2",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "cx": "17",
+                "cy": "6",
+                "r": "4"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_2",
-                "d": "M10 14V0",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M17 4v2.2l1.6.8"
               }
             },
             {
               "tag": "path",
               "attrs": {
-                "id": "_Path_3",
-                "d": "m6 10 4 4 4-4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            }
-          ],
-          "strokeBased": true
-        }
-      ]
-    },
-    {
-      "id": "rockicon__arrow-square-left-inside-2",
-      "familyId": "rockicon",
-      "name": "arrow square left inside 2",
-      "categoryId": "arrow",
-      "tags": [
-        "arrow",
-        "square",
-        "left",
-        "inside",
-        "2"
-      ],
-      "tier": "free",
-      "status": "published",
-      "variants": [
-        {
-          "bundleId": "outline",
-          "viewBox": "0 0 20 20",
-          "paths": [
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_",
-                "d": "M10 17v2H1V1h9v2",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            },
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_2",
-                "d": "M6 10h14",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            },
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_3",
-                "d": "m10 6-4 4 4 4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            }
-          ],
-          "strokeBased": true
-        }
-      ]
-    },
-    {
-      "id": "rockicon__arrow-square-up-2",
-      "familyId": "rockicon",
-      "name": "arrow square up 2",
-      "categoryId": "arrow",
-      "tags": [
-        "arrow",
-        "square",
-        "up",
-        "2"
-      ],
-      "tier": "free",
-      "status": "published",
-      "variants": [
-        {
-          "bundleId": "outline",
-          "viewBox": "0 0 20 20",
-          "paths": [
-            {
-              "tag": "path",
-              "attrs": {
-                "d": "M1 1h18v18H1z",
-                "class": "cls-1"
-              }
-            },
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_",
-                "d": "m6 12 4-4 4 4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            }
-          ],
-          "strokeBased": true
-        }
-      ]
-    },
-    {
-      "id": "rockicon__arrow-square-up",
-      "familyId": "rockicon",
-      "name": "arrow square up",
-      "categoryId": "arrow",
-      "tags": [
-        "arrow",
-        "square",
-        "up"
-      ],
-      "tier": "free",
-      "status": "published",
-      "variants": [
-        {
-          "bundleId": "outline",
-          "viewBox": "0 0 20 20",
-          "paths": [
-            {
-              "tag": "path",
-              "attrs": {
-                "d": "M1 1h18v18H1z",
-                "class": "cls-1"
-              }
-            },
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_",
-                "d": "M10 5v11",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            },
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_2",
-                "d": "m6 9 4-4 4 4",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            }
-          ],
-          "strokeBased": true
-        }
-      ]
-    },
-    {
-      "id": "rockicon__trend-down-left",
-      "familyId": "rockicon",
-      "name": "trend down left",
-      "categoryId": "arrow",
-      "tags": [
-        "trend",
-        "down",
-        "left"
-      ],
-      "tier": "free",
-      "status": "published",
-      "variants": [
-        {
-          "bundleId": "outline",
-          "viewBox": "0 0 11.78 19.62",
-          "paths": [
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_",
-                "d": "M1 11.63v7h7",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
-              }
-            },
-            {
-              "tag": "path",
-              "attrs": {
-                "id": "_Path_2",
-                "d": "m1 18.63 8-8-2-5 4-5",
-                "class": "cls-1",
-                "data-name": "&lt;Path&gt;"
+                "d": "M4 4h2l1 10h10l.14-1M7 7h3"
               }
             }
           ],

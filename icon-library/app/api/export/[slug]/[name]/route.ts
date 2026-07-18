@@ -5,8 +5,8 @@ import { readProIcon } from '@/lib/pro-source';
 import { buildSvgMarkup, toJsx, toVue } from '@/lib/svg-render';
 import { consumeDownload } from '@/lib/rate-limit';
 import {
-  FORMAT_ACCESS, FREE_ATTRIBUTION, canAccessFormat, canAccessIcon, isFreeFormat,
-  type ExportFormat,
+  FORMAT_ACCESS, FREE_ATTRIBUTION, FREE_FIXED_SIZE, FREE_FIXED_STROKE, canAccessBundleWeight, canAccessFormat, canAccessIcon,
+  clampColorForTier, isFreeFormat, type ExportFormat,
 } from '@/lib/licensing';
 import type { IconVariant } from '@/types';
 
@@ -67,7 +67,24 @@ export async function GET(
   }
   if (!variant || variant.paths.length === 0) return NextResponse.json({ error: 'No vector' }, { status: 404 });
 
-  const markup = buildSvgMarkup(variant, { size: 24, color: 'currentColor', strokeWidth: 2 });
+  // Axis 3 — stroke weight. Each bundle is a hand-drawn weight tier
+  // (Thin/Regular/Bold); Free tier only gets the one matching
+  // FREE_FIXED_STROKE. This also stops a free-tier client from bypassing
+  // the UI lock by requesting ?bundle=thin directly.
+  if (!canAccessBundleWeight(userTier, variant.strokeWidth)) {
+    return upgrade('This stroke weight is a Pro feature', format);
+  }
+
+  // Live size / color is a Pro feature — Free exports are pinned to 24px /
+  // black-or-white regardless of what the client sends. Stroke width comes
+  // straight from the resolved bundle's own baked weight, not the client.
+  const reqSize = Number(url.searchParams.get('size'));
+  const reqColor = url.searchParams.get('color') || 'currentColor';
+  const size = userTier === 'pro' && Number.isFinite(reqSize) && reqSize > 0 ? reqSize : FREE_FIXED_SIZE;
+  const strokeWidth = variant.strokeWidth ?? FREE_FIXED_STROKE;
+  const color = clampColorForTier(userTier, reqColor);
+
+  const markup = buildSvgMarkup(variant, { size, color, strokeWidth });
   const base = name.replace(/\s+/g, '-');
   let content = markup, filename = `${base}.svg`;
   if (format === 'jsx') { content = toJsx(markup, name); filename = `${base}.jsx`; }

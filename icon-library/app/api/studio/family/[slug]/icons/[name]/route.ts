@@ -3,6 +3,8 @@ import { isStudioEnabled, deleteSourceIcon } from '@/lib/studio';
 
 export const dynamic = 'force-dynamic';
 
+// Delete ALL weights of an icon (every bundle copy of this name). The
+// file-manager's per-weight delete lives at ../file instead.
 export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ slug: string; name: string }> }

@@ -23,14 +23,16 @@
       "id": "arrow",
       "name": "Arrow",
       "subcategories": []
-    }
-  ],
-  "overrides": {
-    "arrow-circle-2-right": {
-      "name": "arrow circle right"
     },
-    "arrow-circle-2-up": {
-      "name": "arrow circle up"
+    {
+      "id": "shopping",
+      "name": "Shopping",
+      "subcategories": [
+        {
+          "id": "cart",
+          "name": "Cart"
+        }
+      ]
     }
-  }
+  ]
 }

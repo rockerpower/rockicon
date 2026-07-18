@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { FamilyMeta } from '@/types';
 
@@ -10,194 +10,108 @@ interface Props {
   currentCategory: string;
 }
 
-const ROW = 'flex items-center gap-1 h-[28px] px-2 rounded-[7px] cursor-pointer select-none transition-colors hover:bg-[var(--surface-2)] focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--foreground)]';
-const LABEL = 'text-[12.5px] truncate';
-
-type RowKind = 'family' | 'bundle' | 'all' | 'category';
-
-interface Row {
-  key: string;
-  kind: RowKind;
-  label: string;
-  level: number;         // 0 family, 1 bundle, 2 leaf
-  expandable: boolean;
-  expanded: boolean;
-  active: boolean;
-  familySlug: string;
-  bundleId?: string;
-  categoryId?: string;   // for leaf navigation
-}
+type MenuKey = 'family' | 'bundle' | 'category' | null;
 
 export function NavTree({ families, currentFamily, currentBundle, currentCategory }: Props) {
   const router = useRouter();
-  const [focusIdx, setFocusIdx] = useState(0);
-  const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [open, setOpen] = useState<MenuKey>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  // expand state: key = "f:<slug>" | "b:<slug>:<bundleId>"
-  const [expanded, setExpanded] = useState<Record<string, boolean>>(() => {
-    const init: Record<string, boolean> = {};
-    for (const fam of families) {
-      init[`f:${fam.slug}`] = true;
-      for (const b of fam.bundles) {
-        if (fam.slug === currentFamily && b.id === currentBundle) {
-          init[`b:${fam.slug}:${b.id}`] = true;
-        }
-      }
-    }
-    return init;
-  });
+  useEffect(() => {
+    if (!open) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setOpen(null);
+    };
+    const onEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(null); };
+    document.addEventListener('mousedown', onDocClick);
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.removeEventListener('mousedown', onDocClick);
+      document.removeEventListener('keydown', onEsc);
+    };
+  }, [open]);
 
-  const toggle = useCallback((key: string) => {
-    setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
-  }, []);
+  const family = families.find(f => f.slug === currentFamily) ?? families[0];
+  const bundle = family?.bundles.find(b => b.id === currentBundle) ?? family?.bundles[0];
 
-  const navigate = useCallback((family: string, bundle: string, category: string) => {
-    router.push(`/${family}/${bundle}/${category}`);
+  const navigate = useCallback((f: string, b: string, c: string) => {
+    setOpen(null);
+    router.push(`/${f}/${b}/${c}`);
   }, [router]);
 
-  // Flatten the visible tree into an ordered list of rows.
-  const rows = useMemo<Row[]>(() => {
-    const out: Row[] = [];
-    for (const fam of families) {
-      const famKey = `f:${fam.slug}`;
-      const famOpen = !!expanded[famKey];
-      out.push({ key: famKey, kind: 'family', label: fam.name, level: 0, expandable: true, expanded: famOpen, active: false, familySlug: fam.slug });
-      if (!famOpen) continue;
-      for (const bundle of fam.bundles) {
-        const bKey = `b:${fam.slug}:${bundle.id}`;
-        const bOpen = !!expanded[bKey];
-        const bActive = fam.slug === currentFamily && bundle.id === currentBundle;
-        out.push({ key: bKey, kind: 'bundle', label: bundle.name, level: 1, expandable: true, expanded: bOpen, active: bActive, familySlug: fam.slug, bundleId: bundle.id });
-        if (!bOpen) continue;
-        out.push({ key: `${bKey}:__all__`, kind: 'all', label: 'All', level: 2, expandable: false, expanded: false, active: bActive && currentCategory === '__all__', familySlug: fam.slug, bundleId: bundle.id, categoryId: '__all__' });
-        for (const cat of fam.categories) {
-          out.push({ key: `${bKey}:${cat.id}`, kind: 'category', label: cat.name, level: 2, expandable: false, expanded: false, active: bActive && currentCategory === cat.id, familySlug: fam.slug, bundleId: bundle.id, categoryId: cat.id });
-        }
-      }
-    }
-    return out;
-  }, [families, expanded, currentFamily, currentBundle, currentCategory]);
-
-  // Keep focus index in range as rows expand/collapse.
-  useEffect(() => {
-    if (focusIdx > rows.length - 1) setFocusIdx(Math.max(0, rows.length - 1));
-  }, [rows.length, focusIdx]);
-
-  const activateRow = useCallback((row: Row) => {
-    if (row.kind === 'family') {
-      toggle(row.key);
-    } else if (row.kind === 'bundle') {
-      toggle(row.key);
-      if (!row.active) {
-        const fam = families.find(f => f.slug === row.familySlug);
-        const firstCat = fam?.categories[0];
-        if (firstCat && row.bundleId) navigate(row.familySlug, row.bundleId, firstCat.id);
-      }
-    } else if (row.bundleId && row.categoryId) {
-      navigate(row.familySlug, row.bundleId, row.categoryId);
-    }
-  }, [toggle, families, navigate]);
-
-  const focusRow = (idx: number) => {
-    setFocusIdx(idx);
-    rowRefs.current[idx]?.focus();
+  const pickFamily = (f: FamilyMeta) => {
+    const b = f.bundles[0];
+    const c = f.categories[0];
+    if (b && c) navigate(f.slug, b.id, c.id);
+  };
+  const pickBundle = (bundleId: string) => {
+    const c = family?.categories[0];
+    if (family && c) navigate(family.slug, bundleId, c.id);
+  };
+  const pickCategory = (categoryId: string) => {
+    if (family && bundle) navigate(family.slug, bundle.id, categoryId);
   };
 
-  const onKeyDown = (e: React.KeyboardEvent, idx: number) => {
-    const row = rows[idx];
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        focusRow(Math.min(idx + 1, rows.length - 1));
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        focusRow(Math.max(idx - 1, 0));
-        break;
-      case 'ArrowRight':
-        e.preventDefault();
-        if (row.expandable && !row.expanded) toggle(row.key);
-        else if (row.expandable && row.expanded) focusRow(Math.min(idx + 1, rows.length - 1));
-        break;
-      case 'ArrowLeft':
-        e.preventDefault();
-        if (row.expandable && row.expanded) toggle(row.key);
-        else {
-          // jump to parent row (previous row with a lower level)
-          for (let j = idx - 1; j >= 0; j--) {
-            if (rows[j].level < row.level) { focusRow(j); break; }
-          }
-        }
-        break;
-      case 'Enter':
-      case ' ':
-        e.preventDefault();
-        activateRow(row);
-        break;
-    }
-  };
-
-  const leafDot = (active: boolean) => (
-    <span
-      style={{
-        width: 4, height: 4, borderRadius: '50%', flexShrink: 0, marginRight: 4,
-        background: active ? 'var(--foreground)' : 'var(--border-2)',
-        border: active ? undefined : '1px solid var(--border-2)',
-      }}
-    />
+  const Crumb = ({ menuKey, label, accent, children }: { menuKey: MenuKey; label: string; accent?: boolean; children: React.ReactNode }) => (
+    <div style={{ position: 'relative' }}>
+      <button
+        onClick={() => setOpen(o => o === menuKey ? null : menuKey)}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, padding: '13px 16px', cursor: 'pointer',
+          background: 'transparent', border: 'none',
+          color: accent ? 'var(--accent)' : 'var(--muted)', fontWeight: accent ? 600 : 400,
+          boxShadow: accent ? 'inset 0 -2px 0 var(--accent)' : undefined,
+        }}
+      >
+        {label}
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><polyline points="6 9 12 15 18 9" /></svg>
+      </button>
+      {open === menuKey && (
+        <div style={{ position: 'absolute', top: 'calc(100% - 2px)', left: 8, zIndex: 50, background: 'var(--background)', border: '0.5px solid #C7C7C7', borderRadius: 'var(--radius)', boxShadow: '0 14px 34px -14px rgba(0,0,0,.3)', minWidth: 170, padding: 5 }}>
+          {children}
+        </div>
+      )}
+    </div>
   );
 
-  return (
-    <nav className="flex-1 overflow-y-auto py-2 px-2" role="tree" aria-label="Icon library">
-      <div
-        className="px-2 pb-1.5 pt-1"
-        style={{ fontFamily: 'monospace', fontSize: '9px', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)' }}
-      >
-        Library
-      </div>
+  const Option = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
+    <button
+      onClick={onClick}
+      style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', fontSize: 13, cursor: 'pointer', borderRadius: 'var(--radius)', background: 'transparent', border: 'none', color: 'var(--foreground)' }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'var(--surface-2)'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+    >
+      <span>{label}</span>
+      {active && <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+    </button>
+  );
 
-      {rows.map((row, idx) => (
-        <div
-          key={row.key}
-          ref={el => { rowRefs.current[idx] = el; }}
-          className={ROW}
-          role="treeitem"
-          aria-level={row.level + 1}
-          aria-expanded={row.expandable ? row.expanded : undefined}
-          aria-selected={row.active}
-          tabIndex={idx === focusIdx ? 0 : -1}
-          style={{
-            paddingLeft: row.level === 0 ? undefined : row.level === 1 ? 22 : 38,
-            background: row.active && row.kind !== 'bundle' ? 'var(--surface-2)' : undefined,
-          }}
-          onKeyDown={e => onKeyDown(e, idx)}
-          onFocus={() => setFocusIdx(idx)}
-          onClick={() => { setFocusIdx(idx); activateRow(row); }}
-        >
-          {row.expandable ? (
-            <span
-              style={{ fontSize: '9px', color: 'var(--muted-2)', width: 14, textAlign: 'center', flexShrink: 0 }}
-              onClick={e => { e.stopPropagation(); toggle(row.key); }}
-            >
-              {row.expanded ? '▾' : '▸'}
-            </span>
-          ) : (
-            <>
-              <span style={{ width: 10, flexShrink: 0 }} />
-              {leafDot(row.active)}
-            </>
-          )}
-          <span
-            className={LABEL}
-            style={{
-              fontWeight: row.kind === 'family' ? 700 : row.active ? (row.kind === 'bundle' ? 600 : 700) : row.kind === 'all' || row.kind === 'category' ? (row.active ? 700 : 500) : 500,
-              color: row.kind === 'family' || row.active ? 'var(--foreground)' : 'var(--muted)',
-            }}
-          >
-            {row.label}
-          </span>
-        </div>
-      ))}
-    </nav>
+  if (!family || !bundle) return null;
+
+  return (
+    <div ref={rootRef} style={{ position: 'sticky', top: 57, zIndex: 30, background: 'var(--background)', display: 'flex', alignItems: 'center', padding: '0 40px', borderBottom: '1px solid var(--hairline)' }}>
+      <span style={{ fontSize: 12, color: 'var(--muted-2)', paddingRight: 22 }}>Library</span>
+
+      <Crumb menuKey="family" label={family.name}>
+        {families.map(f => (
+          <Option key={f.slug} label={f.name} active={f.slug === family.slug} onClick={() => pickFamily(f)} />
+        ))}
+      </Crumb>
+      <span style={{ color: 'var(--border)' }}>/</span>
+
+      <Crumb menuKey="bundle" label={bundle.name}>
+        {family.bundles.map(b => (
+          <Option key={b.id} label={b.name} active={b.id === bundle.id} onClick={() => pickBundle(b.id)} />
+        ))}
+      </Crumb>
+      <span style={{ color: 'var(--border)' }}>/</span>
+
+      <Crumb menuKey="category" label={currentCategory === '__all__' ? 'All' : (family.categories.find(c => c.id === currentCategory)?.name ?? 'All')} accent>
+        <Option label="All" active={currentCategory === '__all__'} onClick={() => pickCategory('__all__')} />
+        {family.categories.map(c => (
+          <Option key={c.id} label={c.name} active={c.id === currentCategory} onClick={() => pickCategory(c.id)} />
+        ))}
+      </Crumb>
+    </div>
   );
 }

@@ -67,6 +67,7 @@ function processIcon({ f, dir, familyMeta, bundle, catId, subId, iconMap }: Proc
     viewBox,
     paths,
     strokeBased: bundle.strokeBased,
+    strokeWidth: bundle.strokeWidth,
   };
 
   if (iconMap.has(iconId)) {

@@ -26,6 +26,17 @@ export const FORMAT_LABELS: Record<ExportFormat, string> = {
 // Free tier daily download cap (Pro = unlimited).
 export const FREE_DAILY_LIMIT = 5;
 
+// Free tier export customization is locked to these values — live size /
+// stroke / color control and the raw markup view are Pro features.
+export const FREE_FIXED_SIZE = 24;
+export const FREE_FIXED_STROKE = 2;
+export const FREE_COLORS = ['#000000', '#FFFFFF'];
+
+export function clampColorForTier(userTier: Tier, color: string): string {
+  if (userTier === 'pro') return color;
+  return FREE_COLORS.includes(color.toUpperCase()) ? color : FREE_COLORS[0];
+}
+
 export function isFreeFormat(format: ExportFormat): boolean {
   return FORMAT_ACCESS[format] === 'free';
 }
@@ -36,6 +47,16 @@ export function canAccessFormat(userTier: Tier, format: ExportFormat): boolean {
 
 export function canAccessIcon(userTier: Tier, iconTier: Tier): boolean {
   return iconTier === 'free' || userTier === 'pro';
+}
+
+// Third gating axis — stroke weight. Free tier only gets the bundle whose
+// baked strokeWidth matches FREE_FIXED_STROKE (the "Bold" tier); Pro can
+// switch to any weight bundle. Bundles without a strokeWidth (non-weight
+// style variants) are always accessible — this axis only applies when the
+// bundle actually declares a weight.
+export function canAccessBundleWeight(userTier: Tier, bundleStrokeWidth: number | undefined): boolean {
+  if (bundleStrokeWidth === undefined) return true;
+  return userTier === 'pro' || bundleStrokeWidth === FREE_FIXED_STROKE;
 }
 
 // Full check: can this user export this icon in this format?

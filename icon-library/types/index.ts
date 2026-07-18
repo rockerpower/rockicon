@@ -11,6 +11,7 @@ export interface BundleDef {
   strokeBased: boolean;
   predefined: boolean;
   defaultTier?: 'free' | 'pro';
+  strokeWidth?: number; // hand-drawn weight this bundle's source SVGs are calibrated for
 }
 
 export interface SubcategoryNode {
@@ -62,6 +63,7 @@ export interface IconVariant {
   paths: PathNode[];       // free: populated; pro: empty in public index
   previewPng?: string;     // pro only: path to locked preview
   strokeBased: boolean;
+  strokeWidth?: number;    // bundle-derived — see BundleDef.strokeWidth
 }
 
 export interface IconMeta {
