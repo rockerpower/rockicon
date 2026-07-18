@@ -9,6 +9,7 @@ import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { PricingCards } from '@/components/pricing/PricingCards';
 import JSZip from 'jszip';
 import { buildSvgMarkup } from '@/lib/svg-render';
+import { canAccessBundleWeight, FREE_FIXED_STROKE } from '@/lib/licensing';
 import { useSearch } from '@/hooks/useSearch';
 import type { GridDensity } from '@/taxonomy.config';
 
@@ -97,13 +98,22 @@ export function BrowseShell({
 
   const downloadZip = useCallback(async () => {
     if (selected.size === 0) return;
+    const userTier = session?.tier ?? 'free';
     const zip = new JSZip();
+    let zipped = 0, weightLocked = 0;
     for (const id of selected) {
       const ic = allIcons.find(i => i.id === id);
       if (!ic || ic.tier === 'pro') continue; // skip locked (no vectors client-side)
       const v = (proVectors[id] ?? ic.variants).find(x => x.bundleId === currentBundle) ?? ic.variants[0];
       if (!v || v.paths.length === 0) continue;
-      zip.file(`${ic.name.replace(/\s+/g, '-')}.svg`, buildSvgMarkup(v, { size: 24, color: '#000000', strokeWidth: 2 }));
+      if (!canAccessBundleWeight(userTier, v.strokeWidth)) { weightLocked++; continue; } // Free tier: skip non-2px weight bundles
+      zip.file(`${ic.name.replace(/\s+/g, '-')}.svg`, buildSvgMarkup(v, { size: 24, color: '#000000', strokeWidth: v.strokeWidth ?? FREE_FIXED_STROKE }));
+      zipped++;
+    }
+    if (zipped === 0) {
+      showToast(weightLocked > 0 ? 'This stroke weight is a Pro feature' : 'Nothing to download');
+      exitSelect();
+      return;
     }
     const blob = await zip.generateAsync({ type: 'blob' });
     const url = URL.createObjectURL(blob);
@@ -111,9 +121,9 @@ export function BrowseShell({
     a.href = url; a.download = `${currentFamily}-icons.zip`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1500);
-    showToast(`Downloaded ${selected.size} icons`);
+    showToast(weightLocked > 0 ? `Downloaded ${zipped} icons (${weightLocked} need Pro for this weight)` : `Downloaded ${zipped} icons`);
     exitSelect();
-  }, [selected, allIcons, proVectors, currentBundle, currentFamily, showToast]);
+  }, [selected, allIcons, proVectors, currentBundle, currentFamily, session, showToast]);
   const handleClose = () => setSelectedId(null);
 
   // Fetch entitled Pro vectors for this family and patch the grid.

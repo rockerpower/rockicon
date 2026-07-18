@@ -49,6 +49,16 @@ export function canAccessIcon(userTier: Tier, iconTier: Tier): boolean {
   return iconTier === 'free' || userTier === 'pro';
 }
 
+// Third gating axis — stroke weight. Free tier only gets the bundle whose
+// baked strokeWidth matches FREE_FIXED_STROKE (the "Bold" tier); Pro can
+// switch to any weight bundle. Bundles without a strokeWidth (non-weight
+// style variants) are always accessible — this axis only applies when the
+// bundle actually declares a weight.
+export function canAccessBundleWeight(userTier: Tier, bundleStrokeWidth: number | undefined): boolean {
+  if (bundleStrokeWidth === undefined) return true;
+  return userTier === 'pro' || bundleStrokeWidth === FREE_FIXED_STROKE;
+}
+
 // Full check: can this user export this icon in this format?
 export function canExport(userTier: Tier, iconTier: Tier, format: ExportFormat): boolean {
   return canAccessIcon(userTier, iconTier) && canAccessFormat(userTier, format);

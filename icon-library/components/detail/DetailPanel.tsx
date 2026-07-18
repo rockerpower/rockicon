@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 import type { IconMeta, IconVariant } from '@/types';
 import { SvgIcon } from '@/components/icons/SvgIcon';
 import { buildSvgMarkup, copyText, downloadPng, downloadText } from '@/lib/svg-render';
-import { canAccessFormat, FORMAT_LABELS, FREE_ATTRIBUTION, FREE_FIXED_SIZE, FREE_FIXED_STROKE, FREE_COLORS, type ExportFormat, type Tier } from '@/lib/licensing';
+import { canAccessFormat, canAccessBundleWeight, FORMAT_LABELS, FREE_ATTRIBUTION, FREE_FIXED_SIZE, FREE_FIXED_STROKE, FREE_COLORS, type ExportFormat, type Tier } from '@/lib/licensing';
 
 interface Props {
   icon: IconMeta;
@@ -23,7 +23,6 @@ const COLOR_RAMP = ['#FFFFFF', '#C9C9C4', '#8A8A86', '#4A4A48', '#17171A', '#000
 export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTier, unlockedVariants, onRequestLogin, onUnlocked, onClose, onToast }: Props) {
   const isFreeTier = userTier === 'free';
   const [size, setSize] = useState(isFreeTier ? FREE_FIXED_SIZE : 48);
-  const [strokeWidth, setStrokeWidth] = useState(isFreeTier ? FREE_FIXED_STROKE : 2);
   const [color, setColor] = useState(isFreeTier ? FREE_COLORS[0] : '#FFFFFF');
   const [menu, setMenu] = useState<'copy' | 'download' | null>(null);
   const goPricing = () => { window.location.assign('/pricing'); };
@@ -64,12 +63,16 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTi
 
   const variants = unlocked ?? icon.variants;
   const availBundles = variants.map(v => v.bundleId);
-  const [bundleId, setBundleId] = useState(
-    availBundles.includes(activeBundleId) ? activeBundleId : availBundles[0]
-  );
+  // Free tier defaults to the bundle matching the free-accessible weight
+  // (FREE_FIXED_STROKE) when one exists among this icon's variants.
+  const freeBundleId = variants.find(v => canAccessBundleWeight('free', v.strokeWidth))?.bundleId;
+  const [bundleId, setBundleId] = useState(() => {
+    if (isFreeTier && freeBundleId) return freeBundleId;
+    return availBundles.includes(activeBundleId) ? activeBundleId : availBundles[0];
+  });
 
   const variant = variants.find(v => v.bundleId === bundleId) ?? variants[0];
-  const strokeBased = variant?.strokeBased ?? true;
+  const strokeWidth = variant?.strokeWidth ?? FREE_FIXED_STROKE;
   const locked = isPro && !unlocked;
 
   const markup = variant
@@ -145,25 +148,34 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTi
           <span style={{ position: 'absolute', left: 20, bottom: 16, fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--muted-2)' }}>{size}×{size}px</span>
         </div>
 
-        {/* Bundle switcher (only bundles this icon exists in) */}
+        {/* Bundle switcher (only bundles this icon exists in) — also carries
+            stroke weight, since each bundle is a hand-drawn weight tier
+            (Thin/Regular/Bold) rather than a numerically-scaled one source. */}
         {availBundles.length > 1 && (
           <div style={{ marginBottom: 18 }}>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)', marginBottom: 8 }}>Style</div>
             <div style={{ display: 'flex', gap: 6 }}>
-              {availBundles.map(bid => (
-                <button
-                  key={bid}
-                  onClick={() => setBundleId(bid)}
-                  style={{
-                    flex: 1, height: 34, background: bid === bundleId ? 'var(--foreground)' : 'transparent',
-                    color: bid === bundleId ? 'var(--background)' : 'var(--muted)',
-                    border: `0.5px solid ${bid === bundleId ? 'transparent' : '#C7C7C7'}`,
-                    borderRadius: 'var(--radius)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
-                  }}
-                >
-                  {bid}
-                </button>
-              ))}
+              {variants.map(v => {
+                const bid = v.bundleId;
+                const allowed = canAccessBundleWeight(userTier, v.strokeWidth);
+                const label = v.strokeWidth !== undefined ? `${v.strokeWidth}px` : bid;
+                return (
+                  <button
+                    key={bid}
+                    onClick={() => allowed ? setBundleId(bid) : goPricing()}
+                    title={allowed ? undefined : `${label} — Pro only`}
+                    style={{
+                      flex: 1, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                      background: bid === bundleId ? 'var(--foreground)' : 'transparent',
+                      color: bid === bundleId ? 'var(--background)' : allowed ? 'var(--muted)' : 'var(--muted-2)',
+                      border: `0.5px solid ${bid === bundleId ? 'transparent' : '#C7C7C7'}`,
+                      borderRadius: 'var(--radius)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', opacity: allowed ? 1 : .6,
+                    }}
+                  >
+                    {label} {!allowed && <ProLock />}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -180,18 +192,6 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTi
             </div>
             <input type="range" min={16} max={96} value={size} onChange={e => setSize(+e.target.value)} disabled={isFreeTier} style={{ width: '100%', accentColor: 'var(--accent)', opacity: isFreeTier ? .35 : 1 }} />
             {isFreeTier && <UpgradeHint onClick={goPricing} text="Free tier is fixed at 24px — upgrade for live sizing" />}
-          </div>
-
-          {/* Stroke width */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7 }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted-2)' }}>Stroke width</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
-                {strokeBased ? strokeWidth : 'n/a'} {isFreeTier && strokeBased && <ProLock />}
-              </span>
-            </div>
-            <input type="range" min={0.5} max={3} step={0.25} value={strokeWidth} onChange={e => setStrokeWidth(+e.target.value)} disabled={!strokeBased || isFreeTier} style={{ width: '100%', accentColor: 'var(--accent)', opacity: strokeBased && !isFreeTier ? 1 : .35 }} />
-            {isFreeTier && strokeBased && <UpgradeHint onClick={goPricing} text="Free tier is fixed at 2px — upgrade for live stroke control" />}
           </div>
 
           {/* Color */}
@@ -234,7 +234,7 @@ export function DetailPanel({ icon, familySlug, activeBundleId, signedIn, userTi
             if (action === 'copy' && format === 'svg') { copy(markup, 'Copied SVG'); return; }
             // Everything else routes through the server (gating + rate limit + attribution).
             try {
-              const params = new URLSearchParams({ bundle: variant.bundleId, format, size: String(size), color, strokeWidth: String(strokeWidth) });
+              const params = new URLSearchParams({ bundle: variant.bundleId, format, size: String(size), color });
               const res = await fetch(`/api/export/${familySlug}/${iconKey}?${params}`);
               const data = await res.json().catch(() => ({}));
               if (res.status === 402 || res.status === 429) { onToast(data.error ?? 'Upgrade required'); goPricing(); return; }

@@ -38,7 +38,7 @@ export function readProIcon(slug: string, name: string): ProIconPayload | null {
     if (!fs.existsSync(filePath)) continue;
     const raw = fs.readFileSync(filePath, 'utf8');
     const { viewBox, paths } = normalizeSvg(raw);
-    variants.push({ bundleId, viewBox, paths, strokeBased: bundle.strokeBased });
+    variants.push({ bundleId, viewBox, paths, strokeBased: bundle.strokeBased, strokeWidth: bundle.strokeWidth });
   }
 
   if (variants.length === 0) return null;

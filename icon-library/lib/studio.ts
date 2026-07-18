@@ -73,6 +73,99 @@ export interface SourceIcon {
   strokeBased: boolean;
 }
 
+// ── Raw (non-collapsed) folder tree ──────────────────────────────────────────
+// Powers the Studio file-manager: reflects the actual on-disk layout
+// icons-source/<slug>/<bundle>/<category>/[<subcategory>/]<name>.svg without
+// collapsing same-named files across bundles (which listSourceIcons does).
+export interface TreeIcon {
+  name: string;
+  viewBox: string;
+  paths: PathNode[];
+  strokeBased: boolean;
+}
+export interface TreeSub { id: string; icons: TreeIcon[] }
+export interface TreeCategory { id: string; icons: TreeIcon[]; subs: TreeSub[] }
+export interface TreeBundle { id: string; categories: TreeCategory[] }
+export interface Inconsistency {
+  name: string;
+  placements: { bundleId: string; categoryId: string; subcategoryId?: string }[];
+}
+export interface SourceTree {
+  bundles: TreeBundle[];
+  inconsistencies: Inconsistency[];
+}
+
+function readTreeIcon(dir: string, file: string, strokeBased: boolean): TreeIcon {
+  const name = file.replace(/\.svg$/, '');
+  let viewBox = '0 0 24 24', paths: PathNode[] = [];
+  try { ({ viewBox, paths } = normalizeSvg(fs.readFileSync(path.join(dir, file), 'utf8'))); } catch { /* keep defaults */ }
+  return { name, viewBox, paths, strokeBased };
+}
+
+export function listSourceTree(slug: string): SourceTree {
+  const meta = readSourceFamily(slug);
+  if (!meta) return { bundles: [], inconsistencies: [] };
+
+  const bundles: TreeBundle[] = [];
+  // name → set of "bundleId::categoryId::subcategoryId" placements, for the
+  // cross-bundle inconsistency scan.
+  const placements = new Map<string, Inconsistency['placements']>();
+  const track = (name: string, bundleId: string, categoryId: string, subcategoryId?: string) => {
+    const arr = placements.get(name) ?? [];
+    arr.push({ bundleId, categoryId, subcategoryId });
+    placements.set(name, arr);
+  };
+
+  for (const bundle of meta.bundles) {
+    const bundleDir = path.join(SOURCE_DIR, slug, bundle.id);
+    const categories: TreeCategory[] = [];
+    if (fs.existsSync(bundleDir)) {
+      for (const catEntry of fs.readdirSync(bundleDir, { withFileTypes: true })) {
+        if (!catEntry.isDirectory()) continue;
+        const catId = catEntry.name;
+        const catDir = path.join(bundleDir, catId);
+        const icons: TreeIcon[] = [];
+        const subs: TreeSub[] = [];
+        for (const sub of fs.readdirSync(catDir, { withFileTypes: true })) {
+          if (sub.isDirectory()) {
+            const subId = sub.name;
+            const subDir = path.join(catDir, subId);
+            const subIcons: TreeIcon[] = [];
+            for (const f of fs.readdirSync(subDir)) {
+              if (!f.endsWith('.svg')) continue;
+              subIcons.push(readTreeIcon(subDir, f, bundle.strokeBased));
+              track(f.replace(/\.svg$/, ''), bundle.id, catId, subId);
+            }
+            subIcons.sort((a, b) => a.name.localeCompare(b.name));
+            subs.push({ id: subId, icons: subIcons });
+          } else if (sub.name.endsWith('.svg')) {
+            icons.push(readTreeIcon(catDir, sub.name, bundle.strokeBased));
+            track(sub.name.replace(/\.svg$/, ''), bundle.id, catId, undefined);
+          }
+        }
+        icons.sort((a, b) => a.name.localeCompare(b.name));
+        subs.sort((a, b) => a.id.localeCompare(b.id));
+        categories.push({ id: catId, icons, subs });
+      }
+    }
+    categories.sort((a, b) => a.id.localeCompare(b.id));
+    bundles.push({ id: bundle.id, categories });
+  }
+
+  // A name is inconsistent if its (category, subcategory) placement differs
+  // across the bundles it appears in.
+  const inconsistencies: Inconsistency[] = [];
+  for (const [name, places] of placements) {
+    if (places.length < 2) continue;
+    const key = (p: Inconsistency['placements'][number]) => `${p.categoryId}::${p.subcategoryId ?? ''}`;
+    const distinct = new Set(places.map(key));
+    if (distinct.size > 1) inconsistencies.push({ name, placements: places });
+  }
+  inconsistencies.sort((a, b) => a.name.localeCompare(b.name));
+
+  return { bundles, inconsistencies };
+}
+
 // Scan icons-source/<slug>/<bundle>/<cat>/[<sub>/]<name>.svg and collapse
 // same-name files across bundles into one SourceIcon.
 export function listSourceIcons(slug: string): SourceIcon[] {
@@ -177,47 +270,124 @@ export function deleteSourceIcon(slug: string, name: string): number {
   return removed;
 }
 
-// Move a single icon (all its .svg files across bundles) to a different
-// category/subcategory — i.e. relocate the files on disk, since category
-// membership is derived from folder placement. Returns the number of files
-// moved (0 = icon not found, target category/subcategory doesn't exist, or
-// already in that location).
-export function moveSourceIcon(
-  slug: string, name: string, targetCategoryId: string, targetSubcategoryId?: string
-): number {
+// A single file's location within a family: bundle/category/[subcategory]/name.
+export interface FileLoc {
+  bundleId: string;
+  categoryId: string;
+  subcategoryId?: string;
+  name: string;
+}
+export type FileTarget = Omit<FileLoc, 'name'>;
+
+// Validate that every slug segment of a location is well-formed and that the
+// bundle/category/subcategory actually exist in family.json. Returns the
+// resolved absolute file path, or null if invalid.
+function resolveLocPath(
+  srcDir: string, meta: FamilyMeta, bundleId: string, categoryId: string, subcategoryId: string | undefined, name: string
+): string | null {
+  if (![bundleId, categoryId, name].every(s => s && SLUG_RE.test(s))) return null;
+  if (subcategoryId && !SLUG_RE.test(subcategoryId)) return null;
+  if (!meta.bundles.some(b => b.id === bundleId)) return null;
+  const cat = meta.categories.find(c => c.id === categoryId);
+  if (!cat) return null;
+  if (subcategoryId && !cat.subcategories.some(s => s.id === subcategoryId)) return null;
+  const parts = [srcDir, bundleId, categoryId];
+  if (subcategoryId) parts.push(subcategoryId);
+  parts.push(`${name}.svg`);
+  const resolved = path.join(...parts);
+  if (!resolved.startsWith(srcDir + path.sep)) return null;
+  return resolved;
+}
+
+// Move exactly ONE file (this weight only) to a different bundle/category/
+// subcategory — the file-manager's move primitive. Refuses to overwrite an
+// existing destination. Returns { ok } or an error string.
+export function moveSourceFile(slug: string, from: FileLoc, to: FileTarget): { ok: boolean; error?: string } {
   const srcDir = safeChild(SOURCE_DIR, slug);
-  if (!srcDir || !name || !SLUG_RE.test(name)) return 0;
-  if (!SLUG_RE.test(targetCategoryId)) return 0;
-  if (targetSubcategoryId && !SLUG_RE.test(targetSubcategoryId)) return 0;
-
+  if (!srcDir) return { ok: false, error: 'Invalid family' };
   const meta = readSourceFamily(slug);
-  if (!meta) return 0;
-  const targetCat = meta.categories.find(c => c.id === targetCategoryId);
-  if (!targetCat) return 0;
-  if (targetSubcategoryId && !targetCat.subcategories.some(s => s.id === targetSubcategoryId)) return 0;
+  if (!meta) return { ok: false, error: 'Family not found' };
 
-  const source = listSourceIcons(slug).find(ic => ic.name === name);
-  if (!source) return 0;
-  if (source.categoryId === targetCategoryId && source.subcategoryId === targetSubcategoryId) return 0;
+  const fromPath = resolveLocPath(srcDir, meta, from.bundleId, from.categoryId, from.subcategoryId, from.name);
+  if (!fromPath) return { ok: false, error: 'Invalid source' };
+  if (!fs.existsSync(fromPath)) return { ok: false, error: 'Source file not found' };
 
-  let moved = 0;
-  for (const bundleId of source.bundles) {
-    const fromParts = [srcDir, bundleId, source.categoryId];
-    if (source.subcategoryId) fromParts.push(source.subcategoryId);
-    fromParts.push(`${name}.svg`);
-    const from = path.join(...fromParts);
+  const toPath = resolveLocPath(srcDir, meta, to.bundleId, to.categoryId, to.subcategoryId, from.name);
+  if (!toPath) return { ok: false, error: 'Invalid destination (bundle/category must exist)' };
+  if (fromPath === toPath) return { ok: false, error: 'Already in that location' };
+  if (fs.existsSync(toPath)) return { ok: false, error: 'A file with this name already exists there' };
 
-    const toDir = targetSubcategoryId
-      ? path.join(srcDir, bundleId, targetCategoryId, targetSubcategoryId)
-      : path.join(srcDir, bundleId, targetCategoryId);
-    const to = path.join(toDir, `${name}.svg`);
+  fs.mkdirSync(path.dirname(toPath), { recursive: true });
+  fs.renameSync(fromPath, toPath);
+  return { ok: true };
+}
 
-    if (from.startsWith(srcDir + path.sep) && fs.existsSync(from)) {
-      fs.mkdirSync(toDir, { recursive: true });
-      fs.renameSync(from, to);
-      moved++;
-    }
-  }
+// ── Taxonomy deletion (bundle / category / subcategory) ─────────────────────
+// All three refuse to delete while any .svg still lives inside — the caller
+// must move or delete the icons first. Folder(s) are removed from disk AND the
+// entry is stripped from family.json in one shot.
 
-  return moved;
+// Delete a bundle: its folder icons-source/<slug>/<bundleId>/ plus the
+// bundles[] entry. Refuses if the bundle still holds any icon.
+export function deleteBundle(slug: string, bundleId: string): { ok: boolean; error?: string } {
+  const srcDir = safeChild(SOURCE_DIR, slug);
+  if (!srcDir) return { ok: false, error: 'Invalid family' };
+  const meta = readSourceFamily(slug);
+  if (!meta) return { ok: false, error: 'Family not found' };
+  if (!SLUG_RE.test(bundleId) || !meta.bundles.some(b => b.id === bundleId)) return { ok: false, error: 'Bundle not found' };
+
+  const dir = path.join(srcDir, bundleId);
+  if (countSvgs(dir) > 0) return { ok: false, error: 'Bundle still has icons — move or delete them first' };
+  if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
+  meta.bundles = meta.bundles.filter(b => b.id !== bundleId);
+  writeSourceFamily(slug, meta);
+  return { ok: true };
+}
+
+// Delete a category across ALL bundles (the category folder is replicated per
+// bundle) plus the categories[] entry. Refuses if any icon remains anywhere.
+export function deleteCategory(slug: string, categoryId: string): { ok: boolean; error?: string } {
+  const srcDir = safeChild(SOURCE_DIR, slug);
+  if (!srcDir) return { ok: false, error: 'Invalid family' };
+  const meta = readSourceFamily(slug);
+  if (!meta) return { ok: false, error: 'Family not found' };
+  if (!SLUG_RE.test(categoryId) || !meta.categories.some(c => c.id === categoryId)) return { ok: false, error: 'Category not found' };
+
+  const dirs = meta.bundles.map(b => path.join(srcDir, b.id, categoryId));
+  if (dirs.some(d => countSvgs(d) > 0)) return { ok: false, error: 'Category still has icons — move or delete them first' };
+  for (const d of dirs) if (fs.existsSync(d)) fs.rmSync(d, { recursive: true, force: true });
+  meta.categories = meta.categories.filter(c => c.id !== categoryId);
+  writeSourceFamily(slug, meta);
+  return { ok: true };
+}
+
+// Delete a subcategory across ALL bundles plus the subcategories[] entry.
+// Refuses if any icon remains in it.
+export function deleteSubcategory(slug: string, categoryId: string, subId: string): { ok: boolean; error?: string } {
+  const srcDir = safeChild(SOURCE_DIR, slug);
+  if (!srcDir) return { ok: false, error: 'Invalid family' };
+  const meta = readSourceFamily(slug);
+  if (!meta) return { ok: false, error: 'Family not found' };
+  const cat = meta.categories.find(c => c.id === categoryId);
+  if (!SLUG_RE.test(categoryId) || !cat) return { ok: false, error: 'Category not found' };
+  if (!SLUG_RE.test(subId) || !cat.subcategories.some(s => s.id === subId)) return { ok: false, error: 'Subcategory not found' };
+
+  const dirs = meta.bundles.map(b => path.join(srcDir, b.id, categoryId, subId));
+  if (dirs.some(d => countSvgs(d) > 0)) return { ok: false, error: 'Subcategory still has icons — move or delete them first' };
+  for (const d of dirs) if (fs.existsSync(d)) fs.rmSync(d, { recursive: true, force: true });
+  cat.subcategories = cat.subcategories.filter(s => s.id !== subId);
+  writeSourceFamily(slug, meta);
+  return { ok: true };
+}
+
+// Delete exactly ONE file (this weight only). Returns true if removed.
+export function deleteSourceFile(slug: string, loc: FileLoc): boolean {
+  const srcDir = safeChild(SOURCE_DIR, slug);
+  if (!srcDir) return false;
+  const meta = readSourceFamily(slug);
+  if (!meta) return false;
+  const filePath = resolveLocPath(srcDir, meta, loc.bundleId, loc.categoryId, loc.subcategoryId, loc.name);
+  if (!filePath || !fs.existsSync(filePath)) return false;
+  fs.rmSync(filePath);
+  return true;
 }

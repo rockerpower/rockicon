@@ -14,7 +14,8 @@ const FREE_FEATURES = [
 ];
 const PRO_FEATURES = [
   'Everything in Free, plus:',
-  'Live size / stroke / any color',
+  'Live size / any color',
+  'All 3 stroke weights — Thin, Regular, Bold',
   'Markup view + JSX, Vue export',
   'All Pro icons + every style',
   'New icons as they ship',
